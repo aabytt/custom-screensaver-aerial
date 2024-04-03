@@ -40,7 +40,7 @@ WebOSWindow {
 	Text {
 		id: overlayText
 		visible: false
-		opacity:0.4
+		opacity:0.5
 		text: videoList[currentIndex].name
 		font.pixelSize: 44
 		x: 30
@@ -54,33 +54,33 @@ WebOSWindow {
     Text {
 		id: overlayText2
 		visible: overlayText.visible
-		opacity:0.5
+		opacity:overlayText.opacity
 		text: videoList[currentIndex].pointsOfInterest[currentPOI]
 		font.pixelSize: 30
-		x: 30
-		y: 600
-		color: "#6e6e6e"
-		style: Text.Raised
-		styleColor: "black"
-		fontSizeMode: Text.Fit
+		x: overlayText.x
+		y: overlayText.y + 50
+		color: overlayText.color
+		style: overlayText.style
+		styleColor: overlayText.styleColor
+		fontSizeMode: overlayText.fontSizeMode
 	}
 
-    Timer {
-        interval: 100 
-        running: true
-        repeat: true
-        onTriggered: {
-              if (videoList[currentIndex].pointsOfInterest[Math.floor(videoOutput.position/1000)]) currentPOI= Math.floor(videoOutput.position/1000)
-              if (videoOutput.position > 500) overlayText.visible = true
-              if (videoOutput.position < 500) overlayText.visible = false
-            }
+	Timer {
+        	interval: 100 
+        	running: true
+        	repeat: true
+        	onTriggered: {
+              		if (videoList[currentIndex].pointsOfInterest[Math.floor(videoOutput.position/1000)]) currentPOI= Math.floor(videoOutput.position/1000)
+			if (videoOutput.position > 500) overlayText.visible = true
+              		if (videoOutput.position < 500) overlayText.visible = false
+            	}
         }
 		
-		function playNextVideo() {
-			currentIndex = Math.floor(Math.random() * videoList.length)
-			videoOutput.source = videoList[currentIndex].src.H2641080p
-			videoOutput.play()
-		}
+	function playNextVideo() {
+		currentIndex = Math.floor(Math.random() * videoList.length)
+		videoOutput.source = videoList[currentIndex].src.H2641080p
+		videoOutput.play()
+	}
 		
         property var videoList: [
 		  {
