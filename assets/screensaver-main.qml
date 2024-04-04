@@ -81,11 +81,11 @@ WebOSWindow {
         Text {
         	id: date
 		visible: name.visible
-		anchors.right: parent.right -30
+		anchors.right: time.anchors.right
         	horizontalAlignment:  Text.AlignRight
        		opacity:name.opacity
     		font.pixelSize: time.font.pixelSize - 20
-    		x: time.x+5
+    		x: time.x
     		y: time.y + name.font.pixelSize +5 
     		color: name.color
     		style: name.style
