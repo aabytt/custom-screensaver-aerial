@@ -9,7 +9,6 @@
  */
 import QtQuick 2.4
 import Eos.Window 0.1
-import QtQuick.Controls 2.15
 import QtMultimedia 5.9
 import QtQuick.Window 2.2
 
@@ -38,41 +37,70 @@ WebOSWindow {
 	}
 
 	Text {
-		id: overlayText
-		visible: false
-		opacity:0.5
+		id: name
+		visible: true
+		opacity:0.6
 		text: videoList[currentIndex].name
-		font.pixelSize: 44
-		x: 30
-		y: 550
+		fontSizeMode: Text.Fit
+		font.pixelSize: 40
+		x: window.width / 25
+		y: window.height * 0.7
 		color: "#6e6e6e"
 		style: Text.Raised
 		styleColor: "black"
-		fontSizeMode: Text.Fit
 	}
 
-    Text {
-		id: overlayText2
-		visible: overlayText.visible
-		opacity:overlayText.opacity
+   	Text {
+		id: poi
+		visible: name.visible
+		opacity:name.opacity
 		text: videoList[currentIndex].pointsOfInterest[currentPOI]
-		font.pixelSize: 30
-		x: overlayText.x
-		y: overlayText.y + 50
-		color: overlayText.color
-		style: overlayText.style
-		styleColor: overlayText.styleColor
-		fontSizeMode: overlayText.fontSizeMode
+		fontSizeMode: name.fontSizeMode
+		font.pixelSize: name.font.pixelSize - 20
+		x: name.x
+		y: name.y + name.font.pixelSize +2
+		color: name.color
+		style: name.style
+		styleColor: name.styleColor
+	}
+
+	Text {
+        	id: time
+		visible: name.visible
+		anchors.right: parent.right - 30
+    		opacity:name.opacity
+		font.pixelSize: name.font.pixelSize+3
+    		y: name.y - name.font.pixelSize *0.4
+    		color: name.color
+    		style: name.style
+    		styleColor: name.styleColor
+    		fontSizeMode: name.fontSizeMode
+    		text: "" 
+	}
+
+        Text {
+        	id: date
+		visible: name.visible
+		anchors.right: parent.right -30
+        	horizontalAlignment:  Text.AlignRight
+       		opacity:name.opacity
+    		font.pixelSize: time.font.pixelSize - 20
+    		x: time.x+5
+    		y: time.y + name.font.pixelSize +5 
+    		color: name.color
+    		style: name.style
+    		styleColor: name.styleColor
+    		fontSizeMode: name.fontSizeMode
+    		text: ""           
 	}
 
 	Timer {
-        	interval: 100 
+        	interval: 1000 
         	running: true
         	repeat: true
         	onTriggered: {
+			updateTime()
               		if (videoList[currentIndex].pointsOfInterest[Math.floor(videoOutput.position/1000)]) currentPOI= Math.floor(videoOutput.position/1000)
-			if (videoOutput.position > 500) overlayText.visible = true
-              		if (videoOutput.position < 500) overlayText.visible = false
             	}
         }
 		
@@ -80,6 +108,27 @@ WebOSWindow {
 		currentIndex = Math.floor(Math.random() * videoList.length)
 		videoOutput.source = videoList[currentIndex].src.H2641080p
 		videoOutput.play()
+	}
+
+	function updateTime() {
+        	var now = new Date();
+        	time.text = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
+      		const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      		const monthNames = ["January", "February", "March", "April", "May", "June", "July","August", "September", "October", "November", "December"];  
+      		date.text = now.getDate()+getOrdinalSuffix(now.getDate()) + " " + monthNames[now.getMonth()] + " " + now.getFullYear() + "\n" + daysOfWeek[now.getDay()];
+    	}
+	
+	function getOrdinalSuffix(number) {
+    		const suffixes = ["st", "nd", "rd"];
+    		const lastDigit = number % 10;
+    		const lastTwoDigits = number % 100;
+    		if (lastTwoDigits >= 11 && lastTwoDigits <= 13) {
+        		return "th";
+ 		} else if (lastDigit <= 3) {
+        		return suffixes[lastDigit - 1] || "th";
+    		} else {
+        		return "th";
+		}
 	}
 		
         property var videoList: [
