@@ -13,16 +13,15 @@ import QtMultimedia 5.9
 import QtQuick.Window 2.2
 
 WebOSWindow {
-    id: window
-    width: 1920
-    height: 1080
-    windowType: "_WEBOS_WINDOW_TYPE_SCREENSAVER"
-    color: "transparent"
-    title: "Screensaver"
-    appId: "com.webos.app.screensaver"
-    visible: true
-   
-	property int currentPOI: 0
+	id: window
+	width: 1920
+	height: 1080
+	windowType: "_WEBOS_WINDOW_TYPE_SCREENSAVER"
+	color: "transparent"
+	title: "Screensaver"
+	appId: "com.webos.app.screensaver"
+	visible: true
+   	property int currentPOI: 0
 	property int currentIndex: Math.floor(Math.random() * videoList.length)
 
 	Video {
@@ -35,63 +34,67 @@ WebOSWindow {
 		    playNextVideo()
 		}
 	}
+	
+	Rectangle {
+		color: "transparent"
+        	anchors.fill: parent
+        	anchors.margins: 100
+		
+		Text {
+			id: name
+			visible: true
+			opacity:0.6
+			text: videoList[currentIndex].name
+			fontSizeMode: Text.Fit
+			font.pixelSize: 60
+			y: parent.height * 0.82
+			color: "#6e6e6e"
+			style: Text.Raised
+			styleColor: "black"
+		}
 
-	Text {
-		id: name
-		visible: true
-		opacity:0.6
-		text: videoList[currentIndex].name
-		fontSizeMode: Text.Fit
-		font.pixelSize: 40
-		x: window.width / 25
-		y: window.height * 0.7
-		color: "#6e6e6e"
-		style: Text.Raised
-		styleColor: "black"
-	}
+		Text {
+			id: poi
+			visible: name.visible
+			opacity:name.opacity
+			text: videoList[currentIndex].pointsOfInterest[currentPOI]
+			fontSizeMode: name.fontSizeMode
+			font.pixelSize: name.font.pixelSize - 20
+			y: name.y + name.font.pixelSize + 5
+			color: name.color
+			style: name.style
+			styleColor: name.styleColor
+		}
 
-   	Text {
-		id: poi
-		visible: name.visible
-		opacity:name.opacity
-		text: videoList[currentIndex].pointsOfInterest[currentPOI]
-		fontSizeMode: name.fontSizeMode
-		font.pixelSize: name.font.pixelSize - 20
-		x: name.x
-		y: name.y + name.font.pixelSize +2
-		color: name.color
-		style: name.style
-		styleColor: name.styleColor
-	}
+		Text {
+			id: time
+			visible: name.visible
+			horizontalAlignment:  Text.AlignRight
+			anchors.right: parent.right
+			opacity:name.opacity
+			font.pixelSize: name.font.pixelSize
+			y: name.y
+			color: name.color
+			style: name.style
+			styleColor: name.styleColor
+			fontSizeMode: name.fontSizeMode
+			text: "" 
+		}
 
-	Text {
-        	id: time
-		visible: name.visible
-		anchors.right: parent.right - 30
-    		opacity:name.opacity
-		font.pixelSize: name.font.pixelSize+3
-    		y: name.y - name.font.pixelSize *0.4
-    		color: name.color
-    		style: name.style
-    		styleColor: name.styleColor
-    		fontSizeMode: name.fontSizeMode
-    		text: "" 
-	}
-
-        Text {
-        	id: date
-		visible: name.visible
-		anchors.right: time.anchors.right
-        	horizontalAlignment:  Text.AlignRight
-       		opacity:name.opacity
-    		font.pixelSize: time.font.pixelSize - 20
-    		x: time.x
-    		y: time.y + name.font.pixelSize +5 
-    		color: name.color
-    		style: name.style
-    		styleColor: name.styleColor
-    		fontSizeMode: name.fontSizeMode
-    		text: ""           
+		Text {
+			id: date
+			visible: name.visible
+			horizontalAlignment:  Text.AlignRight
+			anchors.right: parent.right
+			opacity:name.opacity
+			font.pixelSize: time.font.pixelSize - 20
+			y: name.y + name.font.pixelSize + 5
+			color: name.color
+			style: name.style
+			styleColor: name.styleColor
+			fontSizeMode: name.fontSizeMode
+			text: ""           
+		}
 	}
 
 	Timer {
@@ -100,7 +103,7 @@ WebOSWindow {
         	repeat: true
         	onTriggered: {
 			updateTime()
-              		if (videoList[currentIndex].pointsOfInterest[Math.floor(videoOutput.position/1000)]) currentPOI= Math.floor(videoOutput.position/1000)
+              		if (videoList[currentIndex].pointsOfInterest[Math.floor(videoOutput.position/1000)]) currentPOI = Math.floor(videoOutput.position/1000)
             	}
         }
 		
@@ -112,25 +115,20 @@ WebOSWindow {
 
 	function updateTime() {
         	var now = new Date();
-        	time.text = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
+			if (now.getHours() < 10) var hours = "0" + now.getHours();
+				else var hours = now.getHours();
+			if (now.getMinutes() < 10) var minutes = "0" + now.getMinutes();
+				else var minutes = now.getMinutes();
+        	time.text = hours + ":" + minutes;
       		const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      		const monthNames = ["January", "February", "March", "April", "May", "June", "July","August", "September", "October", "November", "December"];  
-      		date.text = now.getDate()+getOrdinalSuffix(now.getDate()) + " " + monthNames[now.getMonth()] + " " + now.getFullYear() + "\n" + daysOfWeek[now.getDay()];
+      		const monthNames = ["January", "February", "March", "April", "May", "June", "July","August", "September", "October", "November", "December"]; 
+			if (now.getDate() == 1 || now.getDate() == 21 || now.getDate() == 31) var suffix = "st";
+				else if (now.getDate() == 2 || now.getDate() == 22) var suffix = "nd";
+					else if (now.getDate() == 3 || now.getDate() == 23) var suffix = "rd";
+						else var suffix = "th";
+      		date.text = now.getDate() + suffix + " " + monthNames[now.getMonth()] + " " + now.getFullYear() + "\n" + daysOfWeek[now.getDay()];
     	}
 	
-	function getOrdinalSuffix(number) {
-    		const suffixes = ["st", "nd", "rd"];
-    		const lastDigit = number % 10;
-    		const lastTwoDigits = number % 100;
-    		if (lastTwoDigits >= 11 && lastTwoDigits <= 13) {
-        		return "th";
- 		} else if (lastDigit <= 3) {
-        		return suffixes[lastDigit - 1] || "th";
-    		} else {
-        		return "th";
-		}
-	}
-		
         property var videoList: [
 		  {
 			"id": "2F72BC1E-3D76-456C-81EB-842EBA488C27",
