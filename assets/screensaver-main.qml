@@ -66,10 +66,12 @@ WebOSWindow {
 
 	Text {
         	id: time
-		visible: name.visible
-		anchors.right: parent.right - 30
+			visible: name.visible
+			//anchors.right: parent.right - 30
+			horizontalAlignment:  Text.AlignRight
     		opacity:name.opacity
-		font.pixelSize: name.font.pixelSize+3
+			font.pixelSize: name.font.pixelSize+3
+			x: 1500
     		y: name.y - name.font.pixelSize *0.4
     		color: name.color
     		style: name.style
@@ -80,9 +82,9 @@ WebOSWindow {
 
         Text {
         	id: date
-		visible: name.visible
-		anchors.right: time.anchors.right
-        	horizontalAlignment:  Text.AlignRight
+			visible: name.visible
+			//anchors.right: time.anchors.right
+			horizontalAlignment:  Text.AlignRight
        		opacity:name.opacity
     		font.pixelSize: time.font.pixelSize - 20
     		x: time.x
@@ -112,25 +114,20 @@ WebOSWindow {
 
 	function updateTime() {
         	var now = new Date();
-        	time.text = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
+			if (now.getHours() < 10) var hours = "0" + now.getHours();
+			else var hours = now.getHours();
+			if (now.getMinutes() < 10) var minutes = "0" + now.getMinutes();
+			else var minutes = now.getMinutes();
+        	time.text = hours + ":" + minutes;
       		const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      		const monthNames = ["January", "February", "March", "April", "May", "June", "July","August", "September", "October", "November", "December"];  
-      		date.text = now.getDate()+getOrdinalSuffix(now.getDate()) + " " + monthNames[now.getMonth()] + " " + now.getFullYear() + "\n" + daysOfWeek[now.getDay()];
+      		const monthNames = ["January", "February", "March", "April", "May", "June", "July","August", "September", "October", "November", "December"]; 
+			if (now.getDate() == 1 || now.getDate() == 21 || now.getDate() == 31) var suffix = "st";
+				else if (now.getDate() == 2 || now.getDate() == 22) var suffix = "nd";
+				else if (now.getDate() == 3 || now.getDate() == 23) var suffix = "rd";
+				else var suffix = "th";
+      		date.text = now.getDate() + suffix + " " + monthNames[now.getMonth()] + " " + now.getFullYear() + "\n" + daysOfWeek[now.getDay()];
     	}
 	
-	function getOrdinalSuffix(number) {
-    		const suffixes = ["st", "nd", "rd"];
-    		const lastDigit = number % 10;
-    		const lastTwoDigits = number % 100;
-    		if (lastTwoDigits >= 11 && lastTwoDigits <= 13) {
-        		return "th";
- 		} else if (lastDigit <= 3) {
-        		return suffixes[lastDigit - 1] || "th";
-    		} else {
-        		return "th";
-		}
-	}
-		
         property var videoList: [
 		  {
 			"id": "2F72BC1E-3D76-456C-81EB-842EBA488C27",
