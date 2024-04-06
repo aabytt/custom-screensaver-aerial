@@ -72,7 +72,7 @@ WebOSWindow {
 			text: videoList[currentIndex].name
 			fontSizeMode: Text.Fit
 			font.pixelSize: 52
-			y: parent.height * 0.95
+			y: parent.height * 0.92
 			color: "white"
 			style: Text.Raised
 			styleColor: "black"
