@@ -182,7 +182,7 @@ WebOSWindow {
 		debug.text = 	videoOutput.source + 
 				"\n Timecode: " + Math.floor(videoOutput.position/1000) + " / " + Math.floor(videoOutput.duration/1000) + 
 				"\n Status: " + videoOutput.status + 
-				"\n Error: " + videoOutput.error + " " videoOutput.errorString + 
+				"\n Error: " + videoOutput.error + " " + videoOutput.errorString + 
 				"\n Playback State: " + videoOutput.playbackState +
 				"\n Buffer Progress : " + videoOutput.bufferProgress					
     	}
