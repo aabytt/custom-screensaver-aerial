@@ -320,7 +320,7 @@ WebOSWindow {
 			"id": "2B30E324-E4FF-4CC1-BA45-A958C2D2B2EC",
 			"accessibilityLabel": "Barracuda",
 			"name": "Barracuda",
-			"pointsOfInterest": { "0": "A school of Chevron Barracuda in the waters near Borne" },
+			"pointsOfInterest": { "0": "A school of Chevron Barracuda in the waters near Borneo" },
 			"type": "underwater",
 			"src": {
 			  "H2641080p": "https://sylvan.apple.com/Videos/BO_A018_C029_SDR_20190812_SDR_2K_AVC.mov",
@@ -332,7 +332,7 @@ WebOSWindow {
 			"id": "687D03A2-18A5-4181-8E85-38F3A13409B9",
 			"accessibilityLabel": "Bumpheads",
 			"name": "Bumpheads",
-			"pointsOfInterest": { "0": "Bumphead Parrotfish over the coral reefs off Borneoo" },
+			"pointsOfInterest": { "0": "Bumphead Parrotfish over the coral reefs off Borneo" },
 			"type": "underwater",
 			"src": {
 			  "H2641080p": "https://sylvan.apple.com/Videos/BO_A014_C008_SDR_20190719_SDR_2K_AVC.mov",
