@@ -78,7 +78,7 @@ WebOSWindow {
 			text: videoList[currentIndex].name
 			font.family: segoeUILight.name
 			fontSizeMode: Text.Fit
-			font.pixelSize: 52
+			font.pixelSize: 58
 			y: parent.height * 0.9
 			color: "white"
 			style: Text.Raised
@@ -106,7 +106,7 @@ WebOSWindow {
 			anchors.right: parent.right
 			opacity:name.opacity
 			font.family: name.font.family
-			font.pixelSize: name.font.pixelSize + 30
+			font.pixelSize: name.font.pixelSize + 25
 			y: date.y - name.font.pixelSize - 45
 			color: name.color
 			style: name.style
