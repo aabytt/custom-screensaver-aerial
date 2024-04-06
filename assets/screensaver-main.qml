@@ -29,13 +29,15 @@ WebOSWindow {
    	property bool overlayText: false
 
     Component.onCompleted: {
+        // Window will handle back key event only when this set to true on my TV.
 		videoOutput.play()
     }
 
 	Video {
 		id: videoOutput
-		width: 3840
-		height: 2158 //non fullscreen to avoid screensaver automatic disabling 
+		fillMode: VideoOutput.PreserveAspectCrop
+		width: parent.width
+		height: parent.height - 1 //non fullscreen to avoid screensaver automatic disabling 
 		source: videoList[currentIndex].src.H2651080p
 		visible: true
 		autoLoad: true
@@ -51,9 +53,9 @@ WebOSWindow {
 			overlayText = true
 		}
 		PunchThrough {
-			x: 1; y: 0; z: -1
-			width: 1920
-			height: 1080
+			x: 0; y: 0; z: -1
+			width: parent.width
+			height: parent.height
 		}		
 	}		
 		
@@ -66,7 +68,7 @@ WebOSWindow {
 		Text {
 			id: name
 			visible: overlayText
-			opacity:0.55
+			opacity:0.6
 			text: videoList[currentIndex].name
 			fontSizeMode: Text.Fit
 			font.pixelSize: 52
