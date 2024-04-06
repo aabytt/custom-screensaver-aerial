@@ -8,47 +8,71 @@
  *   luna-send -n 1 'luna://com.webos.service.tvpower/power/turnOnScreenSaver' '{}'
  */
 import QtQuick 2.4
+import QtMultimedia 5.6
 import Eos.Window 0.1
-import QtMultimedia 5.9
+import Eos.Items 0.1
+import WebOS.Global 1.0
 import QtQuick.Window 2.2
 
 WebOSWindow {
+	
 	id: window
 	width: 1920
 	height: 1080
 	windowType: "_WEBOS_WINDOW_TYPE_SCREENSAVER"
-	color: "transparent"
-	title: "Screensaver"
+	color: "black"
 	appId: "com.webos.app.screensaver"
 	visible: true
-   	property int currentPOI: 0
+
+	property int currentPOI: 0
 	property int currentIndex: Math.floor(Math.random() * videoList.length)
+   	property bool overlayText: false
+
+    Component.onCompleted: {
+        // Window will handle back key event only when this set to true on my TV.
+		videoOutput.play()
+    }
 
 	Video {
 		id: videoOutput
-		source: videoList[currentIndex].src.H2641080p
-		anchors.fill: parent
+		width: 3840
+		height: 2158 //non fullscreen to avoid screensaver automatic disabling 
+		source: videoList[currentIndex].src.H2651080p
 		visible: true
-		autoPlay: true
+		autoLoad: true
 		onStopped: {
-		    playNextVideo()
+			playNextVideo()
+			overlayText = false
 		}
-	}
-	
+		onPaused: {
+			playNextVideo()
+			overlayText = false
+		}			
+		onPlaying: {
+			overlayText = true
+		}
+		PunchThrough {
+			x: 1; y: 0; z: -1
+			width: 1920
+			height: 1080
+		}		
+	}		
+		
 	Rectangle {
+		id: osd
 		color: "transparent"
         	anchors.fill: parent
         	anchors.margins: 100
 		
 		Text {
 			id: name
-			visible: true
-			opacity:0.6
+			visible: overlayText
+			opacity:0.55
 			text: videoList[currentIndex].name
 			fontSizeMode: Text.Fit
-			font.pixelSize: 60
-			y: parent.height * 0.82
-			color: "#6e6e6e"
+			font.pixelSize: 52
+			y: parent.height * 0.9
+			color: "white"
 			style: Text.Raised
 			styleColor: "black"
 		}
@@ -67,13 +91,13 @@ WebOSWindow {
 		}
 
 		Text {
-			id: time
+			id: time 
 			visible: name.visible
 			horizontalAlignment:  Text.AlignRight
 			anchors.right: parent.right
 			opacity:name.opacity
-			font.pixelSize: name.font.pixelSize
-			y: name.y
+			font.pixelSize: name.font.pixelSize + 25
+			y: date.y - name.font.pixelSize - 25
 			color: name.color
 			style: name.style
 			styleColor: name.styleColor
@@ -87,7 +111,7 @@ WebOSWindow {
 			horizontalAlignment:  Text.AlignRight
 			anchors.right: parent.right
 			opacity:name.opacity
-			font.pixelSize: time.font.pixelSize - 20
+			font.pixelSize: name.font.pixelSize - 15
 			y: name.y + name.font.pixelSize + 5
 			color: name.color
 			style: name.style
@@ -95,22 +119,38 @@ WebOSWindow {
 			fontSizeMode: name.fontSizeMode
 			text: ""           
 		}
+		
+		Text {
+			id: debug
+			visible: false
+			horizontalAlignment:  Text.AlignRight
+			anchors.right: parent.right
+			opacity:0.8
+			font.pixelSize: name.font.pixelSize - 25
+			color: name.color
+			style: name.style
+			styleColor: name.styleColor
+			fontSizeMode: name.fontSizeMode
+			text: "" 
+			}		
 	}
 
 	Timer {
-        	interval: 1000 
+        	interval: 250 
         	running: true
         	repeat: true
         	onTriggered: {
-			updateTime()
-              		if (videoList[currentIndex].pointsOfInterest[Math.floor(videoOutput.position/1000)]) currentPOI = Math.floor(videoOutput.position/1000)
-            	}
+				updateTime()
+              	if (videoList[currentIndex].pointsOfInterest[Math.floor(videoOutput.position/1000)]) currentPOI = Math.floor(videoOutput.position/1000)
+				//if (videoOutput.status == MediaPlayer.EndOfMedia) playNextVideo()
+			}
         }
 		
 	function playNextVideo() {
 		currentIndex = Math.floor(Math.random() * videoList.length)
-		videoOutput.source = videoList[currentIndex].src.H2641080p
+		videoOutput.source = videoList[currentIndex].src.H2651080p
 		videoOutput.play()
+
 	}
 
 	function updateTime() {
@@ -124,12 +164,17 @@ WebOSWindow {
       		const monthNames = ["January", "February", "March", "April", "May", "June", "July","August", "September", "October", "November", "December"]; 
 			if (now.getDate() == 1 || now.getDate() == 21 || now.getDate() == 31) var suffix = "st";
 				else if (now.getDate() == 2 || now.getDate() == 22) var suffix = "nd";
-					else if (now.getDate() == 3 || now.getDate() == 23) var suffix = "rd";
-						else var suffix = "th";
-      		date.text = now.getDate() + suffix + " " + monthNames[now.getMonth()] + " " + now.getFullYear() + "\n" + daysOfWeek[now.getDay()];
+				else if (now.getDate() == 3 || now.getDate() == 23) var suffix = "rd";
+				else var suffix = "th";
+      		date.text = daysOfWeek[now.getDay()] + " | " + now.getDate() + suffix + " " + monthNames[now.getMonth()] + " " + now.getFullYear();
+			debug.text = 	Math.floor(videoOutput.position/1000) + " / " + Math.floor(videoOutput.duration/1000) + 
+							"\n Status: " + videoOutput.status + 
+							"\n Error: " + videoOutput.error + 
+							"\n PlaybackState: " + videoOutput.playbackState +
+							"\n Buffer Progress : " + videoOutput.bufferProgress					
     	}
 	
-        property var videoList: [
+	property var videoList: [
 		  {
 			"id": "2F72BC1E-3D76-456C-81EB-842EBA488C27",
 			"accessibilityLabel": "Africa and the Middle East",
@@ -1850,4 +1895,4 @@ WebOSWindow {
 			}
 		  }
 		]
-}    
+}
