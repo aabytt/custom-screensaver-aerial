@@ -29,7 +29,6 @@ WebOSWindow {
    	property bool overlayText: false
 
     Component.onCompleted: {
-        // Window will handle back key event only when this set to true on my TV.
 		videoOutput.play()
     }
 
