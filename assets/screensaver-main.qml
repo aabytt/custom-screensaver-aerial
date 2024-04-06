@@ -43,20 +43,20 @@ WebOSWindow {
 		autoLoad: true
 		onStopped: {
 			playNextVideo()
-			PunchThroughArea.visible = false
+			punchThroughArea.visible = false
 			overlayText = false
 		}
 		onPaused: {
 			playNextVideo()
-			PunchThroughArea.visible = false
+			punchThroughArea.visible = false
 			overlayText = false
 		}			
 		onPlaying: {
-			PunchThroughArea.visible = true
+			punchThroughArea.visible = true
 			overlayText = true
 		}
 		PunchThrough {
-			id: PunchThroughArea
+			id: punchThroughArea
 			visible: false
 			x: 0; y: 0; z: -1
 			width: parent.width
@@ -150,7 +150,7 @@ WebOSWindow {
               		if (videoList[currentIndex].pointsOfInterest[Math.floor(videoOutput.position/1000)]) currentPOI = Math.floor(videoOutput.position/1000)
 			if (videoOutput.status == MediaPlayer.EndOfMedia) playNextVideo()
 			if (videoOutput.error !== 0) { 
-				PunchThroughArea.visible = false;
+				punchThroughArea.visible = false;
 				playNextVideo();
 			}
 		}
