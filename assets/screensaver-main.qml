@@ -27,6 +27,7 @@ WebOSWindow {
 	property int currentPOI: 0
 	property int currentIndex: Math.floor(Math.random() * videoList.length)
    	property bool overlayText: false
+	property var currentMedia: videoList[currentIndex].src.H2651080p
 
     Component.onCompleted: {
 		videoOutput.play()
@@ -37,21 +38,26 @@ WebOSWindow {
 		fillMode: VideoOutput.PreserveAspectCrop
 		width: parent.width
 		height: parent.height - 1 //non fullscreen to avoid screensaver automatic disabling 
-		source: videoList[currentIndex].src.H2651080p
+		source: currentMedia
 		visible: true
 		autoLoad: true
 		onStopped: {
 			playNextVideo()
+			PunchThroughArea.visible = false
 			overlayText = false
 		}
 		onPaused: {
 			playNextVideo()
+			PunchThroughArea.visible = false
 			overlayText = false
 		}			
 		onPlaying: {
+			PunchThroughArea.visible = true
 			overlayText = true
 		}
 		PunchThrough {
+			id: PunchThroughArea
+			visible: false
 			x: 0; y: 0; z: -1
 			width: parent.width
 			height: parent.height
@@ -97,7 +103,7 @@ WebOSWindow {
 			anchors.right: parent.right
 			opacity:name.opacity
 			font.pixelSize: name.font.pixelSize + 30
-			y: date.y - name.font.pixelSize - 30
+			y: date.y - name.font.pixelSize - 35
 			color: name.color
 			style: name.style
 			styleColor: name.styleColor
@@ -140,38 +146,45 @@ WebOSWindow {
         	running: true
         	repeat: true
         	onTriggered: {
-				updateTime()
-              	if (videoList[currentIndex].pointsOfInterest[Math.floor(videoOutput.position/1000)]) currentPOI = Math.floor(videoOutput.position/1000)
-				//if (videoOutput.status == MediaPlayer.EndOfMedia) playNextVideo()
+			updateTime()
+              		if (videoList[currentIndex].pointsOfInterest[Math.floor(videoOutput.position/1000)]) currentPOI = Math.floor(videoOutput.position/1000)
+			if (videoOutput.status == MediaPlayer.EndOfMedia) playNextVideo()
+			if (videoOutput.error !== 0) { 
+				PunchThroughArea.visible = false;
+				playNextVideo();
 			}
+		}
         }
 		
 	function playNextVideo() {
 		currentIndex = Math.floor(Math.random() * videoList.length)
-		videoOutput.source = videoList[currentIndex].src.H2651080p
+		videoOutput.source = currentMedia
 		videoOutput.play()
 
 	}
 
 	function updateTime() {
         	var now = new Date();
-			if (now.getHours() < 10) var hours = "0" + now.getHours();
-				else var hours = now.getHours();
-			if (now.getMinutes() < 10) var minutes = "0" + now.getMinutes();
-				else var minutes = now.getMinutes();
+		if (now.getHours() < 10) var hours = "0" + now.getHours();
+			else var hours = now.getHours();
+		if (now.getMinutes() < 10) var minutes = "0" + now.getMinutes();
+			else var minutes = now.getMinutes();
         	time.text = hours + ":" + minutes;
+
       		const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
       		const monthNames = ["January", "February", "March", "April", "May", "June", "July","August", "September", "October", "November", "December"]; 
-			if (now.getDate() == 1 || now.getDate() == 21 || now.getDate() == 31) var suffix = "st";
-				else if (now.getDate() == 2 || now.getDate() == 22) var suffix = "nd";
+		if (now.getDate() == 1 || now.getDate() == 21 || now.getDate() == 31) var suffix = "st";
+			else if (now.getDate() == 2 || now.getDate() == 22) var suffix = "nd";
 				else if (now.getDate() == 3 || now.getDate() == 23) var suffix = "rd";
-				else var suffix = "th";
+					else var suffix = "th";
       		date.text = daysOfWeek[now.getDay()] + " | " + now.getDate() + suffix + " " + monthNames[now.getMonth()] + " " + now.getFullYear();
-			debug.text = 	Math.floor(videoOutput.position/1000) + " / " + Math.floor(videoOutput.duration/1000) + 
-							"\n Status: " + videoOutput.status + 
-							"\n Error: " + videoOutput.error + 
-							"\n PlaybackState: " + videoOutput.playbackState +
-							"\n Buffer Progress : " + videoOutput.bufferProgress					
+
+		debug.text = 	videoOutput.source + 
+				"\n Timecode: " + Math.floor(videoOutput.position/1000) + " / " + Math.floor(videoOutput.duration/1000) + 
+				"\n Status: " + videoOutput.status + 
+				"\n Error: " + videoOutput.error + " " videoOutput.errorString + 
+				"\n Playback State: " + videoOutput.playbackState +
+				"\n Buffer Progress : " + videoOutput.bufferProgress					
     	}
 	
 	property var videoList: [
