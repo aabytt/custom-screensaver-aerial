@@ -68,11 +68,11 @@ WebOSWindow {
 		Text {
 			id: name
 			visible: overlayText
-			opacity:0.6
+			opacity:0.65
 			text: videoList[currentIndex].name
 			fontSizeMode: Text.Fit
 			font.pixelSize: 52
-			y: parent.height * 0.9
+			y: parent.height * 0.95
 			color: "white"
 			style: Text.Raised
 			styleColor: "black"
@@ -84,7 +84,7 @@ WebOSWindow {
 			opacity:name.opacity
 			text: videoList[currentIndex].pointsOfInterest[currentPOI]
 			fontSizeMode: name.fontSizeMode
-			font.pixelSize: name.font.pixelSize - 20
+			font.pixelSize: name.font.pixelSize - 16
 			y: name.y + name.font.pixelSize + 5
 			color: name.color
 			style: name.style
@@ -97,8 +97,8 @@ WebOSWindow {
 			horizontalAlignment:  Text.AlignRight
 			anchors.right: parent.right
 			opacity:name.opacity
-			font.pixelSize: name.font.pixelSize + 25
-			y: date.y - name.font.pixelSize - 25
+			font.pixelSize: name.font.pixelSize + 30
+			y: date.y - name.font.pixelSize - 30
 			color: name.color
 			style: name.style
 			styleColor: name.styleColor
@@ -112,7 +112,7 @@ WebOSWindow {
 			horizontalAlignment:  Text.AlignRight
 			anchors.right: parent.right
 			opacity:name.opacity
-			font.pixelSize: name.font.pixelSize - 15
+			font.pixelSize: name.font.pixelSize - 16
 			y: name.y + name.font.pixelSize + 5
 			color: name.color
 			style: name.style
