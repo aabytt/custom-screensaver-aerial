@@ -68,7 +68,7 @@ WebOSWindow {
 		id: osd
 		color: "transparent"
         	anchors.fill: parent
-        	anchors.margins: 100
+        	anchors.margins: 105
 		FontLoader { id: segoeUILight; source: "file:///media/developer/apps/usr/palm/applications/org.webosbrew.custom-screensaver-aerial/assets/SegoeUI-Light.ttf" }
 			
 		Text {
@@ -77,8 +77,9 @@ WebOSWindow {
 			opacity:0.65
 			text: videoList[currentIndex].name
 			font.family: segoeUILight.name
+			font.letterSpacing: -1
 			fontSizeMode: Text.Fit
-			font.pixelSize: 58
+			font.pixelSize: 60
 			y: parent.height * 0.9
 			color: "white"
 			style: Text.Raised
@@ -91,6 +92,7 @@ WebOSWindow {
 			opacity:name.opacity
 			text: videoList[currentIndex].pointsOfInterest[currentPOI]
 			font.family: name.font.family
+			font.letterSpacing: name.font.letterSpacing
 			fontSizeMode: name.fontSizeMode
 			font.pixelSize: name.font.pixelSize - 16
 			y: name.y + name.font.pixelSize + 10
@@ -106,6 +108,7 @@ WebOSWindow {
 			anchors.right: parent.right
 			opacity:name.opacity
 			font.family: name.font.family
+			font.letterSpacing: name.font.letterSpacing
 			font.pixelSize: name.font.pixelSize + 25
 			y: date.y - name.font.pixelSize - 45
 			color: name.color
@@ -122,6 +125,7 @@ WebOSWindow {
 			anchors.right: parent.right
 			opacity:name.opacity
 			font.family: name.font.family
+			font.letterSpacing: name.font.letterSpacing
 			font.pixelSize: name.font.pixelSize - 16
 			y: name.y + name.font.pixelSize + 5
 			color: name.color
@@ -136,9 +140,9 @@ WebOSWindow {
 			visible: false
 			horizontalAlignment:  Text.AlignRight
 			anchors.right: parent.right
-			opacity:0.8
+			opacity:0.9
 			font.family: name.font.family
-			font.pixelSize: name.font.pixelSize - 25
+			font.pixelSize: name.font.pixelSize - 30
 			color: name.color
 			style: name.style
 			styleColor: name.styleColor
