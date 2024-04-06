@@ -69,7 +69,7 @@ WebOSWindow {
 		color: "transparent"
         	anchors.fill: parent
         	anchors.margins: 100
-			FontLoader { id: segoeUILight; source: "file:///media/developer/apps/usr/palm/applications/org.webosbrew.custom-screensaver-aerial/assets/SegoeUILight.ttf" }
+		FontLoader { id: segoeUILight; source: "file:///media/developer/apps/usr/palm/applications/org.webosbrew.custom-screensaver-aerial/assets/SegoeUI-Light.ttf" }
 			
 		Text {
 			id: name
