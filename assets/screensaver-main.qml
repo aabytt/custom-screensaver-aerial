@@ -29,9 +29,9 @@ WebOSWindow {
    	property bool overlayText: false
 	property var currentMedia: videoList[currentIndex].src.H2651080p
 
-    Component.onCompleted: {
+    	Component.onCompleted: {
 		videoOutput.play()
-    }
+    	}	
 
 	Video {
 		id: videoOutput
@@ -42,13 +42,13 @@ WebOSWindow {
 		visible: true
 		autoLoad: true
 		onStopped: {
-			playNextVideo()
 			punchThroughArea.visible = false
+			playNextVideo()
 			overlayText = false
 		}
 		onPaused: {
-			playNextVideo()
 			punchThroughArea.visible = false
+			playNextVideo()
 			overlayText = false
 		}			
 		onPlaying: {
@@ -69,7 +69,11 @@ WebOSWindow {
 		color: "transparent"
         	anchors.fill: parent
         	anchors.margins: 105
-		FontLoader { id: segoeUILight; source: "file:///media/developer/apps/usr/palm/applications/org.webosbrew.custom-screensaver-aerial/assets/SegoeUI-Light.ttf" }
+		
+		FontLoader { 
+			id: segoeUILight
+			source: "file:///media/developer/apps/usr/palm/applications/org.webosbrew.custom-screensaver-aerial/assets/SegoeUI-Light.ttf" 
+		}
 			
 		Text {
 			id: name
