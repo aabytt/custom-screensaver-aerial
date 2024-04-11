@@ -26,12 +26,11 @@ WebOSWindow {
 
 	property int currentPOI: 0
 	property int currentIndex: Math.floor(Math.random() * videoList.length)
-   	property bool overlayText: false
 	property var currentMedia: videoList[currentIndex].src.H2651080p
 
-    	Component.onCompleted: {
+    Component.onCompleted: {
 		videoOutput.play()
-    	}	
+    }	
 
 	Video {
 		id: videoOutput
@@ -44,16 +43,20 @@ WebOSWindow {
 		onStopped: {
 			punchThroughArea.visible = false
 			playNextVideo()
-			overlayText = false
+			osd.visible = false
+			fadeOutVideo.running = false
 		}
 		onPaused: {
 			punchThroughArea.visible = false
 			playNextVideo()
-			overlayText = false
+			osd.visible = false
+			fadeOutVideo.running = false
 		}			
 		onPlaying: {
 			punchThroughArea.visible = true
-			overlayText = true
+			fadeInVideo.running = true
+			fadeInOsd.running = true
+			osd.visible = true
 		}
 		PunchThrough {
 			id: punchThroughArea
@@ -61,29 +64,73 @@ WebOSWindow {
 			x: 0; y: 0; z: -1
 			width: parent.width
 			height: parent.height
+			
+			Rectangle {
+				id: opacityBox
+				width: 1920
+				height: 1080
+				z:1
+				color: "black"
+				
+				OpacityAnimator {
+					id: fadeInVideo
+					target: opacityBox 
+					from: 1
+					to: 0
+					duration: 3000
+					running: false
+				}
+				
+				OpacityAnimator {
+					id: fadeOutVideo
+					target: opacityBox
+					from: 0
+					to: 1
+					duration: 5000
+					running: false
+				}
+			}
+			
 		}		
 	}		
 	
 	Rectangle {
 		id: osd
+		opacity: 0
+		visible: false
 		color: "transparent"
-        	anchors.fill: parent
-        	anchors.margins: 105
-		
+		anchors.fill: parent
+		anchors.margins: 75
 		FontLoader { 
 			id: segoeUILight
 			source: "file:///media/developer/apps/usr/palm/applications/org.webosbrew.custom-screensaver-aerial/assets/SegoeUI-Light.ttf" 
 		}
-			
+		OpacityAnimator {
+			id: fadeInOsd
+			target: osd 
+			from: 0
+			to: 1
+			duration: 3000
+			running: false
+		}	
+		
+		OpacityAnimator {
+			id: fadeOutOsd
+			target: osd 
+			from: 1
+			to: 0
+			duration: 5000
+			running: false
+		}
+		
 		Text {
 			id: name
-			visible: overlayText
 			opacity:0.65
 			text: videoList[currentIndex].name
 			font.family: segoeUILight.name
 			font.letterSpacing: -1
 			fontSizeMode: Text.Fit
-			font.pixelSize: 60
+			font.pixelSize: 58
 			y: parent.height * 0.9
 			color: "white"
 			style: Text.Raised
@@ -92,7 +139,6 @@ WebOSWindow {
 
 		Text {
 			id: poi
-			visible: name.visible
 			opacity:name.opacity
 			text: videoList[currentIndex].pointsOfInterest[currentPOI]
 			font.family: name.font.family
@@ -107,14 +153,13 @@ WebOSWindow {
 
 		Text {
 			id: time 
-			visible: name.visible
 			horizontalAlignment:  Text.AlignRight
 			anchors.right: parent.right
 			opacity:name.opacity
 			font.family: name.font.family
 			font.letterSpacing: name.font.letterSpacing
-			font.pixelSize: name.font.pixelSize + 25
-			y: date.y - name.font.pixelSize - 45
+			font.pixelSize: name.font.pixelSize + 23
+			y: date.y - name.font.pixelSize - 40
 			color: name.color
 			style: name.style
 			styleColor: name.styleColor
@@ -124,7 +169,6 @@ WebOSWindow {
 
 		Text {
 			id: date
-			visible: name.visible
 			horizontalAlignment:  Text.AlignRight
 			anchors.right: parent.right
 			opacity:name.opacity
@@ -138,10 +182,9 @@ WebOSWindow {
 			fontSizeMode: name.fontSizeMode
 			text: ""           
 		}
-		
+
 		Text {
 			id: debug
-			visible: false
 			horizontalAlignment:  Text.AlignRight
 			anchors.right: parent.right
 			opacity:0.9
@@ -152,54 +195,55 @@ WebOSWindow {
 			styleColor: name.styleColor
 			fontSizeMode: name.fontSizeMode
 			text: "" 
-			}		
+		}		
 	}
 
 	Timer {
-        	interval: 250 
-        	running: true
-        	repeat: true
-        	onTriggered: {
-			updateTime()
-              		if (videoList[currentIndex].pointsOfInterest[Math.floor(videoOutput.position/1000)]) currentPOI = Math.floor(videoOutput.position/1000)
-			if (videoOutput.status == MediaPlayer.EndOfMedia) playNextVideo()
-			if (videoOutput.error !== 0) { 
-				punchThroughArea.visible = false;
-				playNextVideo();
-			}
+       	interval: 250 
+       	running: true
+       	repeat: true
+       	onTriggered: {
+		updateTime()
+        if (videoList[currentIndex].pointsOfInterest[Math.floor(videoOutput.position/1000)]) currentPOI = Math.floor(videoOutput.position/1000)
+		if (Math.floor(videoOutput.position/1000) == Math.floor(videoOutput.duration/1000) - 5) {
+			fadeOutVideo.running = true
+			fadeOutOsd.running = true
 		}
-        }
+		if (videoOutput.status == MediaPlayer.EndOfMedia) playNextVideo()
+		if (videoOutput.error !== 0) { 
+			punchThroughArea.visible = false;
+			playNextVideo();
+		}
+		}
+	}
 		
 	function playNextVideo() {
 		currentIndex = Math.floor(Math.random() * videoList.length)
 		videoOutput.source = currentMedia
 		videoOutput.play()
-
 	}
 
 	function updateTime() {
-        	var now = new Date();
+        var now = new Date();
 		if (now.getHours() < 10) var hours = "0" + now.getHours();
 			else var hours = now.getHours();
 		if (now.getMinutes() < 10) var minutes = "0" + now.getMinutes();
 			else var minutes = now.getMinutes();
-        	time.text = hours + ":" + minutes;
-
-      		const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      		const monthNames = ["January", "February", "March", "April", "May", "June", "July","August", "September", "October", "November", "December"]; 
+        time.text = hours + ":" + minutes;
+		const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      	const monthNames = ["January", "February", "March", "April", "May", "June", "July","August", "September", "October", "November", "December"]; 
 		if (now.getDate() == 1 || now.getDate() == 21 || now.getDate() == 31) var suffix = "st";
 			else if (now.getDate() == 2 || now.getDate() == 22) var suffix = "nd";
 				else if (now.getDate() == 3 || now.getDate() == 23) var suffix = "rd";
 					else var suffix = "th";
-      		date.text = daysOfWeek[now.getDay()] + " | " + now.getDate() + suffix + " " + monthNames[now.getMonth()] + " " + now.getFullYear();
-
+      	date.text = daysOfWeek[now.getDay()] + " | " + now.getDate() + suffix + " " + monthNames[now.getMonth()] + " " + now.getFullYear();
 		debug.text = 	videoOutput.source + 
 				"\n Timecode: " + Math.floor(videoOutput.position/1000) + " / " + Math.floor(videoOutput.duration/1000) + 
-				"\n Status: " + videoOutput.status + 
-				"\n Error: " + videoOutput.error + " " + videoOutput.errorString + 
+				"\n Status: " + videoOutput.status +
+				"\n Error: " + videoOutput.error + " " + videoOutput.errorString +
 				"\n Playback State: " + videoOutput.playbackState +
-				"\n Buffer Progress : " + videoOutput.bufferProgress					
-    	}
+				"\n Buffer Progress : " + videoOutput.bufferProgress
+	}
 	
 	property var videoList: [
 		  {
@@ -324,7 +368,7 @@ WebOSWindow {
 			"id": "2B30E324-E4FF-4CC1-BA45-A958C2D2B2EC",
 			"accessibilityLabel": "Barracuda",
 			"name": "Barracuda",
-			"pointsOfInterest": { "0": "A school of Chevron Barracuda in the waters near Borneo" },
+			"pointsOfInterest": { "0": "A school of Chevron Barracuda in the waters near Borne" },
 			"type": "underwater",
 			"src": {
 			  "H2641080p": "https://sylvan.apple.com/Videos/BO_A018_C029_SDR_20190812_SDR_2K_AVC.mov",
@@ -336,7 +380,7 @@ WebOSWindow {
 			"id": "687D03A2-18A5-4181-8E85-38F3A13409B9",
 			"accessibilityLabel": "Bumpheads",
 			"name": "Bumpheads",
-			"pointsOfInterest": { "0": "Bumphead Parrotfish over the coral reefs off Borneo" },
+			"pointsOfInterest": { "0": "Bumphead Parrotfish over the coral reefs off Borneoo" },
 			"type": "underwater",
 			"src": {
 			  "H2641080p": "https://sylvan.apple.com/Videos/BO_A014_C008_SDR_20190719_SDR_2K_AVC.mov",
