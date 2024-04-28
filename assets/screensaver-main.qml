@@ -1,5 +1,5 @@
 /*
- * Apple Aerial screensaver.
+ * Aerial screensaver.
  *
  * Usage:
  *   mount --bind ./screensaver-main.qml /usr/palm/applications/com.webos.app.screensaver/qml/main.qml
@@ -13,6 +13,7 @@ import Eos.Window 0.1
 import Eos.Items 0.1
 import WebOS.Global 1.0
 import QtQuick.Window 2.2
+import WebOSServices 1.0
 
 WebOSWindow {
 	
@@ -27,9 +28,10 @@ WebOSWindow {
 	property int currentPOI: 0
 	property int currentIndex: Math.floor(Math.random() * videoList.length)
 	property var currentMedia: videoList[currentIndex].src.H2651080p
-
+	
     Component.onCompleted: {
-		videoOutput.play()
+        disableNoty.callService('')
+	videoOutput.play()
     }	
 
 	Video {
@@ -39,10 +41,9 @@ WebOSWindow {
 		height: parent.height - 1 //non fullscreen to avoid screensaver automatic disabling 
 		source: currentMedia
 		visible: true
-		autoLoad: true
+		autoPlay: true
 		onStopped: {
 			punchThroughArea.visible = false
-			playNextVideo()
 			osd.visible = false
 			fadeOutVideo.running = false
 		}
@@ -51,7 +52,7 @@ WebOSWindow {
 			playNextVideo()
 			osd.visible = false
 			fadeOutVideo.running = false
-		}			
+		}					
 		onPlaying: {
 			punchThroughArea.visible = true
 			fadeInVideo.running = true
@@ -185,6 +186,7 @@ WebOSWindow {
 
 		Text {
 			id: debug
+			visible: false
 			horizontalAlignment:  Text.AlignRight
 			anchors.right: parent.right
 			opacity:0.9
@@ -203,24 +205,26 @@ WebOSWindow {
        	running: true
        	repeat: true
        	onTriggered: {
-		updateTime()
-        if (videoList[currentIndex].pointsOfInterest[Math.floor(videoOutput.position/1000)]) currentPOI = Math.floor(videoOutput.position/1000)
-		if (Math.floor(videoOutput.position/1000) == Math.floor(videoOutput.duration/1000) - 5) {
-			fadeOutVideo.running = true
-			fadeOutOsd.running = true
-		}
-		if (videoOutput.status == MediaPlayer.EndOfMedia) playNextVideo()
-		if (videoOutput.error !== 0) { 
-			punchThroughArea.visible = false;
-			playNextVideo();
-		}
+			updateTime()
+			if (videoOutput.position > 2000) enableNoty.callService('')
+			if (videoList[currentIndex].pointsOfInterest[Math.floor(videoOutput.position/1000)]) currentPOI = Math.floor(videoOutput.position/1000)
+			if (Math.floor(videoOutput.position/1000) == Math.floor(videoOutput.duration/1000) - 5) {
+				fadeOutVideo.running = true
+				fadeOutOsd.running = true
+			}
+			if (videoOutput.status == MediaPlayer.EndOfMedia) playNextVideo()
+			if (videoOutput.error !== 0) {
+				enableNoty.callService('')
+				punchThroughArea.visible = false;
+				playNextVideo();
+			}
 		}
 	}
 		
 	function playNextVideo() {
+		disableNoty.callService('')
 		currentIndex = Math.floor(Math.random() * videoList.length)
 		videoOutput.source = currentMedia
-		videoOutput.play()
 	}
 
 	function updateTime() {
@@ -244,6 +248,21 @@ WebOSWindow {
 				"\n Playback State: " + videoOutput.playbackState +
 				"\n Buffer Progress : " + videoOutput.bufferProgress
 	}
+	
+    Service {
+        id: disableNoty
+        appId: globalVars.appId
+        service: "com.webos.notification"
+        method: "disable"
+        onResponse: {}
+    }	
+    Service {
+        id: enableNoty
+        appId: globalVars.appId
+        service: "com.webos.notification"
+        method: "enable"
+        onResponse: {}
+    }	
 	
 	property var videoList: [
 		  {
@@ -380,7 +399,7 @@ WebOSWindow {
 			"id": "687D03A2-18A5-4181-8E85-38F3A13409B9",
 			"accessibilityLabel": "Bumpheads",
 			"name": "Bumpheads",
-			"pointsOfInterest": { "0": "Bumphead Parrotfish over the coral reefs off Borneoo" },
+			"pointsOfInterest": { "0": "Bumphead Parrotfish over the coral reefs off Borneo" },
 			"type": "underwater",
 			"src": {
 			  "H2641080p": "https://sylvan.apple.com/Videos/BO_A014_C008_SDR_20190719_SDR_2K_AVC.mov",
@@ -1551,7 +1570,7 @@ WebOSWindow {
 			"accessibilityLabel": "Sahara and Italy",
 			"name": "Sahara and Italy",
 			"pointsOfInterest": {
-			  "0": "Over western Africa moving toward the Saharao",
+			  "0": "Over western Africa moving toward the Sahara",
 			  "30": "Crossing the Sahara in North Africa",
 			  "110": "Passing over the Ahaggar Mountains in the Sahara, North Africa",
 			  "155": "Over the Grand Erg Oriental in North Africa moving toward the Mediterranean Sea",
