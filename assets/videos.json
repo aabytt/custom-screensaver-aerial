@@ -1723,6 +1723,7 @@
     {
       "id": "D7950C0A-27B9-4034-AB5B-EDB89D41341A",
       "localizedNameKey": "I003_C005_NAME",
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v.1.0.3/I003_C005_UHD_SDR_60fps_10d589e5-2709-4c6d-8ae0-a3e0e1e1cb37q18_sRGB_tsa.mp4",
       "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/I003_C005_UHD_SDR_240fps_10d589e5-2709-4c6d-8ae0-a3e0e1e1cb37q18_sRGB_tsa.mov",
       "pointsOfInterest": {
         "0": "I003_C005_0"
@@ -1779,12 +1780,14 @@
       },
       "id": "F390FE3B-FA61-483D-BADC-2447F89951BA",
       "localizedNameKey": "W014_C018_F01_NAME",
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v.1.0.3/W014_C018_F01_FRC_sdr_4k_qp29_240p_t2160_grover401_tsa.mp4",    
       "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/W014_C018_F01_FRC_sdr_4k_qp29_240p_t2160_grover401_tsa.mov"
     },
     {
       "pointsOfInterest": {
         "0": "W015_C010_0"
       },
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v.1.0.3/W015_C010_F01_clipF0F4200_sdr_4k_qp31_240p_t2160_grover401_tsa.mp4",          
       "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/W015_C010_F01_clipF0F4200_sdr_4k_qp31_240p_t2160_grover401_tsa.mov",
       "id": "4A3590EC-FF30-41E7-85FE-210FF6112917",
       "localizedNameKey": "W015_C010_F01_NAME"
@@ -1792,12 +1795,14 @@
     {
       "id": "473C2FDC-0B75-497A-B1FE-AA1863C9C885",
       "localizedNameKey": "W015_C006_F01_NAME",
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v.1.0.3/W015_C006_F01_FRC_sdr_4k_qp28_240p_t2160_grover401_tsa.mp4",    
       "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/W015_C006_F01_FRC_sdr_4k_qp28_240p_t2160_grover401_tsa.mov",
       "pointsOfInterest": {
         "0": "W015_C006_0"
       }
     },
     {
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v.1.0.2/R010_C003_F02_Sdr_4K_Qp26_60P_T2160_Grover401_Tsa.mp4",      
       "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/R010_C003_F02_sdr_4k_qp26_240p_t2160_grover401_tsa.mov",
       "pointsOfInterest": {
         "0": "R010_C003_0"
@@ -1806,6 +1811,8 @@
       "localizedNameKey": "R010_C003_F01_NAME"
     },
     {
+      
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v.1.0.2/R013_C039_F01_Frc_Sdr_4K_Qp27_60P_T2160_Grover401_Tsa.mp4",
       "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/R013_C039_F01_FRC_sdr_4k_qp27_240p_t2160_grover401_tsa.mov",
       "id": "97447D85-960C-4B2A-A101-048284D95853",
       "localizedNameKey": "R013_C039_F01_NAME",
@@ -1816,6 +1823,7 @@
     {
       "id": "8A57476A-E177-4AAD-B317-643F681584E1",
       "localizedNameKey": "R006_C013_S05_NAME",
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v.1.0.2/R006_C013_S05_Frc_Sdr_4K_Qp24_60P_T2160_Grover401_Tsa.mp4",
       "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/R006_C013_S05_FRC_sdr_4k_qp24_240p_t2160_grover401_tsa.mov",
       "pointsOfInterest": {
         "0": "R006_C013_0"
@@ -1824,6 +1832,7 @@
     {
       "id": "15A8BC97-45AC-45DC-9AF9-313808C578BC",
       "localizedNameKey": "R004_C012_F01_NAME",
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v.1.0.2/R004_C012_F01_Frc_Sdr_4K_Qp32_60P_T2160_Grover401_Tsa.mp4",
       "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/R004_C012_F01_FRC_sdr_4k_qp32_240p_t2160_grover401_tsa.mov",
       "pointsOfInterest": {
         "0": "R004_C012_0",
@@ -1831,6 +1840,7 @@
       }
     },
     {
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.1/M012_C065_S04_FRC60fps_sdr_4k_qp22_60p_t2160_grover401_tsa.mp4",
       "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/M012_C065_S04_FRC240fps_sdr_4k_qp22_240p_t2160_grover401_tsa.mov",
       "id": "AB7FC3C3-8853-45CD-AB6E-89F0985C2922",
       "localizedNameKey": "M012_C065_S04_NAME",
@@ -1846,6 +1856,7 @@
       },
       "id": "47BC0599-72E7-43C4-8BE1-CBCE2432E2A5",
       "localizedNameKey": "M013_C012_F01_NAME",
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.1/M013_C012_F01_Frc60fps_Sdr_4K_Qp25_60P_T2160_Grover401_Tsa.mp4",
       "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/M013_C012_F01_FRC240fps_sdr_4k_qp25_240p_t2160_grover401_tsa.mov"
     },
     {
@@ -1855,9 +1866,11 @@
       },
       "id": "7530C83C-8F7B-42C6-BB71-5FA2ED070BEC",
       "localizedNameKey": "M010_C005_F01_NAME",
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.1/M010_C005_F01_clipF6556F13846_sdr_4k_qp23_60p_t2160_grover401_tsa.mp4",
       "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/M010_C005_F01_clipF6556F13846_sdr_4k_qp23_240p_t2160_grover401_tsa.mov"
     },
     {
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.1/M007_C007_F02_Sdr_4K_Qp20_60P_T2160_Grover401_Tsa.mp4",
       "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/M007_C007_F02_sdr_4k_qp20_240p_t2160_grover401_tsa.mov",
       "id": "100858D2-FE01-4B70-8E2D-3FCF20AFE6B5",
       "localizedNameKey": "M007_C007_F01_NAME",
@@ -1871,9 +1884,11 @@
       },
       "id": "1A17ED86-9E0D-4DF2-8CF3-5AB5DB67A348",
       "localizedNameKey": "M012_C023_S04_NAME",
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.1/M012_C023_S04_FRC_sdr_4k_qp22_60p_t2160_grover401_tsa.mp4",
       "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/M012_C023_S04_FRC_sdr_4k_qp22_240p_t2160_grover401_tsa.mov"
     },
     {
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.1/M010_C009_F01_FRC_sdr_4k_qp22_60p_t2160_grover401_tsa.mp4",
       "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/M010_C009_F01_FRC_sdr_4k_qp22_240p_t2160_grover401_tsa.mov",
       "id": "D759828B-4BAB-456B-AD75-225BA238F925",
       "localizedNameKey": "M010_C009_F01_NAME",
@@ -1884,6 +1899,7 @@
       }
     },
     {
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.1/M005_C017_F01_Frc_Sdr_4K_Qp22_60P_T2160_Grover401_Tsa.mp4",
       "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/M005_C017_F01_FRC_sdr_4k_qp22_240p_t2160_grover401_tsa.mov",
       "id": "A168628E-11EE-4456-AD66-E7E3E47D1B21",
       "localizedNameKey": "M005_C017_F01_NAME",
@@ -1898,9 +1914,11 @@
       "pointsOfInterest": {
         "0": "DB_D011_C009_0"
       },
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.4/Comp_Db_D011_D009_Signcmp_V15_6Mbps_upscale_4K_HEVC.mp4",
       "url-1080-H264": "http://a1.phobos.apple.com/us/r1000/000/Features/atv/AutumnResources/videos/comp_DB_D011_D009_SIGNCMP_v15_6Mbps.mov"
     },
     {
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.4/b1-3_upscale_4K_30FPS_HEVC.mp4",
       "url-1080-H264": "http://a1.phobos.apple.com/us/r1000/000/Features/atv/AutumnResources/videos/b1-3.mov",
       "id": "b1-3",
       "localizedNameKey": "N006_C003_NAME",
@@ -1911,6 +1929,7 @@
       }
     },
     {
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.4/b2-2_upscale_4K_30FPS_HEVC.mp4",
       "url-1080-H264": "http://a1.phobos.apple.com/us/r1000/000/Features/atv/AutumnResources/videos/b2-2.mov",
       "id": "b2-2",
       "localizedNameKey": "H010_C006_NAME",
@@ -1920,6 +1939,7 @@
       }
     },
     {
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.4/b2-4_upscale_4K_30FPS_HEVC.mp4",
       "url-1080-H264": "http://a1.phobos.apple.com/us/r1000/000/Features/atv/AutumnResources/videos/b2-4.mov",
       "id": "b2-4",
       "localizedNameKey": "A018_C014_NAME",
@@ -1930,6 +1950,7 @@
       }
     },
     {
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.4/b4-3_upscale_4K_30FPS_HEVC.mp4",
       "url-1080-H264": "http://a1.phobos.apple.com/us/r1000/000/Features/atv/AutumnResources/videos/b4-3.mov",
       "id": "b4-3",
       "localizedNameKey": "A013_C005_NAME",
@@ -1939,6 +1960,7 @@
       }
     },
     {
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.4/b5-3_upscale_4K_30FPS_HEVC.mp4",
       "url-1080-H264": "http://a1.phobos.apple.com/us/r1000/000/Features/atv/AutumnResources/videos/b5-3.mov",
       "id": "b5-3",
       "localizedNameKey": "A015_C014_NAME",
@@ -1948,6 +1970,7 @@
       }
     },
     {
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.4/b6-4_upscale_4K_30FPS_HEVC.mp4",
       "url-1080-H264": "http://a1.phobos.apple.com/us/r1000/000/Features/atv/AutumnResources/videos/b6-4.mov",
       "id": "b6-4",
       "localizedNameKey": "b6-4_NAME",
@@ -1956,6 +1979,7 @@
       }
     },
     {
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.4/b8-2_upscale_4K_30FPS_HEVC.mp4",
       "url-1080-H264": "http://a1.phobos.apple.com/us/r1000/000/Features/atv/AutumnResources/videos/b8-2.mov",
       "id": "b8-2",
       "localizedNameKey": "A012_C004_NAME",
@@ -1965,6 +1989,7 @@
       }
     },
     {
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.4/b8-3_upscale_4K_30FPS_HEVC.mp4",
       "url-1080-H264": "http://a1.phobos.apple.com/us/r1000/000/Features/atv/AutumnResources/videos/b8-3.mov",
       "id": "b8-3",
       "localizedNameKey": "b8-3",
