@@ -521,7 +521,7 @@
     "B002_C011_0": "Dofins comuns de musell curt a la costa de Califòrnia, als Estats Units",
     "I005_C008_NAME": "Casquet glacial d’Islàndia",
     "b6-4_NAME": "El centre de la ciutat i la Torre Coit",
-    "b6-4_0": "El centre de San Francisco amb la torre Coit en primer pla",	
+    "b6-4_0": "El centre de San Francisco amb la torre Coit en primer pla",
     "A083_C002_1130KZ_0": "El reflex del sol a la costa d’Iran",
     "U009_C004_NAME": "Taurons de cua negra",
     "GMT314_139M_170NC_125": "Passant per les Grans Planes dels Estats Units",
@@ -743,5 +743,30 @@
     "video_nusfjord_202109": "Nusfjord, Noruega",
     "video_reine_202109": "Reine, Noruega",
     "video_vettisfossen_202109": "Vettisfossen, Noruega"
+  },
+  "date": {
+    "months": [
+      "gener",
+      "febrer",
+      "març",
+      "abril",
+      "maig",
+      "juny",
+      "juliol",
+      "agost",
+      "setembre",
+      "octubre",
+      "novembre",
+      "desembre"
+    ],
+    "daysOfWeek": [
+      "diumenge",
+      "dilluns",
+      "dimarts",
+      "dimecres",
+      "dijous",
+      "divendres",
+      "dissabte"
+    ]
   }
 }
