@@ -4,5 +4,5 @@
     "sourceType": "url-1080-SDR",
     "sourceTypeIndex": 0,
     "osdOpacity": 35,
-    "debug": true
+    "debug": false
 }
