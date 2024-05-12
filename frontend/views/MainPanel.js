@@ -6,6 +6,7 @@ var
   BodyText = require('moonstone/BodyText'),
   Marquee = require('moonstone/Marquee'),
   ExpandablePicker = require('moonstone/ExpandablePicker'),
+  Button = require('moonstone/Button'),
   SimpleIntegerPicker = require('moonstone/SimpleIntegerPicker'),
   LunaService = require('enyo-webos/LunaService'),
   Divider = require('moonstone/Divider'),
@@ -13,6 +14,7 @@ var
   Item = require('moonstone/Item'),
   ToggleItem = require('moonstone/ToggleItem'),
   Group = require('enyo/Group');
+
 
 var basePath = "/media/developer/apps/usr/palm/applications/org.webosbrew.custom-screensaver-aerial";
 var applyPath = basePath + "/assets/apply.sh";
@@ -37,7 +39,7 @@ module.exports = kind({
               {kind: Marquee.Text, content: 'Apply temporarily'},
               {kind: BodyText, style: 'margin: 10px 0', content: 'This will only enable custom screensaver until a reboot'},
             ], ontap: "temporaryApply"},
-            {kind: Item, content: 'Test run screensaver', ontap: "testRun"},			
+            {kind: Button, content: 'Test run', ontap: "testRun"},			
             {kind: ExpandablePicker, name: "source", content: 'Source video type', selectedIndex: settings.sourceTypeIndex,  onChange: 'selectSource', components: [
 			  {content: 'FullHD (H265)', value: 'url-1080-SDR'},
 			  {content: 'FullHD (H264)', value: 'url-1080-H264'},
@@ -93,7 +95,6 @@ module.exports = kind({
             },
             {kind: Item, components: [ 
 				{kind: Marquee.Text, content: 'Text opacity, %'},
-				{kind: BodyText, style: 'margin: 10px 0', content: 'High values not recommended for Dolby Vision source'},
 				{kind: SimpleIntegerPicker, name: 'opacityPicker', value: settings.osdOpacity, min: 0, max: 100, step: 5, unit: '', onChange: 'setOpacity' }
             ]},
             {kind: ToggleItem, name: "debug", content: 'Show debug info', checked: settings.debug, onchange: 'debugToggle'},					  
