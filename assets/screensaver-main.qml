@@ -15,6 +15,7 @@ import WebOS.Global 1.0
 import QtQuick.Window 2.2
 import WebOSServices 1.0
 import iLib 1.0 as I
+
 WebOSWindow {
     id : window
     width : 1920
@@ -298,10 +299,12 @@ WebOSWindow {
         
         debug.text = "Video " + randomIndex + " of " + playList.assets.length +
         "\n Source Type: " + settings.sourceType + sourceAlt +
+        "\n Try Other Source: " + settings.playLowerQuality +
         "\n Locale: " + settings.localeLang +
         "\n OSD opacity: " + settings.osdOpacity + "%" +
         "\n Timecode: " + Math.floor(videoOutput.position / 1000) + " / " + Math.floor(videoOutput.duration / 1000) +
         "\n Media Status: " + status +
+        "\n Stalled Timeout: " + (25 - stalledCounter) +
         "\n Error: " + videoOutput.error + " " + videoOutput.errorString +
         "\n Playback State: " + playbackState +
         "\n Buffer Progress : " + (
