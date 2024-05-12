@@ -260,13 +260,19 @@ WebOSWindow {
             playRandomVideo()
         if (videoOutput.status === 1) 
             var status = 'NoMedia'
-         else if (videoOutput.status === 2) 
+        else if (videoOutput.status === 2) {
             var status = 'Loading'
-         else if (videoOutput.status === 3) 
+            stalledCounter ++
+            if (stalledCounter > 25) {
+                punchThroughArea.visible = false
+                playRandomVideo()
+            }
+        }
+        else if (videoOutput.status === 3) 
             var status = 'Loaded'
-         else if (videoOutput.status === 4) 
+        else if (videoOutput.status === 4) 
             var status = 'Buffering'
-         else if (videoOutput.status === 5) {
+        else if (videoOutput.status === 5) {
             var status = 'Stalled'
             stalledCounter ++
             if (stalledCounter > 25) {
