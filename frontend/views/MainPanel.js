@@ -29,9 +29,9 @@ module.exports = kind({
   titleBelow: "webosbrew.org",
   headerType: 'medium',
   components: [
-    {kind: FittableColumns, classes: 'enyo-center', fit: true, components: [
+    {kind: FittableColumns, fit: true, components: [
       {kind: Scroller, fit: true, components: [
-        {classes: 'moon-hspacing',  style: 'margin-left: 10%', controlClasses: 'moon-12h', components: [
+        {classes: 'moon-hspacing',  style: 'margin-left: 15%', controlClasses: 'moon-12h', components: [
           {components: [
             // {kind: Divider, content: 'Toggle Items'},
             {kind: ToggleItem, name: "autostart", content: 'Autostart', disabled: true, onchange: "autostartToggle"},
