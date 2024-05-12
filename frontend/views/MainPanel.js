@@ -26,7 +26,6 @@ module.exports = kind({
   name: 'MainPanel',
   kind: Panel,
   title: 'webOS Aerial Screensaver',
-  titleBelow: "webosbrew.org",
   headerType: 'medium',
   components: [
     {kind: FittableColumns, fit: true, components: [
