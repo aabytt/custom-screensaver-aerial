@@ -15,6 +15,7 @@ import WebOS.Global 1.0
 import QtQuick.Window 2.2
 import WebOSServices 1.0
 import iLib 1.0 as I
+
 WebOSWindow {
     id : window
     width : 1920
@@ -29,6 +30,7 @@ WebOSWindow {
     property var playList
     property int randomIndex
     property int stalledCounter : 0
+    property string sourceAlt
     property string basePath : "file:///media/developer/apps/usr/palm/applications/org.webosbrew.custom-screensaver-aerial/assets/"
     Component.onCompleted : {
         init()
@@ -213,13 +215,27 @@ WebOSWindow {
     function playRandomVideo() {
         stalledCounter = 0
         randomIndex = Math.floor(Math.random() * playList.assets.length)
-        if (! playList.assets[randomIndex].viewed) {
+        if (!playList.assets[randomIndex].viewed) {
             if (playList.assets[randomIndex][settings.sourceType]) {
+                sourceAlt = ""
                 videoOutput.source = playList.assets[randomIndex][settings.sourceType]
                     notificationsService.set('disable')
                     videoOutput.play()
-            } else 
-                playRandomVideo()        
+            } else if(settings.sourceType == "url-4K-HDR" && settings.playLowerQuality){
+                sourceAlt = " - n/a, trying url-4K-SDR"
+                videoOutput.source = playList.assets[randomIndex]["url-4K-SDR"]
+                    videoOutput.play()
+            } else if(settings.sourceType == "url-1080-HDR" && settings.playLowerQuality){
+                if(playList.assets[randomIndex]["url-1080-SDR"]){
+                    sourceAlt = " - n/a, trying url-1080-SDR"
+                    videoOutput.source = playList.assets[randomIndex]["url-1080-SDR"]
+                    videoOutput.play()
+                } else if(playList.assets[randomIndex]["url-1080-H264"]){
+                    sourceAlt = " - n/a, trying url-1080-H264"
+                    videoOutput.source = playList.assets[randomIndex]["url-1080-H264"]
+                    videoOutput.play()
+                } else playRandomVideo() 
+            } else playRandomVideo() 
         } else 
             playRandomVideo()
     }
@@ -245,13 +261,19 @@ WebOSWindow {
             playRandomVideo()
         if (videoOutput.status === 1) 
             var status = 'NoMedia'
-         else if (videoOutput.status === 2) 
+        else if (videoOutput.status === 2) {
             var status = 'Loading'
-         else if (videoOutput.status === 3) 
+            stalledCounter ++
+            if (stalledCounter > 25) {
+                punchThroughArea.visible = false
+                playRandomVideo()
+            }
+        }
+        else if (videoOutput.status === 3) 
             var status = 'Loaded'
-         else if (videoOutput.status === 4) 
+        else if (videoOutput.status === 4) 
             var status = 'Buffering'
-         else if (videoOutput.status === 5) {
+        else if (videoOutput.status === 5) {
             var status = 'Stalled'
             stalledCounter ++
             if (stalledCounter > 25) {
@@ -276,11 +298,13 @@ WebOSWindow {
             var playbackState = 'stopped'
         
         debug.text = "Video " + randomIndex + " of " + playList.assets.length +
-        "\n Source Type: " + settings.sourceType +
+        "\n Source Type: " + settings.sourceType + sourceAlt +
+        "\n Try Other Source: " + settings.playLowerQuality +
         "\n Locale: " + settings.localeLang +
         "\n OSD opacity: " + settings.osdOpacity + "%" +
         "\n Timecode: " + Math.floor(videoOutput.position / 1000) + " / " + Math.floor(videoOutput.duration / 1000) +
         "\n Media Status: " + status +
+        "\n Stalled Timeout: " + (25 - stalledCounter) +
         "\n Error: " + videoOutput.error + " " + videoOutput.errorString +
         "\n Playback State: " + playbackState +
         "\n Buffer Progress : " + (

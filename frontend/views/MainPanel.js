@@ -14,26 +14,22 @@ var
   Item = require('moonstone/Item'),
   ToggleItem = require('moonstone/ToggleItem'),
   Group = require('enyo/Group');
-
-
 var basePath = "/media/developer/apps/usr/palm/applications/org.webosbrew.custom-screensaver-aerial";
 var applyPath = basePath + "/assets/apply.sh";
 var linkPath = "/var/lib/webosbrew/init.d/50-custom-screensaver-aerial";
 var settingsPath = basePath + "/assets/settings.json";
 var settings = {};
-
 module.exports = kind({
   name: 'MainPanel',
   kind: Panel,
   title: 'webOS Aerial Screensaver',
   titleBelow: "webosbrew.org",
-  headerType: 'medium',
+  headerType: 'small',	
   components: [
     {kind: FittableColumns, fit: true, components: [
       {kind: Scroller, fit: true, components: [
         {classes: 'moon-hspacing',  style: 'margin-left: 10%', controlClasses: 'moon-12h', components: [
           {components: [
-            // {kind: Divider, content: 'Toggle Items'},
             {kind: ToggleItem, name: "autostart", content: 'Autostart', disabled: true, onchange: "autostartToggle"},
             {kind: Item, components: [
               {kind: Marquee.Text, content: 'Apply temporarily'},
@@ -45,9 +41,9 @@ module.exports = kind({
 			  {content: 'FullHD Dolby Vision (HEVC)', value: 'url-1080-HDR'},
 			  {content: '4k (HEVC)', value: 'url-4K-SDR'},
 			  {content: '4k Dolby Vision (HEVC)', value: 'url-4K-HDR'},
-			  {content: '4k 240FPS (HEVC) - unlikely working in webOS', value: 'url-4K-SDR-240FPS'}
-			  
+			  {content: '4k 240FPS (HEVC) - unlikely working in webOS', value: 'url-4K-SDR-240FPS'}	  
             ]},
+            {kind: ToggleItem, name: "playLowerQuality", content: 'Try SDR source if Dolby Vision video does not exist', checked: settings.playLowerQuality, onchange: 'playLowerQualityToggle'},		  
             {kind: ExpandablePicker, name: "language", content: 'On-screen display text language', selectedIndex: settings.localeLangIndex , onChange: 'selectLang',
 			components: [
 				{value:'ar-AE', content:'العربية'},
@@ -93,11 +89,11 @@ module.exports = kind({
             ]
             },
             {kind: Item, components: [ 
-				{kind: Marquee.Text, content: 'Text opacity, %'},
-				{kind: SimpleIntegerPicker, name: 'opacityPicker', value: settings.osdOpacity, min: 0, max: 100, step: 5, unit: '', onChange: 'setOpacity' }
+		{kind: Marquee.Text, content: 'Text opacity, %'},
+		{kind: SimpleIntegerPicker, name: 'opacityPicker', value: settings.osdOpacity, min: 0, max: 100, step: 5, unit: '', onChange: 'setOpacity' }
             ]},
             {kind: ToggleItem, name: "debug", content: 'Show debug info', checked: settings.debug, onchange: 'debugToggle'},
-            {kind: Button, style: 'margin: 10px 0', content: 'Test run', ontap: "testRun"},			  
+            {kind: Button, style: 'margin: 20px 0', content: 'Test run', ontap: "testRun"},			  
           ]},
         ]},
       ]},
@@ -130,6 +126,7 @@ module.exports = kind({
     this.$.source.set('selectedIndex', settings.sourceTypeIndex);
     this.$.opacityPicker.set('value', settings.osdOpacity);
     this.$.debug.set('checked', settings.debug);
+    this.$.playLowerQuality.set('checked', settings.playLowerQuality);	  
   },
 	
   testRun: function (command) {
@@ -196,6 +193,16 @@ module.exports = kind({
       this.settingsSave();
     }
   }, 
+	
+  playLowerQualityToggle: function (sender) {
+    if (sender.active) {
+      settings.playLowerQuality = true;
+      this.settingsSave();
+    } else {
+      settings.playLowerQuality = false;
+      this.settingsSave();
+    }
+  }, 	
   
   setOpacity: function (sender) {
 	if(settings.osdOpacity != this.$.opacityPicker.value){
