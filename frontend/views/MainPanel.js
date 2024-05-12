@@ -29,9 +29,9 @@ module.exports = kind({
   titleBelow: "webosbrew.org",
   headerType: 'medium',
   components: [
-    {kind: FittableColumns, classes: 'enyo-center', fit: true, components: [
+    {kind: FittableColumns, fit: true, components: [
       {kind: Scroller, fit: true, components: [
-        {classes: 'moon-hspacing', controlClasses: 'moon-12h', components: [
+        {classes: 'moon-hspacing',  style: 'margin-left: 10%', controlClasses: 'moon-12h', components: [
           {components: [
             // {kind: Divider, content: 'Toggle Items'},
             {kind: ToggleItem, name: "autostart", content: 'Autostart', disabled: true, onchange: "autostartToggle"},
@@ -97,7 +97,7 @@ module.exports = kind({
 				{kind: SimpleIntegerPicker, name: 'opacityPicker', value: settings.osdOpacity, min: 0, max: 100, step: 5, unit: '', onChange: 'setOpacity' }
             ]},
             {kind: ToggleItem, name: "debug", content: 'Show debug info', checked: settings.debug, onchange: 'debugToggle'},
-            {kind: Button, style: 'margin: 5px 0', content: 'Test run', ontap: "testRun"},			  
+            {kind: Button, style: 'margin: 10px 0', content: 'Test run', ontap: "testRun"},			  
           ]},
         ]},
       ]},
