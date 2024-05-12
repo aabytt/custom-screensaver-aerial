@@ -29,6 +29,7 @@ WebOSWindow {
     property var playList
     property int randomIndex
     property int stalledCounter : 0
+    property string sourceAlt
     property string basePath : "file:///media/developer/apps/usr/palm/applications/org.webosbrew.custom-screensaver-aerial/assets/"
     Component.onCompleted : {
         init()
@@ -219,13 +220,16 @@ WebOSWindow {
                     notificationsService.set('disable')
                     videoOutput.play()
             } else if(settings.sourceType == "url-4K-HDR" && settings.playLowerQuality){
+                sourceAlt = " - n/a, trying url-4K-SDR"
                 videoOutput.source = playList.assets[randomIndex]["url-4K-SDR"]
                     videoOutput.play()
             } else if(settings.sourceType == "url-1080-HDR" && settings.playLowerQuality){
                 if(playList.assets[randomIndex]["url-1080-SDR"]){
+                    sourceAlt = " - n/a, trying url-1080-SDR"
                     videoOutput.source = playList.assets[randomIndex]["url-1080-SDR"]
                     videoOutput.play()
                 } else if(playList.assets[randomIndex]["url-1080-H264"]){
+                    sourceAlt = " - n/a, trying url-1080-H264"
                     videoOutput.source = playList.assets[randomIndex]["url-1080-H264"]
                     videoOutput.play()
                 } else playRandomVideo() 
@@ -286,7 +290,7 @@ WebOSWindow {
             var playbackState = 'stopped'
         
         debug.text = "Video " + randomIndex + " of " + playList.assets.length +
-        "\n Source Type: " + settings.sourceType +
+        "\n Source Type: " + settings.sourceType + sourceAlt +
         "\n Locale: " + settings.localeLang +
         "\n OSD opacity: " + settings.osdOpacity + "%" +
         "\n Timecode: " + Math.floor(videoOutput.position / 1000) + " / " + Math.floor(videoOutput.duration / 1000) +
