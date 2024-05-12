@@ -97,7 +97,7 @@ module.exports = kind({
 				{kind: SimpleIntegerPicker, name: 'opacityPicker', value: settings.osdOpacity, min: 0, max: 100, step: 5, unit: '', onChange: 'setOpacity' }
             ]},
             {kind: ToggleItem, name: "debug", content: 'Show debug info', checked: settings.debug, onchange: 'debugToggle'},
-            {kind: Button, classes: 'enyo-left',content: 'Test run', ontap: "testRun"},			  
+            {kind: Button, style: 'margin: 5px 0', content: 'Test run', ontap: "testRun"},			  
           ]},
         ]},
       ]},
