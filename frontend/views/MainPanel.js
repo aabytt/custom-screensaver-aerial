@@ -201,10 +201,10 @@ module.exports = kind({
 	
   playLowerQualityToggle: function (sender) {
     if (sender.active) {
-      settings.playLowerQualityToggle = true;
+      settings.playLowerQuality = true;
       this.settingsSave();
     } else {
-      settings.playLowerQualityToggle = false;
+      settings.playLowerQuality = false;
       this.settingsSave();
     }
   }, 	
