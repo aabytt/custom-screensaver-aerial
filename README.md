@@ -1,7 +1,7 @@
 Aerial webOS screensaver (fork of [custom-screensaver](https://github.com/webosbrew/custom-screensaver))
 ==================
-
-Requires root
+180+ aerial videos from different sources.
+Requires root.
 
 Disclaimer
 ---------------
