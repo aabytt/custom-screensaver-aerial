@@ -218,10 +218,10 @@ WebOSWindow {
                 videoOutput.source = playList.assets[randomIndex][settings.sourceType]
                     notificationsService.set('disable')
                     videoOutput.play()
-            } else if(settings.sourceType == "url-4K-HDR"){
+            } else if(settings.sourceType == "url-4K-HDR" && settings.playLowerQuality){
                 videoOutput.source = playList.assets[randomIndex]["url-4K-SDR"]
                     videoOutput.play()
-            } else if(settings.sourceType == "url-1080-HDR"){
+            } else if(settings.sourceType == "url-1080-HDR" && settings.playLowerQuality){
                 if(playList.assets[randomIndex]["url-1080-SDR"]){
                     videoOutput.source = playList.assets[randomIndex]["url-1080-SDR"]
                     videoOutput.play()
