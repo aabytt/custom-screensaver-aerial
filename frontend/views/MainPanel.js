@@ -97,6 +97,7 @@ module.exports = kind({
 				{kind: SimpleIntegerPicker, name: 'opacityPicker', value: settings.osdOpacity, min: 0, max: 100, step: 5, unit: '', onChange: 'setOpacity' }
             ]},
             {kind: ToggleItem, name: "debug", content: 'Show debug info', checked: settings.debug, onchange: 'debugToggle'},
+            {kind: ToggleItem, name: "playLowerQuality", content: 'Play SDR source if HDR not available', checked: settings.playLowerQuality, onchange: 'playLowerQualityToggle'},		  
             {kind: Button, style: 'margin: 10px 0', content: 'Test run', ontap: "testRun"},			  
           ]},
         ]},
@@ -130,6 +131,7 @@ module.exports = kind({
     this.$.source.set('selectedIndex', settings.sourceTypeIndex);
     this.$.opacityPicker.set('value', settings.osdOpacity);
     this.$.debug.set('checked', settings.debug);
+    this.$.playLowerQuality.set('checked', settings.playLowerQuality);	  
   },
 	
   testRun: function (command) {
@@ -196,6 +198,16 @@ module.exports = kind({
       this.settingsSave();
     }
   }, 
+	
+  playLowerQualityToggle: function (sender) {
+    if (sender.active) {
+      settings.playLowerQualityToggle = true;
+      this.settingsSave();
+    } else {
+      settings.playLowerQualityToggle = false;
+      this.settingsSave();
+    }
+  }, 	
   
   setOpacity: function (sender) {
 	if(settings.osdOpacity != this.$.opacityPicker.value){
