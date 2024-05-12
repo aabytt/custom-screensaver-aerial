@@ -213,13 +213,23 @@ WebOSWindow {
     function playRandomVideo() {
         stalledCounter = 0
         randomIndex = Math.floor(Math.random() * playList.assets.length)
-        if (! playList.assets[randomIndex].viewed) {
+        if (!playList.assets[randomIndex].viewed) {
             if (playList.assets[randomIndex][settings.sourceType]) {
                 videoOutput.source = playList.assets[randomIndex][settings.sourceType]
                     notificationsService.set('disable')
                     videoOutput.play()
-            } else 
-                playRandomVideo()        
+            } else if(settings.sourceType == "url-4K-HDR"){
+                videoOutput.source = playList.assets[randomIndex]["url-4K-SDR"]
+                    videoOutput.play()
+            } else if(settings.sourceType == "url-1080-HDR"){
+                if(playList.assets[randomIndex]["url-1080-SDR"]){
+                    videoOutput.source = playList.assets[randomIndex]["url-1080-SDR"]
+                    videoOutput.play()
+                } else if(playList.assets[randomIndex]["url-1080-H264"]){
+                    videoOutput.source = playList.assets[randomIndex]["url-1080-H264"]
+                    videoOutput.play()
+                } else playRandomVideo() 
+            } else playRandomVideo() 
         } else 
             playRandomVideo()
     }
