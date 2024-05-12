@@ -216,6 +216,7 @@ WebOSWindow {
         randomIndex = Math.floor(Math.random() * playList.assets.length)
         if (!playList.assets[randomIndex].viewed) {
             if (playList.assets[randomIndex][settings.sourceType]) {
+                sourceAlt = ""
                 videoOutput.source = playList.assets[randomIndex][settings.sourceType]
                     notificationsService.set('disable')
                     videoOutput.play()
