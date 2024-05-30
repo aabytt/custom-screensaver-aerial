@@ -1,7 +1,7 @@
 {
-    "id": "org.webosbrew.custom-screensaver-aerial",
-    "version": "1.0.5",
-    "vendor": "webosbrew.org",
+    "id": "webos.custom-screensaver-aerial",
+    "version": "1.0.6",
+    "vendor": "aabytt",
     "title": "Aerial Screensaver",
     "icon": "assets/icon130.png",
     "largeIcon": "assets/icon130.png",

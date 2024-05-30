@@ -14,7 +14,7 @@ var
   Item = require('moonstone/Item'),
   ToggleItem = require('moonstone/ToggleItem'),
   Group = require('enyo/Group');
-var basePath = "/media/developer/apps/usr/palm/applications/org.webosbrew.custom-screensaver-aerial";
+var basePath = "/media/developer/apps/usr/palm/applications/webos.custom-screensaver-aerial";
 var applyPath = basePath + "/assets/apply.sh";
 var linkPath = "/var/lib/webosbrew/init.d/50-custom-screensaver-aerial";
 var settingsPath = basePath + "/assets/settings.json";
@@ -23,7 +23,6 @@ module.exports = kind({
   name: 'MainPanel',
   kind: Panel,
   title: 'webOS Aerial Screensaver',
-  titleBelow: "webosbrew.org",
   headerType: 'small',	
   components: [
     {kind: FittableColumns, fit: true, components: [
