@@ -23,7 +23,6 @@ module.exports = kind({
   name: 'MainPanel',
   kind: Panel,
   title: 'webOS Aerial Screensaver',
-  titleBelow: "webosbrew.org",
   headerType: 'small',	
   components: [
     {kind: FittableColumns, fit: true, components: [
@@ -102,9 +101,9 @@ module.exports = kind({
       {kind: Divider, content: 'Result'},
       {kind: BodyText, name: 'result', content: 'Nothing selected...'}
     ]},
-    {kind: LunaService, name: 'statusCheck', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onStatusCheck', onError: 'onStatusCheck'},
-    {kind: LunaService, name: 'exec', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onExec', onError: 'onExec'},
-    {kind: LunaService, name: 'init', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onInit', onError: 'onInit'},	  
+    {kind: LunaService, name: 'statusCheck', service: 'luna://org..hbchannel.service', method: 'exec', onResponse: 'onStatusCheck', onError: 'onStatusCheck'},
+    {kind: LunaService, name: 'exec', service: 'luna://org..hbchannel.service', method: 'exec', onResponse: 'onExec', onError: 'onExec'},
+    {kind: LunaService, name: 'init', service: 'luna://org..hbchannel.service', method: 'exec', onResponse: 'onInit', onError: 'onInit'},	  
   ],
 
   bindings: [],
@@ -178,7 +177,7 @@ module.exports = kind({
 
   autostartToggle: function (sender) {
     if (sender.active) {
-      this.exec('mkdir -p /var/lib/webosbrew/init.d && ln -sf ' + applyPath + ' ' + linkPath);
+      this.exec('mkdir -p /var/lib//init.d && ln -sf ' + applyPath + ' ' + linkPath);
     } else {
       this.exec('rm -rf ' + linkPath);
     }
