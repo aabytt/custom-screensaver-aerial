@@ -31,7 +31,7 @@ WebOSWindow {
     property int randomIndex
     property int stalledCounter : 0
     property string sourceAlt
-    property string basePath : "file:///media/developer/apps/usr/palm/applications/webos.custom-screensaver-aerial/assets/"
+    property string basePath : "file:///media/developer/apps/usr/palm/applications/org.aabytt.webos.custom-screensaver-aerial/assets/"
     Component.onCompleted : {
         init()
         notificationsService.set('disable')
