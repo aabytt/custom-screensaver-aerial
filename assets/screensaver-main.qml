@@ -294,9 +294,15 @@ WebOSWindow {
             var playbackState = 'playing'
          else if (videoOutput.playbackState === 2) 
             var playbackState = 'paused'
-         else if (videoOutput.playbackState === 0) 
+         else if (videoOutput.playbackState === 0){ 
             var playbackState = 'stopped'
-        
+            stalledCounter ++
+            if (stalledCounter > 5) {
+                punchThroughArea.visible = false
+                playRandomVideo()
+            }
+        }
+
         debug.text = "Video " + randomIndex + " of " + playList.assets.length +
         "\n Source Type: " + settings.sourceType + sourceAlt +
         "\n Try Other Source: " + settings.playLowerQuality +
