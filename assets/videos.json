@@ -1909,6 +1909,27 @@
       }
     },
     {
+      "id": "6D6834A4-2F0F-479A-B053-7D4DC5CB8EB7",
+      "localizedNameKey": "A007_C0001_NAME",
+      "pointsOfInterest": {},
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.5/A007C0001_Final_v2_HEVC.mp4",
+      "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/A007C0001_Final_v2_HEVC.mov"
+    },
+    {
+      "localizedNameKey": "A010_C0005_NAME",
+      "pointsOfInterest": {},
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.5/A010C0005_Final_v2_HEVC.mp4",      
+      "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/A010C0005_Final_v2_HEVC.mov",
+      "id": "F88CDF4A-9681-4D1F-88FE-34F1A3C6A62B"
+    },
+    {
+      "id": "97C3047F-ED39-472C-9778-CABF25D8682D",
+      "localizedNameKey": "A018_C0002_NAME",
+      "pointsOfInterest": {},
+      "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.5/A018C0002_Final_v2_HEVC.mp4",            
+      "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/A018C0002_Final_v2_HEVC.mov"
+    }
+    {
       "id": "2F11E857-4F77-4476-8033-4A1E4610AFCC",
       "localizedNameKey": "DB_D011_C009_NAME",
       "pointsOfInterest": {
