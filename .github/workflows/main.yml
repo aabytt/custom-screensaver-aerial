@@ -5,7 +5,7 @@ name: Build & Test
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, new-icon ]
   pull_request:
     branches: [ main ]
 
