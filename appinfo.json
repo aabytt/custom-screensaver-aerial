@@ -6,7 +6,7 @@
     "icon": "assets/icon130.png",
     "largeIcon": "assets/icon130.png",
     "main": "index.html",
-    "iconColor": "#ffffff",
+    "iconColor": "#2d353d",
     "type": "web",
     "imageForRecents":"assets/imageForRecents.png",
     "noSplashOnLaunch":true,
