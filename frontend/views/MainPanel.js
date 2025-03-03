@@ -77,6 +77,7 @@ module.exports = kind({
 				{value:'ro-RO', content:'Română'},
 				{value:'ru-RU', content:'Русский'},
 				{value:'sk-SK', content:'Slovenčina'},
+				{value:'sl-SI', content:'Slovenski'},				
 				{value:'sv-SE', content:'Svenska'},
 				{value:'th-TH', content:'ไทย'},
 				{value:'tr-TR', content:'Türkçe'},
