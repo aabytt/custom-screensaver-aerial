@@ -776,9 +776,9 @@
     "ANN0110_0": "Following the Ganges from Rishikesh in Uttarakhand, India",
     "ANN0120_0": "Passing the Garhwal Himalayas in Uttarakhand, India",
     "ANN0130_0": "Heading east over Munnar tea gardens in Kerala, India",
-    "TA_L_002_0": "Over Lake Tahoe at midday in California–Nevada, USA",
-    "TA_L_001_0": "Morning over Lake Tahoe in California–Nevada, USA",
-    "TA_D_001_0": "Evening over Lake Tahoe with mountain silhouettes in California–Nevada, USA",
-    "TA_D_002_0": "Night over Lake Tahoe with shoreline lights in California–Nevada, USA"
+    "TA_L_002_0": "Over Lake Tahoe at midday in California",
+    "TA_L_001_0": "Morning over Lake Tahoe in California",
+    "TA_D_001_0": "Evening over Lake Tahoe with mountain silhouettes in California",
+    "TA_D_002_0": "Night over Lake Tahoe with shoreline lights in California"
   }
 }
