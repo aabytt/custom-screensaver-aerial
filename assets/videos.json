@@ -2025,25 +2025,33 @@
         },
         {
             "id": "4C108785-A7BA-422E-9C79-B0129F1D5550",
-            "pointsOfInterest": {},
+            "pointsOfInterest": {
+                "0": "TA_L_002_0"
+            },
             "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/LIGHT02_20250613_V2_sdr_4k_rate12000_240p_t2160_grover74_tsa_MTE-Modified.mov",
             "localizedNameKey": "TA_L_002_NAME"
         },
         {
             "id": "B2FC91ED-6891-4DEB-85A1-268B2B4160B6",
-            "pointsOfInterest": {},
+            "pointsOfInterest": {
+                "0": "TA_L_001_0"
+            },
             "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/LIGHT01_20250623_V3_sdr_4k_rate12000_240p_t2160_grover74_tsa_nclc111.mov",
             "localizedNameKey": "TA_L_001_NAME"
         },
         {
             "id": "52ACB9B8-75FC-4516-BC60-4550CFF3B661",
-            "pointsOfInterest": {},
+            "pointsOfInterest": {
+                "0": "TA_D_001_0"
+            },
             "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/DARK01_20250703_v10_sdr_4k_rate12000_240p_t2160_grover74_tsa_nclc111.mov",
             "localizedNameKey": "TA_D_001_NAME"
         },
         {
             "id": "CF6347E2-4F81-4410-8892-4830991B6C5A",
-            "pointsOfInterest": {},
+            "pointsOfInterest": {
+                "0": "TA_D_002_0"
+            },
             "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/DARK02_20250719_V1_FRC_240fps_sdr_4k_rate12000_240p_t2160_grover74_tsa_nclc111.mov",
             "localizedNameKey": "TA_D_002_NAME"
         },
