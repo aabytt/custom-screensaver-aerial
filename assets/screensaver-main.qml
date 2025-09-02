@@ -297,7 +297,7 @@ WebOSWindow {
          else if (videoOutput.playbackState === 0){ 
             var playbackState = 'stopped'
             stalledCounter ++
-            if (stalledCounter > 5) {
+            if (stalledCounter > 15) {
                 punchThroughArea.visible = false
                 playRandomVideo()
             }
