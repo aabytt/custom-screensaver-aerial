@@ -1,0 +1,16 @@
+{
+    "id": "com.webos.app.screensaver",
+    "version": "3.0.0",
+    "vendor": "LG Electronics, Inc.",
+    "type": "web",
+    "main": "web-screensaver.html",
+    "title": "Screen Saver",
+    "icon": "",
+    "visible": false,
+    "supportRollingScreenMode": true,
+    "defaultWindowType": "screenSaver",
+    "noSplashOnLaunch": true,
+    "requiredPermissions": [
+        "all"
+    ]
+}
