@@ -1,0 +1,254 @@
+<!doctype html>
+<!--
+  Aerial screensaver for webOS versions where the stock screensaver is a Flutter app
+  (webOS 25 / 10.x) and QML apps can't be launched. apply.sh bind-mounts the assets directory
+  over /usr/palm/applications/com.webos.app.screensaver (see assets/appinfo.json). Web apps
+  can only read files inside their own app directory, so everything is loaded relative to it.
+  Mirrors screensaver-main.qml and reads the same settings, videos and locales.
+
+  A paused video in another app keeps its hardware decoder. If Aerial asks
+  for the same decoder, the media server takes it away and that app can't resume. So if
+  another app holds a video decoder, this shows only the time and date instead of video.
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<title>Aerial</title>
+<style>
+  @font-face { font-family: SegoeUILight; src: url("SegoeUI-Light.ttf"); }
+  html, body { margin: 0; width: 100%; height: 100%; background: #000; overflow: hidden; cursor: none; }
+  /* 1px short of fullscreen: webOS ends the screensaver when fullscreen video plays */
+  video { position: absolute; top: 0; left: 0; width: 100%; height: calc(100% - 1px); object-fit: cover;
+          opacity: 0; transition: opacity 3s ease; }
+  video.on { opacity: 1; }
+  video.fading { opacity: 0; transition-duration: 5s; }
+  #osd { position: absolute; left: 65px; right: 65px; bottom: 65px; display: flex;
+         justify-content: space-between; align-items: flex-end; color: #fff;
+         font-family: SegoeUILight, sans-serif; letter-spacing: -1px;
+         opacity: 0; transition: opacity 3s ease; }
+  #osd.fading { transition-duration: 5s; }
+  #name { font-size: 56px; }
+  #poi { font-size: 40px; margin-top: 10px; }
+  #right { text-align: right; }
+  #time { font-size: 79px; }
+  #date { font-size: 40px; margin-top: 5px; }
+  /* Clock mode: only the time and date, moved every minute against OLED burn-in */
+  body.clock #osd { right: auto; bottom: auto; }
+  body.clock #name, body.clock #poi { display: none; }
+  #debug { position: absolute; top: 25px; right: 25px; color: #fff; font: 26px monospace;
+           white-space: pre; text-align: right; display: none; }
+</style>
+</head>
+<body>
+<video id="video" muted autoplay></video>
+<div id="osd">
+  <div><div id="name"></div><div id="poi"></div></div>
+  <div id="right"><div id="time"></div><div id="date"></div></div>
+</div>
+<div id="debug"></div>
+<script>
+var basePath = "";
+var settings = { localeLang: "en-GB", sourceType: "url-4K-SDR", osdOpacity: 60, debug: false, playLowerQuality: true };
+var playList = { assets: [] };
+var poi = { strings: {} };
+var randomIndex = -1;
+var sourceAlt = "";
+var stalledSeconds = 0;
+var clockMode = false;
+
+var video = document.getElementById("video");
+var osd = document.getElementById("osd");
+
+function loadJSONData(url) {
+    return new Promise(function (resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url);
+        xhr.onload = function () {
+            // file:// requests report status 0 on success
+            if (xhr.status === 200 || (xhr.status === 0 && xhr.responseText)) {
+                resolve(JSON.parse(xhr.responseText));
+            } else {
+                reject(new Error(url + ": " + xhr.status));
+            }
+        };
+        xhr.onerror = function () { reject(new Error(url + ": request failed")); };
+        xhr.send();
+    });
+}
+
+// sylvan.apple.com is signed by Apple's private root CA, which webOS doesn't trust
+function fixUrl(url) {
+    return url.replace(/^https:\/\/sylvan\.apple\.com\//, "http://sylvan.apple.com/");
+}
+
+// Same fallbacks as screensaver-main.qml
+function pickSource(asset) {
+    if (asset[settings.sourceType]) {
+        sourceAlt = "";
+        return asset[settings.sourceType];
+    }
+    if (!settings.playLowerQuality) return null;
+    if (settings.sourceType == "url-4K-HDR" && asset["url-4K-SDR"]) {
+        sourceAlt = " - n/a, trying url-4K-SDR";
+        return asset["url-4K-SDR"];
+    }
+    if (settings.sourceType == "url-1080-HDR") {
+        if (asset["url-1080-SDR"]) {
+            sourceAlt = " - n/a, trying url-1080-SDR";
+            return asset["url-1080-SDR"];
+        }
+        if (asset["url-1080-H264"]) {
+            sourceAlt = " - n/a, trying url-1080-H264";
+            return asset["url-1080-H264"];
+        }
+    }
+    return null;
+}
+
+function playRandomVideo() {
+    var assets = playList.assets;
+    var candidates = [];
+    for (var i = 0; i < assets.length; i++) {
+        if (!assets[i].viewed && i !== randomIndex && pickSource(assets[i])) candidates.push(i);
+    }
+    if (!candidates.length) {
+        // Everything has been shown once: start over
+        for (var j = 0; j < assets.length; j++) assets[j].viewed = false;
+        for (var k = 0; k < assets.length; k++) {
+            if (k !== randomIndex && pickSource(assets[k])) candidates.push(k);
+        }
+        if (!candidates.length) return;
+    }
+    randomIndex = candidates[Math.floor(Math.random() * candidates.length)];
+    stalledSeconds = 0;
+    video.classList.remove("on", "fading");
+    osd.classList.remove("fading");
+    osd.style.opacity = 0;
+    document.getElementById("name").textContent = poi.strings[assets[randomIndex].localizedNameKey] || "";
+    document.getElementById("poi").textContent = "";
+    video.src = fixUrl(pickSource(assets[randomIndex]));
+    video.play().catch(function () {});
+}
+
+video.addEventListener("playing", function () {
+    video.classList.add("on");
+    osd.style.opacity = settings.osdOpacity / 100;
+});
+video.addEventListener("ended", playRandomVideo);
+video.addEventListener("error", function () { setTimeout(playRandomVideo, 1000); });
+
+function checkStatus() {
+    if (randomIndex < 0) return;
+    var asset = playList.assets[randomIndex];
+    if (video.currentTime > 2) asset.viewed = true;
+    if (video.duration && Math.floor(video.currentTime) == Math.floor(video.duration) - 5) {
+        video.classList.add("fading");
+        osd.classList.add("fading");
+        osd.style.opacity = 0;
+    }
+    if (video.paused || video.readyState < 3) {
+        if (++stalledSeconds > 25) playRandomVideo();
+    } else {
+        stalledSeconds = 0;
+    }
+    var poiKey = (asset.pointsOfInterest || {})[Math.floor(video.currentTime)];
+    if (poiKey && poi.strings[poiKey]) document.getElementById("poi").textContent = poi.strings[poiKey];
+}
+
+function updateOSD() {
+    var now = new Date();
+    document.getElementById("time").textContent =
+        now.toLocaleTimeString(settings.localeLang, { hour: "2-digit", minute: "2-digit" });
+    if (poi.date) {
+        document.getElementById("date").textContent =
+            poi.date.daysOfWeek[now.getDay()] + ", " + now.getDate() + " " + poi.date.months[now.getMonth()];
+    } else {
+        document.getElementById("date").textContent =
+            now.toLocaleDateString(settings.localeLang, { weekday: "long", day: "numeric", month: "long" });
+    }
+}
+
+// Resolves to true if another app holds a video decoder
+var pipelineBridge = null; // global: a garbage-collected PalmServiceBridge drops its call
+function videoDecoderInUse() {
+    return new Promise(function (resolve) {
+        if (typeof PalmServiceBridge === "undefined") return resolve(false);
+        setTimeout(function () { resolve(false); }, 3000);
+        pipelineBridge = new PalmServiceBridge();
+        pipelineBridge.onservicecallback = function (msg) {
+            try {
+                resolve(JSON.parse(msg).some(function (pipeline) {
+                    return (pipeline.resource || []).some(function (r) {
+                        return /VDEC|HEVC|H264|MSVC|VP9|AV1/.test(r.resource);
+                    });
+                }));
+            } catch (e) {
+                resolve(false);
+            }
+        };
+        pipelineBridge.call("luna://com.webos.media/getActivePipelines", "{}");
+    });
+}
+
+function moveClock() {
+    osd.style.opacity = 0;
+    setTimeout(function () {
+        osd.style.left = Math.random() * (window.innerWidth - osd.offsetWidth) + "px";
+        osd.style.top = Math.random() * (window.innerHeight - osd.offsetHeight) + "px";
+        osd.style.opacity = settings.osdOpacity / 100;
+    }, 3000);
+}
+
+function startClock() {
+    clockMode = true;
+    document.body.classList.add("clock");
+    moveClock();
+    setInterval(moveClock, 60000);
+}
+
+function updateDebug() {
+    if (!settings.debug) return;
+    var el = document.getElementById("debug");
+    el.style.display = "block";
+    el.textContent = "Mode: " + (clockMode ? "clock (video decoder in use)" : "video") +
+        "\n Video " + randomIndex + " of " + playList.assets.length +
+        "\n Source Type: " + settings.sourceType + sourceAlt +
+        "\n Try Other Source: " + settings.playLowerQuality +
+        "\n Locale: " + settings.localeLang +
+        "\n OSD opacity: " + settings.osdOpacity + "%" +
+        "\n Timecode: " + Math.floor(video.currentTime) + " / " + Math.floor(video.duration || 0) +
+        "\n Ready State: " + video.readyState +
+        "\n Stalled Timeout: " + (25 - stalledSeconds) +
+        "\n Error: " + (video.error ? video.error.code + " " + video.error.message : 0) +
+        "\n Paused: " + video.paused;
+}
+
+// Any key ends the screensaver
+document.addEventListener("keydown", function () { window.close(); });
+
+loadJSONData(basePath + "settings.json")
+    .then(function (s) { for (var key in s) settings[key] = s[key]; })
+    .catch(function (e) { console.error(e.message); })
+    .then(function () {
+        return Promise.all([
+            loadJSONData(basePath + "videos.json"),
+            loadJSONData(basePath + "locales/" + settings.localeLang + ".json").catch(function () { return { strings: {} }; }),
+            videoDecoderInUse()
+        ]);
+    })
+    .then(function (r) {
+        playList = r[0];
+        poi = r[1];
+        if (settings.osdOpacity == 0) osd.style.display = "none";
+        updateOSD();
+        setInterval(function () { checkStatus(); updateOSD(); updateDebug(); }, 1000);
+        if (r[2]) startClock(); else playRandomVideo();
+    })
+    .catch(function (e) {
+        settings.debug = true;
+        document.getElementById("debug").style.display = "block";
+        document.getElementById("debug").textContent = e.message;
+    });
+</script>
+</body>
+</html>

@@ -13,11 +13,22 @@
 * 40+ locales for OSD
 * Source type selection (FullHD/4k SDR or Dolby Vision)
 * Requires root and Homebrew channel
-* Compatible with webOS 5 (2020), webOS 6 (2021), webOS 22 (2022), webOS 23 (2023)
+* Compatible with webOS 5 (2020), webOS 6 (2021), webOS 22 (2022), webOS 23 (2023), webOS 25 (10.x)
 
 Disclaimer
 ---------------
 - App replaces original webOS screensaver. Use at your own risk. 
+
+webOS 25 (10.x)
+---------------
+The stock screensaver is a Flutter app on these TVs and QML apps can't be launched, so
+`apply.sh` uses a web version of the screensaver instead (`assets/web-screensaver.html`). It
+uses the same settings, videos and locales. Notes:
+
+- Applying restarts the app manager, so running apps close and the home screen reloads.
+- Set text opacity to 0 to hide the on-screen text, e.g. to avoid burn-in on OLED TVs.
+- If another app has a paused video, the screensaver shows a clock that moves every minute
+  instead of video, so that app keeps its video decoder and playback can resume.
 
 Features
 --------
