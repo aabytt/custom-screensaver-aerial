@@ -8,3 +8,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - webOS 25 (10.x) support: on TVs with the Flutter-based stock screensaver, `apply.sh` mounts a
   web version of the screensaver that uses the same settings, videos and locales.
+- webOS 25 (10.x): if another app has a paused video, the web screensaver no longer takes its
+  video decoder, and shows a moving clock instead of video.

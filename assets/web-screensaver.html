@@ -5,6 +5,10 @@
   over /usr/palm/applications/com.webos.app.screensaver (see assets/appinfo.json). Web apps
   can only read files inside their own app directory, so everything is loaded relative to it.
   Mirrors screensaver-main.qml and reads the same settings, videos and locales.
+
+  A paused video in another app keeps its hardware decoder. If Aerial asks
+  for the same decoder, the media server takes it away and that app can't resume. So if
+  another app holds a video decoder, this shows only the time and date instead of video.
 -->
 <html>
 <head>
@@ -28,6 +32,9 @@
   #right { text-align: right; }
   #time { font-size: 79px; }
   #date { font-size: 40px; margin-top: 5px; }
+  /* Clock mode: only the time and date, moved every minute against OLED burn-in */
+  body.clock #osd { right: auto; bottom: auto; }
+  body.clock #name, body.clock #poi { display: none; }
   #debug { position: absolute; top: 25px; right: 25px; color: #fff; font: 26px monospace;
            white-space: pre; text-align: right; display: none; }
 </style>
@@ -47,6 +54,7 @@ var poi = { strings: {} };
 var randomIndex = -1;
 var sourceAlt = "";
 var stalledSeconds = 0;
+var clockMode = false;
 
 var video = document.getElementById("video");
 var osd = document.getElementById("osd");
@@ -160,11 +168,50 @@ function updateOSD() {
     }
 }
 
+// Resolves to true if another app holds a video decoder
+var pipelineBridge = null; // global: a garbage-collected PalmServiceBridge drops its call
+function videoDecoderInUse() {
+    return new Promise(function (resolve) {
+        if (typeof PalmServiceBridge === "undefined") return resolve(false);
+        setTimeout(function () { resolve(false); }, 3000);
+        pipelineBridge = new PalmServiceBridge();
+        pipelineBridge.onservicecallback = function (msg) {
+            try {
+                resolve(JSON.parse(msg).some(function (pipeline) {
+                    return (pipeline.resource || []).some(function (r) {
+                        return /VDEC|HEVC|H264|MSVC|VP9|AV1/.test(r.resource);
+                    });
+                }));
+            } catch (e) {
+                resolve(false);
+            }
+        };
+        pipelineBridge.call("luna://com.webos.media/getActivePipelines", "{}");
+    });
+}
+
+function moveClock() {
+    osd.style.opacity = 0;
+    setTimeout(function () {
+        osd.style.left = Math.random() * (window.innerWidth - osd.offsetWidth) + "px";
+        osd.style.top = Math.random() * (window.innerHeight - osd.offsetHeight) + "px";
+        osd.style.opacity = settings.osdOpacity / 100;
+    }, 3000);
+}
+
+function startClock() {
+    clockMode = true;
+    document.body.classList.add("clock");
+    moveClock();
+    setInterval(moveClock, 60000);
+}
+
 function updateDebug() {
     if (!settings.debug) return;
     var el = document.getElementById("debug");
     el.style.display = "block";
-    el.textContent = "Video " + randomIndex + " of " + playList.assets.length +
+    el.textContent = "Mode: " + (clockMode ? "clock (video decoder in use)" : "video") +
+        "\n Video " + randomIndex + " of " + playList.assets.length +
         "\n Source Type: " + settings.sourceType + sourceAlt +
         "\n Try Other Source: " + settings.playLowerQuality +
         "\n Locale: " + settings.localeLang +
@@ -185,7 +232,8 @@ loadJSONData(basePath + "settings.json")
     .then(function () {
         return Promise.all([
             loadJSONData(basePath + "videos.json"),
-            loadJSONData(basePath + "locales/" + settings.localeLang + ".json").catch(function () { return { strings: {} }; })
+            loadJSONData(basePath + "locales/" + settings.localeLang + ".json").catch(function () { return { strings: {} }; }),
+            videoDecoderInUse()
         ]);
     })
     .then(function (r) {
@@ -194,7 +242,7 @@ loadJSONData(basePath + "settings.json")
         if (settings.osdOpacity == 0) osd.style.display = "none";
         updateOSD();
         setInterval(function () { checkStatus(); updateOSD(); updateDebug(); }, 1000);
-        playRandomVideo();
+        if (r[2]) startClock(); else playRandomVideo();
     })
     .catch(function (e) {
         settings.debug = true;

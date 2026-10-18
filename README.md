@@ -27,6 +27,8 @@ uses the same settings, videos and locales. Notes:
 
 - Applying restarts the app manager, so running apps close and the home screen reloads.
 - Set text opacity to 0 to hide the on-screen text, e.g. to avoid burn-in on OLED TVs.
+- If another app has a paused video, the screensaver shows a clock that moves every minute
+  instead of video, so that app keeps its video decoder and playback can resume.
 
 Features
 --------
