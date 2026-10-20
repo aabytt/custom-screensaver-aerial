@@ -68,6 +68,7 @@ module.exports = kind({
 				{value:'it-IT', content:'Italiano'},
 				{value:'ja-JP', content:'日本語'},
 				{value:'ko-KR', content:'한국어'},
+				{value:'mk-MK', content:'Македонски'},
 				{value:'ms-MY', content:'Bahasa Melayu'},
 				{value:'nl-NL', content:'Nederlands'},
 				{value:'nb-NO', content:'Norge'},
