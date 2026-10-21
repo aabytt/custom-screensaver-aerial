@@ -6,6 +6,16 @@
  *
  * Test launch (no way to trigger on "No signal" screen)
  *   luna-send -n 1 'luna://com.webos.service.tvpower/power/turnOnScreenSaver' '{}'
+ *
+ * File layout (single file on purpose: the app is deployed with `mount --bind`)
+ *
+ *   config    constants and tunables
+ *   store     loads settings.json / videos.json / locale and holds them
+ *   playlist  decides which asset plays next
+ *   player    starts playback
+ *   watchdog  once a second: detects errors, stalls, end of media, fade-out
+ *   osd       title, point of interest, clock, date (+ debug panel)
+ *   video     Video element with punch-through and fade animations
  */
 import QtQuick 2.4
 import QtMultimedia 5.6
@@ -19,7 +29,6 @@ import iLib 1.0 as I
 WebOSWindow {
     id: window
 
-    // ---- Window ----------------------------------------------------------
     width: 1920
     height: 1080
     windowType: "_WEBOS_WINDOW_TYPE_SCREENSAVER"
@@ -27,47 +36,224 @@ WebOSWindow {
     appId: "com.webos.app.screensaver"
     visible: true
 
-    // ---- Data (filled from JSON files, see init()) -----------------------
-    property var settings      // settings.json
-    property var playList      // videos.json
-    property var poi           // locales/<lang>.json
-    property bool ready: false // true once settings, playList and poi are loaded
-
     // ---- Playback state --------------------------------------------------
-    property int randomIndex   // index of the current asset in playList.assets
-    property int poiIndex: 0
-    property int stalledCounter: 0
-    property string sourceAlt  // debug note when a fallback source is used
+    property int randomIndex       // index of the current asset in playList.assets
+    property int poiIndex: 0       // current point of interest of the asset
+    property int stalledCounter: 0 // seconds spent in a "not playing" state
+    property string sourceAlt      // debug note when a fallback source is used
 
-    // ---- Cached date/time formatters (created lazily, see updateOSD()) ---
-    property var timeFormatter
-    property var dateFormatter
-
-    // ---- Constants -------------------------------------------------------
-    readonly property string basePath: "file:///media/developer/apps/usr/palm/applications/org.aabytt.webos.custom-screensaver-aerial/assets/"
-    readonly property int viewedAfterMs: 2000       // video counts as "viewed" after this position
-    readonly property int fadeInMs: 3000
-    readonly property int fadeOutMs: 5000
-    readonly property int fadeOutLeadSec: 5         // start fade-out this many seconds before the end
-    readonly property int statusStallLimit: 25      // ticks (1 s each) in Loading/Stalled before skipping
-    readonly property int stoppedStallLimit: 15     // ticks in "stopped" state before skipping
-    // Labels as in the original code. NOTE: verify 4 vs 5 against the QtMultimedia
-    // enum on the device (Qt declares Stalled before Buffering).
-    readonly property var mediaStatusNames: [
-        "UnknownStatus", "NoMedia", "Loading", "Loaded", "Buffering",
-        "Stalled", "Buffered", "EndOfMedia", "InvalidMedia"
-    ]
-    readonly property var playbackStateNames: ["stopped", "playing", "paused"]
-    // Used when settings.playLowerQuality is on and the asset has no source of the chosen type
-    readonly property var lowerQualityFallbacks: ({
-        "url-4K-HDR": ["url-4K-SDR"],
-        "url-1080-HDR": ["url-1080-SDR", "url-1080-H264"]
-    })
+    readonly property var currentAsset: store.ready ? store.playList.assets[randomIndex] : null
 
     Component.onCompleted: {
         notificationsService.set("disable")
-        init() // playback starts from loadResources() when all data is loaded
+        store.load(player.playNext)
     }
+
+    // ======================================================================
+    //  Modules
+    // ======================================================================
+
+    QtObject {
+        id: config
+
+        readonly property string basePath: "file:///media/developer/apps/usr/palm/applications/org.aabytt.webos.custom-screensaver-aerial/assets/"
+
+        readonly property int fadeInMs: 3000
+        readonly property int fadeOutMs: 5000
+        readonly property int fadeOutLeadSec: 5      // start fading this many seconds before the end
+        readonly property int viewedAfterMs: 2000    // a video counts as viewed after this position
+        readonly property int stallLimitSec: 25      // Loading / Stalled for this long -> skip
+        readonly property int stoppedLimitSec: 15    // stopped for this long -> skip
+
+        // MediaPlayer statuses that count as "stalled" (numbering kept from the original code)
+        readonly property var stallStatuses: [2, 5]
+
+        // Used when settings.playLowerQuality is on and an asset lacks the chosen source type
+        readonly property var lowerQualityFallbacks: ({
+            "url-4K-HDR": ["url-4K-SDR"],
+            "url-1080-HDR": ["url-1080-SDR", "url-1080-H264"]
+        })
+    }
+
+    // Loads and holds the data files. Loading is sequential:
+    // settings -> videos -> locale, so everything is ready before the first video.
+    QtObject {
+        id: store
+
+        property var settings      // settings.json
+        property var playList      // videos.json
+        property var poi           // locales/<lang>.json
+        property bool ready: false
+
+        function load(onReady) {
+            fetchJSON("settings.json", function (loadedSettings) {
+                store.settings = loadedSettings
+                fetchJSON("videos.json", function (loadedVideos) {
+                    store.playList = loadedVideos
+                    fetchJSON("locales/" + store.settings.localeLang + ".json", function (loadedLocale) {
+                        store.poi = loadedLocale
+                        store.ready = true
+                        onReady()
+                    })
+                })
+            })
+        }
+
+        function fetchJSON(file, onLoaded) {
+            var url = config.basePath + file
+            var xhr = new XMLHttpRequest()
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState !== XMLHttpRequest.DONE)
+                    return
+                if (xhr.status === 200) {
+                    onLoaded(JSON.parse(xhr.responseText))
+                } else {
+                    console.error("Error loading JSON data:", url, xhr.statusText)
+                    titleOSD.text = xhr.statusText
+                }
+            }
+            xhr.open("GET", url)
+            xhr.send()
+        }
+    }
+
+    // Chooses the next asset. Pure selection logic, no side effects on playback.
+    QtObject {
+        id: playlist
+
+        // Returns { url, note } for the asset according to the settings,
+        // or null if the asset has nothing playable.
+        function resolveSource(asset) {
+            var type = store.settings.sourceType
+            if (asset[type])
+                return { url: asset[type], note: "" }
+            if (!store.settings.playLowerQuality)
+                return null
+
+            var fallbacks = config.lowerQualityFallbacks[type] || []
+            for (var i = 0; i < fallbacks.length; i++) {
+                if (asset[fallbacks[i]])
+                    return { url: asset[fallbacks[i]], note: " - n/a, trying " + fallbacks[i] }
+            }
+            return null
+        }
+
+        // All assets that were not viewed yet and have a playable source.
+        function candidates() {
+            var result = []
+            var assets = store.playList.assets
+            for (var i = 0; i < assets.length; i++) {
+                if (assets[i].viewed)
+                    continue
+                var source = resolveSource(assets[i])
+                if (source)
+                    result.push({ index: i, url: source.url, note: source.note })
+            }
+            return result
+        }
+
+        function markViewed(index) {
+            store.playList.assets[index].viewed = true
+        }
+
+        function resetViewed() {
+            var assets = store.playList.assets
+            for (var i = 0; i < assets.length; i++)
+                assets[i].viewed = false
+        }
+
+        // Returns { index, url, note } or null if nothing is playable at all.
+        function pickRandom() {
+            var list = candidates()
+            if (list.length === 0) {
+                // everything has been shown already: start a new round
+                resetViewed()
+                list = candidates()
+            }
+            if (list.length === 0)
+                return null
+            return list[Math.floor(Math.random() * list.length)]
+        }
+    }
+
+    QtObject {
+        id: player
+
+        function playNext() {
+            window.stalledCounter = 0
+
+            var pick = playlist.pickRandom()
+            if (!pick) {
+                console.error("No playable video for source type", store.settings.sourceType)
+                return
+            }
+
+            window.randomIndex = pick.index
+            window.sourceAlt = pick.note
+            videoOutput.source = pick.url
+            notificationsService.set("disable")
+            videoOutput.play()
+        }
+
+        // Abandon the current video and start another one.
+        function skip() {
+            punchThroughArea.visible = false
+            playNext()
+        }
+    }
+
+    // Runs every second and keeps playback going.
+    QtObject {
+        id: watchdog
+
+        function tick() {
+            checkError()
+            checkProgress()
+            checkStalls()
+        }
+
+        function checkError() {
+            if (videoOutput.error !== 0) {
+                notificationsService.set("enable")
+                player.skip()
+            }
+        }
+
+        function checkProgress() {
+            var position = videoOutput.position
+
+            if (position > config.viewedAfterMs) {
+                notificationsService.set("enable")
+                playlist.markViewed(window.randomIndex)
+            }
+
+            var secondsLeft = Math.floor(videoOutput.duration / 1000) - Math.floor(position / 1000)
+            if (secondsLeft === config.fadeOutLeadSec) {
+                fadeOutVideo.running = true
+                fadeOutOsd.running = true
+            }
+
+            if (videoOutput.status === MediaPlayer.EndOfMedia)
+                player.playNext()
+        }
+
+        function checkStalls() {
+            if (config.stallStatuses.indexOf(videoOutput.status) !== -1)
+                countStall(config.stallLimitSec)
+            if (videoOutput.playbackState === 0)
+                countStall(config.stoppedLimitSec)
+        }
+
+        function countStall(limitSec) {
+            window.stalledCounter++
+            if (window.stalledCounter > limitSec)
+                player.skip()
+        }
+    }
+
+    // ======================================================================
+    //  Non-visual helpers
+    // ======================================================================
 
     I.ILib {
         id: ilib
@@ -75,7 +261,7 @@ WebOSWindow {
 
     FontLoader {
         id: segoeUILight
-        source: basePath + "SegoeUI-Light.ttf"
+        source: config.basePath + "SegoeUI-Light.ttf"
     }
 
     Service {
@@ -87,16 +273,20 @@ WebOSWindow {
     }
 
     Timer {
-        id: refreshOSD
+        id: refreshTimer
         interval: 1000
-        running: window.ready
+        running: store.ready
         repeat: true
         onTriggered: {
-            checkError()
-            checkStatus()
-            updateOSD()
+            watchdog.tick()
+            debug.refresh()
+            osd.refresh()
         }
     }
+
+    // ======================================================================
+    //  Visuals
+    // ======================================================================
 
     Video {
         id: videoOutput
@@ -113,8 +303,7 @@ WebOSWindow {
             fadeOutVideo.running = false
         }
         onPaused: {
-            punchThroughArea.visible = false
-            playRandomVideo()
+            player.skip()
             osd.visible = false
             fadeOutVideo.running = false
         }
@@ -146,7 +335,7 @@ WebOSWindow {
                     target: opacityBox
                     from: 1
                     to: 0
-                    duration: window.fadeInMs
+                    duration: config.fadeInMs
                     running: false
                 }
                 OpacityAnimator {
@@ -154,7 +343,7 @@ WebOSWindow {
                     target: opacityBox
                     from: 0
                     to: 1
-                    duration: window.fadeOutMs
+                    duration: config.fadeOutMs
                     running: false
                 }
             }
@@ -169,12 +358,57 @@ WebOSWindow {
         anchors.fill: parent
         anchors.margins: 65
 
+        // iLib formatters, created on first use
+        property var timeFormatter
+        property var dateFormatter
+
+        function refresh() {
+            ensureFormatters()
+            var now = new Date()
+            timeOSD.text = timeFormatter.format(now)
+            dateOSD.text = formatDate(now)
+            updatePointOfInterest()
+        }
+
+        function ensureFormatters() {
+            if (timeFormatter)
+                return
+            var DateFmt = ilib.require("DateFmt.js")
+            timeFormatter = new DateFmt({
+                locale: store.settings.localeLang,
+                timezone: "local",
+                type: "time",
+                length: "full"
+            })
+            dateFormatter = new DateFmt({
+                locale: store.settings.localeLang,
+                timezone: "local",
+                type: "date",
+                date: "dmw",
+                length: "full"
+            })
+        }
+
+        // Prefers the locale file's own day/month names, falls back to iLib.
+        function formatDate(now) {
+            var date = store.poi.date
+            if (date)
+                return date.daysOfWeek[now.getDay()] + ", " + now.getDate() + " " + date.months[now.getMonth()]
+            return dateFormatter.format(now)
+        }
+
+        function updatePointOfInterest() {
+            var second = Math.floor(videoOutput.position / 1000)
+            if (window.currentAsset.pointsOfInterest[second])
+                window.poiIndex = second
+        }
+
         OpacityAnimator {
             id: fadeInOsd
             target: osd
             from: 0
             to: 1
-            duration: window.fadeInMs
+            duration: config.fadeInMs
             running: false
         }
         OpacityAnimator {
@@ -182,14 +416,14 @@ WebOSWindow {
             target: osd
             from: 1
             to: 0
-            duration: window.fadeOutMs
+            duration: config.fadeOutMs
             running: false
         }
 
         Text {
             id: titleOSD
-            opacity: window.ready ? settings.osdOpacity / 100 : 0
-            text: window.ready ? poi.strings[playList.assets[randomIndex].localizedNameKey] : ""
+            opacity: store.ready ? store.settings.osdOpacity / 100 : 0
+            text: window.currentAsset ? store.poi.strings[window.currentAsset.localizedNameKey] : ""
             font.family: segoeUILight.name
             font.letterSpacing: -1
             fontSizeMode: Text.Fit
@@ -202,7 +436,7 @@ WebOSWindow {
         Text {
             id: poiOSD
             opacity: titleOSD.opacity
-            text: window.ready ? poi.strings[playList.assets[randomIndex].pointsOfInterest[poiIndex]] : ""
+            text: window.currentAsset ? store.poi.strings[window.currentAsset.pointsOfInterest[window.poiIndex]] : ""
             font.family: titleOSD.font.family
             font.letterSpacing: titleOSD.font.letterSpacing
             fontSizeMode: titleOSD.fontSizeMode
@@ -244,7 +478,7 @@ WebOSWindow {
 
     Text {
         id: debug
-        visible: window.ready && !!settings.debug
+        visible: store.ready && !!store.settings.debug
         horizontalAlignment: Text.AlignRight
         anchors.right: parent.right
         anchors.margins: 25
@@ -255,190 +489,30 @@ WebOSWindow {
         style: titleOSD.style
         styleColor: titleOSD.styleColor
         fontSizeMode: titleOSD.fontSizeMode
-    }
 
-    // ---- Loading ---------------------------------------------------------
+        // Labels as in the original code. NOTE: verify 4 vs 5 against the QtMultimedia
+        // enum on the device (Qt declares Stalled before Buffering).
+        readonly property var mediaStatusNames: [
+            "UnknownStatus", "NoMedia", "Loading", "Loaded", "Buffering",
+            "Stalled", "Buffered", "EndOfMedia", "InvalidMedia"
+        ]
+        readonly property var playbackStateNames: ["stopped", "playing", "paused"]
 
-    // Loading is sequential: settings -> videos -> locale -> first video.
-    function init() {
-        loadJSON(basePath + "settings.json", function (data) {
-            settings = data
-            loadResources()
-        })
-    }
-
-    function loadResources() {
-        loadJSON(basePath + "videos.json", function (videos) {
-            playList = videos
-            loadJSON(basePath + "locales/" + settings.localeLang + ".json", function (locale) {
-                poi = locale
-                ready = true
-                playRandomVideo()
-            })
-        })
-    }
-
-    function loadJSON(url, onLoaded) {
-        var xhr = new XMLHttpRequest()
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState !== XMLHttpRequest.DONE)
+        function refresh() {
+            if (!visible)
                 return
-            if (xhr.status === 200) {
-                onLoaded(JSON.parse(xhr.responseText))
-            } else {
-                console.error("Error loading JSON data:", url, xhr.statusText)
-                titleOSD.text = xhr.statusText
-            }
+            var settings = store.settings
+            text = "Video " + window.randomIndex + " of " + store.playList.assets.length +
+                "\n Source Type: " + settings.sourceType + window.sourceAlt +
+                "\n Try Other Source: " + settings.playLowerQuality +
+                "\n Locale: " + settings.localeLang +
+                "\n OSD opacity: " + settings.osdOpacity + "%" +
+                "\n Timecode: " + Math.floor(videoOutput.position / 1000) + " / " + Math.floor(videoOutput.duration / 1000) +
+                "\n Media Status: " + mediaStatusNames[videoOutput.status] +
+                "\n Stalled Timeout: " + (config.stallLimitSec - window.stalledCounter) +
+                "\n Error: " + videoOutput.error + " " + videoOutput.errorString +
+                "\n Playback State: " + playbackStateNames[videoOutput.playbackState] +
+                "\n Buffer Progress : " + (videoOutput.bufferProgress * 33.334).toFixed(0) + "%"
         }
-        xhr.open("GET", url)
-        xhr.send()
-    }
-
-    // ---- Playback --------------------------------------------------------
-
-    // Returns { url, note } for the asset according to the settings,
-    // or null if the asset has nothing playable.
-    function resolveSource(asset) {
-        var type = settings.sourceType
-        if (asset[type])
-            return { url: asset[type], note: "" }
-        if (!settings.playLowerQuality)
-            return null
-
-        var fallbacks = lowerQualityFallbacks[type] || []
-        for (var i = 0; i < fallbacks.length; i++) {
-            if (asset[fallbacks[i]])
-                return { url: asset[fallbacks[i]], note: " - n/a, trying " + fallbacks[i] }
-        }
-        return null
-    }
-
-    // All not yet viewed assets that have a playable source.
-    function findCandidates() {
-        var result = []
-        var assets = playList.assets
-        for (var i = 0; i < assets.length; i++) {
-            if (assets[i].viewed)
-                continue
-            var source = resolveSource(assets[i])
-            if (source)
-                result.push({ index: i, url: source.url, note: source.note })
-        }
-        return result
-    }
-
-    function resetViewed() {
-        var assets = playList.assets
-        for (var i = 0; i < assets.length; i++)
-            assets[i].viewed = false
-    }
-
-    function playRandomVideo() {
-        stalledCounter = 0
-
-        var candidates = findCandidates()
-        if (candidates.length === 0) {
-            // everything has been shown already: start a new round
-            resetViewed()
-            candidates = findCandidates()
-        }
-        if (candidates.length === 0) {
-            console.error("No playable video for source type", settings.sourceType)
-            return
-        }
-
-        var pick = candidates[Math.floor(Math.random() * candidates.length)]
-        randomIndex = pick.index
-        sourceAlt = pick.note
-        videoOutput.source = pick.url
-        notificationsService.set("disable")
-        videoOutput.play()
-    }
-
-    function registerStall(limit) {
-        stalledCounter++
-        if (stalledCounter > limit) {
-            punchThroughArea.visible = false
-            playRandomVideo()
-        }
-    }
-
-    // ---- Periodic checks (called by refreshOSD every second) -------------
-
-    function checkError() {
-        if (videoOutput.error !== 0) {
-            notificationsService.set("enable")
-            punchThroughArea.visible = false
-            playRandomVideo()
-        }
-    }
-
-    function checkStatus() {
-        var position = videoOutput.position
-
-        if (position > viewedAfterMs) {
-            notificationsService.set("enable")
-            playList.assets[randomIndex].viewed = true
-        }
-        if (Math.floor(position / 1000) === Math.floor(videoOutput.duration / 1000) - fadeOutLeadSec) {
-            fadeOutVideo.running = true
-            fadeOutOsd.running = true
-        }
-        if (videoOutput.status === MediaPlayer.EndOfMedia)
-            playRandomVideo()
-
-        // 2 = Loading, 5 = Stalled (numbering kept from the original code)
-        if (videoOutput.status === 2 || videoOutput.status === 5)
-            registerStall(statusStallLimit)
-        if (videoOutput.playbackState === 0)
-            registerStall(stoppedStallLimit)
-
-        updateDebugText()
-    }
-
-    function updateDebugText() {
-        debug.text = "Video " + randomIndex + " of " + playList.assets.length +
-            "\n Source Type: " + settings.sourceType + sourceAlt +
-            "\n Try Other Source: " + settings.playLowerQuality +
-            "\n Locale: " + settings.localeLang +
-            "\n OSD opacity: " + settings.osdOpacity + "%" +
-            "\n Timecode: " + Math.floor(videoOutput.position / 1000) + " / " + Math.floor(videoOutput.duration / 1000) +
-            "\n Media Status: " + mediaStatusNames[videoOutput.status] +
-            "\n Stalled Timeout: " + (statusStallLimit - stalledCounter) +
-            "\n Error: " + videoOutput.error + " " + videoOutput.errorString +
-            "\n Playback State: " + playbackStateNames[videoOutput.playbackState] +
-            "\n Buffer Progress : " + (videoOutput.bufferProgress * 33.334).toFixed(0) + "%"
-    }
-
-    function updateOSD() {
-        if (!timeFormatter) {
-            var DateFmt = ilib.require("DateFmt.js")
-            timeFormatter = new DateFmt({
-                locale: settings.localeLang,
-                timezone: "local",
-                type: "time",
-                length: "full"
-            })
-            dateFormatter = new DateFmt({
-                locale: settings.localeLang,
-                timezone: "local",
-                type: "date",
-                date: "dmw",
-                length: "full"
-            })
-        }
-
-        var now = new Date()
-        timeOSD.text = timeFormatter.format(now)
-        if (poi.date) {
-            dateOSD.text = poi.date.daysOfWeek[now.getDay()] + ", " +
-                now.getDate() + " " + poi.date.months[now.getMonth()]
-        } else {
-            dateOSD.text = dateFormatter.format(now)
-        }
-
-        var second = Math.floor(videoOutput.position / 1000)
-        if (playList.assets[randomIndex].pointsOfInterest[second])
-            poiIndex = second
     }
 }
