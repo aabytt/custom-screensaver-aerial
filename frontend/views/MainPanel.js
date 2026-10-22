@@ -13,7 +13,8 @@ var
   Scroller = require('moonstone/Scroller'),
   Item = require('moonstone/Item'),
   ToggleItem = require('moonstone/ToggleItem'),
-  Group = require('enyo/Group');
+  Group = require('enyo/Group'),
+  VideoSelectPanel = require('./VideoSelectPanel.js');
 var basePath = "/media/developer/apps/usr/palm/applications/org.aabytt.webos.custom-screensaver-aerial";
 var applyPath = basePath + "/assets/apply.sh";
 var linkPath = "/var/lib/webosbrew/init.d/50-custom-screensaver-aerial";
@@ -23,7 +24,10 @@ module.exports = kind({
   name: 'MainPanel',
   kind: Panel,
   title: 'webOS Aerial Screensaver',
-  headerType: 'small',	
+  headerType: 'small',
+  events: {
+    onRequestPushPanel: ''
+  },
   components: [
     {kind: FittableColumns, fit: true, components: [
       {kind: Scroller, fit: true, components: [
@@ -42,6 +46,10 @@ module.exports = kind({
 			  {content: '4k Dolby Vision (HEVC)', value: 'url-4K-HDR'},
 			  {content: '4k 240FPS (HEVC) - unlikely working in webOS', value: 'url-4K-SDR-240FPS'}	  
             ]},
+            {kind: Item, components: [
+              {kind: Marquee.Text, content: 'Choose videos'},
+              {kind: BodyText, style: 'margin: 10px 0', name: 'videoSelectInfo', content: 'Select which videos are played'},
+            ], ontap: "openVideoSelect"},
             {kind: ToggleItem, name: "playLowerQuality", content: 'Try SDR source if Dolby Vision video does not exist', checked: settings.playLowerQuality, onchange: 'playLowerQualityToggle'},		  
             {kind: ExpandablePicker, name: "language", content: 'On-screen display text language', selectedIndex: settings.localeLangIndex , onChange: 'selectLang',
 			components: [
@@ -212,6 +220,16 @@ module.exports = kind({
 	}
   }, 
   
+  openVideoSelect: function () {
+    if (!settings.sourceType) { return; } // settings not loaded yet
+    this.doRequestPushPanel({panel: {
+      kind: VideoSelectPanel,
+      settings: settings,
+      settingsPath: settingsPath,
+      basePath: basePath
+    }});
+  },
+
   settingsSave: function (sender) {
     this.exec("echo '" + JSON.stringify(settings)+"' > "+ settingsPath);
   },

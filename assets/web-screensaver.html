@@ -52,6 +52,7 @@ var settings = { localeLang: "en-GB", sourceType: "url-4K-SDR", osdOpacity: 60, 
 var playList = { assets: [] };
 var poi = { strings: {} };
 var randomIndex = -1;
+var disabledSet = null;
 var sourceAlt = "";
 var stalledSeconds = 0;
 var clockMode = false;
@@ -105,17 +106,34 @@ function pickSource(asset) {
     return null;
 }
 
+// Videos switched off in the app's "Choose videos" screen (empty selection = play all)
+function isAllowed(asset) {
+    return !disabledSet || !disabledSet[asset.id];
+}
+
+function buildDisabledSet() {
+    disabledSet = null;
+    var list = settings.disabledVideos || [];
+    if (!list.length) return;
+    var set = {}, enabled = 0;
+    for (var i = 0; i < list.length; i++) set[list[i]] = true;
+    for (var j = 0; j < playList.assets.length; j++) {
+        if (!set[playList.assets[j].id]) enabled++;
+    }
+    if (enabled) disabledSet = set;
+}
+
 function playRandomVideo() {
     var assets = playList.assets;
     var candidates = [];
     for (var i = 0; i < assets.length; i++) {
-        if (!assets[i].viewed && i !== randomIndex && pickSource(assets[i])) candidates.push(i);
+        if (!assets[i].viewed && i !== randomIndex && isAllowed(assets[i]) && pickSource(assets[i])) candidates.push(i);
     }
     if (!candidates.length) {
         // Everything has been shown once: start over
         for (var j = 0; j < assets.length; j++) assets[j].viewed = false;
         for (var k = 0; k < assets.length; k++) {
-            if (k !== randomIndex && pickSource(assets[k])) candidates.push(k);
+            if (k !== randomIndex && isAllowed(assets[k]) && pickSource(assets[k])) candidates.push(k);
         }
         if (!candidates.length) return;
     }
@@ -238,6 +256,7 @@ loadJSONData(basePath + "settings.json")
     })
     .then(function (r) {
         playList = r[0];
+        buildDisabledSet();
         poi = r[1];
         if (settings.osdOpacity == 0) osd.style.display = "none";
         updateOSD();
