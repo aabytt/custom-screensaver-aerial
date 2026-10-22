@@ -2476,6 +2476,50 @@
         },
         {
             "source":"Apple Aerials",
+            "id": "4207734D-74FE-4F92-B5E1-6EC8DEE24A15",
+            "localizedNameKey": "GG_A_SUNSET_NAME",
+            "pointsOfInterest": {
+                "0": "GG_A_SUNSET_0"
+            },
+            "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.7/GG_A_SUNSET_MarshallsBeach_c28_v7_24comp_HFR_16Mbps.mp4",
+            "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/GG_A_SUNSET_MarshallsBeach_c28_v7_24comp_HFR_16Mbps.mov",
+            "previewImage": "assets/tn/4207734D-74FE-4F92-B5E1-6EC8DEE24A15.webp"
+        },
+        {
+            "source":"Apple Aerials",
+            "id": "6511D2B5-E185-4886-9505-B4004E920D27",
+            "localizedNameKey": "GG_A_DAY_NAME",
+            "pointsOfInterest": {
+                "0": "GG_A_DAY_0"
+            },
+            "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.7/GG_A_DAY_Bluffs_C35_V25_24comp_HFR_16Mbps.mp4",
+            "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/GG_A_DAY_Bluffs_C35_V25_24comp_HFR_16Mbps.mov",
+            "previewImage": "assets/tn/6511D2B5-E185-4886-9505-B4004E920D27.webp"
+        },
+        {
+            "source":"Apple Aerials",
+            "id": "3FD9FD5C-6DC5-4362-9932-4087C942F1C5",
+            "localizedNameKey": "GG_A_EVENING_NAME",
+            "pointsOfInterest": {
+                "0": "GG_A_EVENING_0"
+            },
+            "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.7/GG_A_EVENING_TorpedoWharf_C35_v22_24comp_HFR_16Mbps.mp4",
+            "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/GG_A_EVENING_TorpedoWharf_C35_v22_24comp_HFR_16Mbps.mov",
+            "previewImage": "assets/tn/3FD9FD5C-6DC5-4362-9932-4087C942F1C5.webp"
+        },
+        {
+            "source":"Apple Aerials",
+            "id": "86E89C23-C39B-44C8-A985-E56EEA6456FE",
+            "localizedNameKey": "GG_A_NIGHT_NAME",
+            "pointsOfInterest": {
+                "0": "GG_A_NIGHT_0"
+            },
+            "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.7/GG_A_NIGHT_BatterySpencer_c9_v8_Final01_24comp_HFR_12Mbps.mp4",
+            "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/GG_A_NIGHT_BatterySpencer_c9_v8_Final01_24comp_HFR_12Mbps.mov",
+            "previewImage": "assets/tn/86E89C23-C39B-44C8-A985-E56EEA6456FE.webp"
+        },   
+        {
+            "source":"Apple Aerials",
             "id": "2F11E857-4F77-4476-8033-4A1E4610AFCC",
             "localizedNameKey": "DB_D011_C009_NAME",
             "pointsOfInterest": {
