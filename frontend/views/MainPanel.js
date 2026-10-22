@@ -221,13 +221,22 @@ module.exports = kind({
   }, 
   
   openVideoSelect: function () {
-    if (!settings.sourceType) { return; } // settings not loaded yet
-    this.doRequestPushPanel({panel: {
-      kind: VideoSelectPanel,
-      settings: settings,
-      settingsPath: settingsPath,
-      basePath: basePath
-    }});
+    console.info('openVideoSelect, settings:', settings);
+    if (!settings.sourceType) {
+      this.$.result.set('content', 'Settings not loaded yet (settings.json could not be read), cannot open video list');
+      return;
+    }
+    try {
+      this.doRequestPushPanel({panel: {
+        kind: VideoSelectPanel,
+        settings: settings,
+        settingsPath: settingsPath,
+        basePath: basePath
+      }});
+    } catch (e) {
+      console.error(e);
+      this.$.result.set('content', 'Failed to open video list: ' + e.message);
+    }
   },
 
   settingsSave: function (sender) {
