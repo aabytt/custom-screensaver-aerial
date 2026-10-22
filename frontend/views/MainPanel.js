@@ -123,19 +123,50 @@ module.exports = kind({
     this.$.statusCheck.send({
       command: 'readlink ' + linkPath,
     });
+    this.loadSettingsLocal();   // direct read of the packaged file
     this.$.init.send({
       command: 'cat ' + settingsPath,
-    });	  
+    });
   },
-	
-  onInit: function (sender, evt) {
-    console.info(sender, evt);
-    settings = JSON.parse(evt.stdoutString);
+
+  // Fallback: the app's own files are readable without the luna service
+  loadSettingsLocal: function () {
+    var self = this, xhr = new XMLHttpRequest();
+    xhr.open('GET', 'assets/settings.json');
+    xhr.onload = function () {
+      if (settings.sourceType) { return; } // service read already won
+      if (xhr.status === 200 || (xhr.status === 0 && xhr.responseText)) {
+        try {
+          self.applySettings(JSON.parse(xhr.responseText));
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    };
+    xhr.send();
+  },
+
+  applySettings: function (s) {
+    settings = s;
     this.$.language.set('selectedIndex', settings.localeLangIndex);
     this.$.source.set('selectedIndex', settings.sourceTypeIndex);
     this.$.opacityPicker.set('value', settings.osdOpacity);
     this.$.debug.set('checked', settings.debug);
-    this.$.playLowerQuality.set('checked', settings.playLowerQuality);	  
+    this.$.playLowerQuality.set('checked', settings.playLowerQuality);
+  },
+
+  onInit: function (sender, evt) {
+    console.info(sender, evt);
+    if (!evt || !evt.returnValue || !evt.stdoutString) {
+      this.$.result.set('content', 'Could not read settings via service: ' +
+        ((evt && (evt.errorText || evt.stderrString)) || 'no response'));
+      return;
+    }
+    try {
+      this.applySettings(JSON.parse(evt.stdoutString));
+    } catch (e) {
+      this.$.result.set('content', 'settings.json is not valid JSON: ' + e.message);
+    }
   },
 	
   testRun: function (command) {
