@@ -21,11 +21,15 @@ var IMG_STYLE = 'display:block; width:100%; height:170px; object-fit:cover; back
 var MIN_SUB = 3;
 var OTHER = '__other';
 
+// Videos reference categories / subcategories directly by their localizedNameKey
+// (e.g. "AerialCategoryLandscapes"); the list of categories is built from the videos themselves.
 // Categories matched by key (without the "AerialCategory" prefix) or by shown name, case-insensitive.
 // Hidden: never shown as a category.
 var HIDDEN_CATEGORIES = ['dynamic'];
-// Merged: every group becomes one category (first one found is kept, the others are folded into it).
-var MERGED_CATEGORIES = [['mac', 'pattern', 'patterns']];
+
+// order of the categories on the first level (others go after these, alphabetically)
+var CATEGORY_ORDER = ['AerialCategoryLandscapes', 'AerialCategoryCities', 'AerialCategoryUnderwater',
+  'AerialCategorySpace', 'AerialCategoryPatterns', 'AerialCategoryFire'];
 
 // order of sources in the Source picker (others go after these, alphabetically)
 var SOURCE_ORDER = ['Apple Aerials', 'Amazon Fire OS', 'Jetson Creative', 'Robin Fourcade'];
@@ -386,7 +390,7 @@ var VideoSelectPanel = kind({
 
   onVideos: function (data) {
     this.assets = data.assets || [];
-    this.categories = data.categories || [];
+    this.categories = [];
     var lang = this.settings.localeLang || 'en-GB';
     this.loadJSON('assets/locales/' + lang + '.json', this.basePath + '/assets/locales/' + lang + '.json', this.onLocale);
   },
@@ -420,7 +424,7 @@ var VideoSelectPanel = kind({
   // ---- helpers ----
 
   nameOf: function (item) {
-    return item.mergedName || this.strings[item.localizedNameKey] || item.localizedNameKey || item.id;
+    return this.strings[item.localizedNameKey] || this.prettyKey(item.localizedNameKey || item.id);
   },
 
   categoryMatches: function (c, list) {
@@ -429,32 +433,52 @@ var VideoSelectPanel = kind({
     return list.indexOf(key) !== -1 || (name && list.indexOf(name) !== -1);
   },
 
-  // drop hidden categories, fold merged ones into a single category
+  // "AerialSubcategoryPalauJellies" -> "Palau Jellies" (only used when there is no translation)
+  prettyKey: function (key) {
+    return String(key || '')
+      .replace(/^Aerial(Sub)?Category(Description)?/, '')
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+      .replace(/_/g, ' ') || String(key || '');
+  },
+
+  // Build the category / subcategory lists from the videos: each video holds the localizedNameKey
+  // of its categories and subcategories (no separate categories list in the data any more).
   normalizeCategories: function () {
-    var self = this, remap = {},
-      cats = (this.categories || []).filter(function (c) {
-        return c && c.id && !self.categoryMatches(c, HIDDEN_CATEGORIES);
-      });
-    MERGED_CATEGORIES.forEach(function (list) {
-      var parts = cats.filter(function (c) { return self.categoryMatches(c, list); }), main;
-      if (parts.length < 2) { return; }
-      main = parts[0];
-      main.mergedName = parts.map(function (c) { return self.nameOf(c); }).join(' / ');
-      parts.slice(1).forEach(function (c) {
-        remap[c.id] = main.id;
-        main.subcategories = (main.subcategories || []).concat(c.subcategories || []);
-      });
-      cats = cats.filter(function (c) { return !remap[c.id]; });
-    });
+    var self = this, map = {}, list = [];
     this.assets.forEach(function (a) {
-      var seen = {}, out = [];
-      (a.categories || []).forEach(function (id) {
-        id = remap[id] || id;
-        if (!seen[id]) { seen[id] = true; out.push(id); }
+      var subs = a.subcategories || [];
+      a.categories = a.categories || [];
+      a.subcategories = subs;
+      a.categories.forEach(function (key) {
+        var cat = map[key];
+        if (!cat) {
+          cat = map[key] = {id: key, localizedNameKey: key, subcategories: [], subMap: {}};
+          list.push(cat);
+        }
+        subs.forEach(function (sk) {
+          if (!cat.subMap[sk]) {
+            cat.subMap[sk] = true;
+            cat.subcategories.push({id: sk, localizedNameKey: sk});
+          }
+        });
       });
-      a.categories = out;
     });
-    this.categories = cats;
+    list = list.filter(function (c) { return !self.categoryMatches(c, HIDDEN_CATEGORIES); });
+    list.forEach(function (c) {
+      delete c.subMap;
+      c.subcategories.sort(function (x, y) {
+        var nx = self.nameOf(x).toLowerCase(), ny = self.nameOf(y).toLowerCase();
+        return nx < ny ? -1 : (nx > ny ? 1 : 0);
+      });
+    });
+    list.sort(function (x, y) {
+      var i = CATEGORY_ORDER.indexOf(x.id), j = CATEGORY_ORDER.indexOf(y.id);
+      if (i === -1 && j === -1) { return self.nameOf(x) < self.nameOf(y) ? -1 : 1; }
+      if (i === -1) { return 1; }
+      if (j === -1) { return -1; }
+      return i - j;
+    });
+    this.categories = list;
   },
 
   currentValue: function (pickerName) {
