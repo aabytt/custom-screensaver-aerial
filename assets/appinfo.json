@@ -1,6 +1,6 @@
 {
     "id": "com.webos.app.screensaver",
-    "version": "3.0.1",
+    "version": "3.0.2",
     "vendor": "LG Electronics, Inc.",
     "type": "web",
     "main": "web-screensaver.html",
