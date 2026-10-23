@@ -7,27 +7,71 @@ var
   BodyText = require('moonstone/BodyText'),
   Marquee = require('moonstone/Marquee'),
   ExpandablePicker = require('moonstone/ExpandablePicker'),
+  Popup = require('moonstone/Popup'),
+  Control = require('enyo/Control'),
   LunaService = require('enyo-webos/LunaService');
 
+var TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:300px; margin:8px; padding:6px;';
+var CAT_TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:520px; margin:12px; padding:8px;';
+var CAT_IMG_STYLE = 'display:block; width:100%; height:290px; object-fit:cover; background:#2d353d;';
+var IMG_STYLE = 'display:block; width:100%; height:170px; object-fit:cover; background:#2d353d;';
+
+// subcategories with fewer videos than this are merged into one "Other" group
+var MIN_SUB = 3;
+var OTHER = '__other';
+
+// Categories matched by key (without the "AerialCategory" prefix) or by shown name, case-insensitive.
+// Hidden: never shown as a category.
+var HIDDEN_CATEGORIES = ['dynamic'];
+// Merged: every group becomes one category (first one found is kept, the others are folded into it).
+var MERGED_CATEGORIES = [['mac', 'pattern', 'patterns']];
+
+// how long OK / click has to be held to start a preview
+var LONG_PRESS_MS = 600;
+
+// best URL for a short preview: prefers 1080p / SDR / H.264, avoids 4K and HDR/Dolby Vision
+function previewUrl(a) {
+  var best = '', bestScore = -100;
+  Object.keys(a).forEach(function (k) {
+    var v = a[k], score;
+    if (!/^url/i.test(k) || typeof v !== 'string' || !v) { return; }
+    score = (/1080/.test(k) ? 2 : 0) + (/sdr/i.test(k) ? 1 : 0) + (/h264|avc/i.test(k) ? 1 : 0) -
+      (/4k|2160/i.test(k) ? 2 : 0) - (/hdr|dolby|\bdv\b/i.test(k) ? 3 : 0);
+    if (score > bestScore) { best = v; bestScore = score; }
+  });
+  return best;
+}
+
+function has(list, id) {
+  return !!list && list.indexOf(id) !== -1;
+}
+
 /**
- * One thumbnail tile. Tap / OK on the remote toggles it.
+ * One video tile. Tap / OK on the remote toggles it.
  * Selected = video is in the playlist.
  */
 var VideoTile = kind({
   name: 'aerial.VideoTile',
   kind: Item,
-  style: 'display:inline-block; vertical-align:top; position:relative; width:300px; margin:8px; padding:6px;',
+  style: TILE_STYLE,
   published: {
     selected: true
   },
   events: {
-    onToggled: ''
+    onToggled: '',
+    onPreview: ''
   },
   handlers: {
-    ontap: 'toggle'
+    ontap: 'toggle',
+    // magic remote / mouse: click and hold
+    onholdpulse: 'holdPulse',
+    onrelease: 'released',
+    // 5-way remote: OK held down
+    onkeydown: 'keyDown',
+    onkeyup: 'keyUp'
   },
   components: [
-    {name: 'img', tag: 'img', style: 'display:block; width:100%; height:170px; object-fit:cover; background:#2d353d;'},
+    {name: 'img', tag: 'img', style: IMG_STYLE},
     {name: 'badge', content: '\u2713', style: 'position:absolute; top:12px; right:12px; width:36px; height:36px; line-height:36px; text-align:center; border-radius:18px; font-size:24px; background:#cf0652; color:#fff;'},
     {kind: Marquee.Text, name: 'label', style: 'margin-top:6px; font-size:22px;'}
   ],
@@ -44,13 +88,107 @@ var VideoTile = kind({
     this.$.img.applyStyle('opacity', this.selected ? 1 : 0.3);
   },
   toggle: function () {
+    if (this.heldFired) { return true; }   // the tap that ends a long press
     this.set('selected', !this.selected);
     this.doToggled({id: this.assetId, selected: this.selected});
+    return true;
+  },
+  fireHold: function () {
+    this.heldFired = true;
+    this.startJob('clearHeld', 'clearHeld', 1500);
+    this.doPreview({id: this.assetId});
+  },
+  clearHeld: function () {
+    this.heldFired = false;
+  },
+  holdPulse: function (sender, evt) {
+    if (!this.heldFired && evt.holdTime >= LONG_PRESS_MS) { this.fireHold(); }
+  },
+  released: function () {
+    this.startJob('clearHeld', 'clearHeld', 400);
+  },
+  keyDown: function (sender, evt) {
+    if (evt.keyCode === 13 && !this.keyHeld) {
+      this.keyHeld = true;
+      this.startJob('longpress', 'fireHold', LONG_PRESS_MS);
+    }
+  },
+  keyUp: function (sender, evt) {
+    if (evt.keyCode === 13) {
+      this.keyHeld = false;
+      this.stopJob('longpress');
+      this.startJob('clearHeld', 'clearHeld', 400);
+    }
+  }
+});
+
+/**
+ * One category tile (first level). Tap / OK opens the category.
+ */
+var CategoryTile = kind({
+  name: 'aerial.CategoryTile',
+  kind: Item,
+  style: CAT_TILE_STYLE,
+  events: {
+    onOpenCategory: ''
+  },
+  handlers: {
+    ontap: 'open'
+  },
+  components: [
+    {name: 'img', tag: 'img', style: CAT_IMG_STYLE},
+    {kind: Marquee.Text, name: 'label', style: 'margin-top:10px; font-size:32px;'},
+    {name: 'info', style: 'font-size:26px; opacity:0.7;'}
+  ],
+  create: function () {
+    this.inherited(arguments);
+    if (this.src) {
+      this.$.img.setAttribute('src', this.src);
+    }
+    this.$.label.set('content', this.label || '');
+    this.$.info.set('content', this.info || '');
+  },
+  setInfo: function (text) {
+    this.$.info.set('content', text);
+  },
+  open: function () {
+    this.doOpenCategory({id: this.categoryId, name: this.label});
     return true;
   }
 });
 
-module.exports = kind({
+/**
+ * Group header inside a category. Tap / OK toggles every video of the group.
+ */
+var SectionHeader = kind({
+  name: 'aerial.SectionHeader',
+  kind: Item,
+  style: 'display:block; margin:18px 8px 4px; padding:8px 12px;',
+  events: {
+    onToggleGroup: ''
+  },
+  handlers: {
+    ontap: 'toggleAll'
+  },
+  components: [
+    {name: 'label', tag: 'span', style: 'font-size:28px;'},
+    {name: 'info', tag: 'span', style: 'font-size:22px; opacity:0.7; margin-left:24px;'}
+  ],
+  create: function () {
+    this.inherited(arguments);
+    this.$.label.set('content', this.label || '');
+    this.$.info.set('content', this.info || '');
+  },
+  setInfo: function (text) {
+    this.$.info.set('content', text);
+  },
+  toggleAll: function () {
+    this.doToggleGroup({ids: this.groupIds});
+    return true;
+  }
+});
+
+var VideoSelectPanel = kind({
   name: 'aerial.VideoSelectPanel',
   kind: Panel,
   title: 'Choose videos',
@@ -58,19 +196,36 @@ module.exports = kind({
   // passed in by MainPanel
   settings: null,
   settingsPath: '',
+  // 'categories' = first level (category tiles), 'videos' = video tiles
+  mode: 'categories',
+  // set on the second-level panel
+  categoryId: '',
+  isChild: false,
+  shared: null,
   handlers: {
-    onToggled: 'tileToggled'
+    onToggled: 'tileToggled',
+    onOpenCategory: 'openCategory',
+    onToggleGroup: 'toggleGroup',
+    onPreview: 'previewVideo'
   },
   components: [
     {kind: Scroller, name: 'scroller', fit: true, components: [
       {style: 'margin: 0 20px', components: [
         {kind: BodyText, name: 'count', content: 'Loading...'},
-        {kind: ExpandablePicker, name: 'filter', content: 'Source', selectedIndex: 0, onChange: 'filterChanged', components: [
-          {content: 'All sources', value: ''},
-          {content: 'Apple Aerials', value: 'Apple Aerials'},
-          {content: 'Amazon Fire OS', value: 'Amazon Fire OS'},
-          {content: 'Jetson Creative', value: 'Jetson Creative'},
-          {content: 'Robin Fourcade', value: 'Robin Fourcade'}
+        {name: 'hint', showing: false, content: 'OK: add / remove \u00b7 hold OK: preview', style: 'font-size:22px; opacity:0.6; margin-bottom:8px;'},
+        {name: 'filters', showing: false, components: [
+          {kind: ExpandablePicker, name: 'filter', content: 'Source', selectedIndex: 0, onChange: 'filterChanged', components: [
+            {content: 'All sources', value: ''},
+            {content: 'Apple Aerials', value: 'Apple Aerials'},
+            {content: 'Amazon Fire OS', value: 'Amazon Fire OS'},
+            {content: 'Jetson Creative', value: 'Jetson Creative'},
+            {content: 'Robin Fourcade', value: 'Robin Fourcade'}
+          ]},
+          {kind: ExpandablePicker, name: 'state', content: 'Show', selectedIndex: 0, onChange: 'filterChanged', components: [
+            {content: 'All', value: ''},
+            {content: 'In playlist', value: 'on'},
+            {content: 'Not in playlist', value: 'off'}
+          ]}
         ]},
         {style: 'margin: 10px 0', components: [
           {kind: Button, content: 'Select all', ontap: 'selectAll'},
@@ -79,17 +234,39 @@ module.exports = kind({
         {name: 'grid'}
       ]}
     ]},
+    // centered preview window; Back closes it (instead of leaving the panel)
+    {kind: Popup, name: 'preview', modal: true, spotlightModal: true, autoDismiss: true,
+      onHide: 'previewHidden', onkeydown: 'previewKey', onkeyup: 'previewKey',
+      style: 'position:fixed; left:50%; top:50%; right:auto; bottom:auto; width:1280px; height:810px; margin:-405px 0 0 -640px; padding:12px; box-sizing:border-box;',
+      components: [
+        {kind: Control, name: 'pvBox', spotlight: true, style: 'outline:none;', components: [
+          {name: 'pv', tag: 'video', attributes: {autoplay: 'autoplay', loop: 'loop', muted: 'muted'}, style: 'display:block; width:100%; height:720px; background:#000;'},
+          {kind: BodyText, name: 'previewTitle', style: 'margin-top:8px; text-align:center;'}
+        ]}
+      ]},
     {kind: LunaService, name: 'cat', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onCat', onError: 'onCat'},
     {kind: LunaService, name: 'save', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec'}
   ],
 
   create: function () {
     this.inherited(arguments);
-    this.assets = [];
-    this.strings = {};
-    this.disabled = {};
     this.dirty = false;
     this.settings = this.settings || {};
+
+    if (this.shared) {
+      // second level: data already loaded by the first level
+      this.assets = this.shared.assets;
+      this.categories = this.shared.categories;
+      this.strings = this.shared.strings;
+      this.disabled = this.shared.disabled;
+      this.start();
+      return;
+    }
+
+    this.assets = [];
+    this.categories = [];
+    this.strings = {};
+    this.disabled = {};
     (this.settings.disabledVideos || []).forEach(function (id) {
       this.disabled[id] = true;
     }, this);
@@ -103,6 +280,7 @@ module.exports = kind({
       this.save();
     }
     this.stopJob('batch');
+    this.stopPreview();
     this.inherited(arguments);
   },
 
@@ -141,48 +319,325 @@ module.exports = kind({
 
   onVideos: function (data) {
     this.assets = data.assets || [];
+    this.categories = data.categories || [];
     var lang = this.settings.localeLang || 'en-GB';
     this.loadJSON('assets/locales/' + lang + '.json', this.basePath + '/assets/locales/' + lang + '.json', this.onLocale);
   },
 
   onLocale: function (data) {
     this.strings = (data && data.strings) || {};
+    this.normalizeCategories();
+    this.shared = {
+      assets: this.assets,
+      categories: this.categories,
+      strings: this.strings,
+      disabled: this.disabled,
+      onChange: this.bindSafely('refreshCounts')
+    };
+    this.start();
+  },
+
+  start: function () {
+    // no categories in the data: single level with all videos
+    if (this.mode === 'categories' && !this.visibleCategories().length) {
+      this.mode = 'videos';
+    }
+    this.$.filters.set('showing', this.mode === 'videos');
+    this.$.hint.set('showing', this.mode === 'videos');
     this.renderTiles();
   },
 
-  currentSource: function () {
-    var sel = this.$.filter.get('selected');
+  // ---- helpers ----
+
+  nameOf: function (item) {
+    return item.mergedName || this.strings[item.localizedNameKey] || item.localizedNameKey || item.id;
+  },
+
+  categoryMatches: function (c, list) {
+    var key = String(c.localizedNameKey || c.id || '').replace(/^aerialcategory/i, '').toLowerCase(),
+      name = String(this.strings[c.localizedNameKey] || '').toLowerCase();
+    return list.indexOf(key) !== -1 || (name && list.indexOf(name) !== -1);
+  },
+
+  // drop hidden categories, fold merged ones into a single category
+  normalizeCategories: function () {
+    var self = this, remap = {},
+      cats = (this.categories || []).filter(function (c) {
+        return c && c.id && !self.categoryMatches(c, HIDDEN_CATEGORIES);
+      });
+    MERGED_CATEGORIES.forEach(function (list) {
+      var parts = cats.filter(function (c) { return self.categoryMatches(c, list); }), main;
+      if (parts.length < 2) { return; }
+      main = parts[0];
+      main.mergedName = parts.map(function (c) { return self.nameOf(c); }).join(' / ');
+      parts.slice(1).forEach(function (c) {
+        remap[c.id] = main.id;
+        main.subcategories = (main.subcategories || []).concat(c.subcategories || []);
+      });
+      cats = cats.filter(function (c) { return !remap[c.id]; });
+    });
+    this.assets.forEach(function (a) {
+      var seen = {}, out = [];
+      (a.categories || []).forEach(function (id) {
+        id = remap[id] || id;
+        if (!seen[id]) { seen[id] = true; out.push(id); }
+      });
+      a.categories = out;
+    });
+    this.categories = cats;
+  },
+
+  currentValue: function (pickerName) {
+    var sel = this.$[pickerName].get('selected');
     return sel ? sel.value : '';
   },
 
+  // {on, total} for a category ('' = everything)
+  categoryStats: function (id) {
+    var total = 0, on = 0;
+    this.assets.forEach(function (a) {
+      if (!id || has(a.categories, id)) {
+        total++;
+        if (!this.disabled[a.id]) { on++; }
+      }
+    }, this);
+    return {on: on, total: total};
+  },
+
+  // categories that actually contain videos
+  visibleCategories: function () {
+    return (this.categories || []).filter(function (c) {
+      return c && c.id && this.categoryStats(c.id).total > 0;
+    }, this);
+  },
+
+  // thumbnail of a category: preview of any video that belongs to it
+  previewFor: function (category) {
+    var i, a;
+    for (i = 0; i < this.assets.length; i++) {
+      a = this.assets[i];
+      if ((!category || has(a.categories, category.id)) && a.previewImage) {
+        return a.previewImage;
+      }
+    }
+    return '';
+  },
+
+  infoText: function (id) {
+    var s = this.categoryStats(id);
+    return s.on + ' / ' + s.total;
+  },
+
+  // ---- first level: categories ----
+
+  renderCategories: function () {
+    var self = this;
+    function add(id, name, src) {
+      self.$.grid.createComponent({
+        kind: CategoryTile,
+        categoryId: id,
+        src: src,
+        label: name,
+        info: self.infoText(id)
+      }).render();
+    }
+    this.visibleCategories().forEach(function (c) {
+      add(c.id, this.nameOf(c), this.previewFor(c));
+    }, this);
+  },
+
+  openCategory: function (sender, evt) {
+    var panels = this.findPanels();
+    if (panels) {
+      panels.pushPanel({
+        kind: VideoSelectPanel,
+        title: evt.name,
+        headerType: 'small',
+        mode: 'videos',
+        isChild: true,
+        categoryId: evt.id,
+        shared: this.shared,
+        settings: this.settings,
+        settingsPath: this.settingsPath
+      });
+    }
+    return true;
+  },
+
+  // walk up to the (moonstone) Panels that holds this panel
+  findPanels: function () {
+    var c = this.container || this.parent;
+    while (c && !c.pushPanel) {
+      c = c.container || c.parent;
+    }
+    return c;
+  },
+
+  // ---- second level: videos ----
+
   visibleAssets: function () {
-    var src = this.currentSource();
-    return this.assets.filter(function (a) { return !src || a.source === src; });
+    if (this.mode === 'categories') { return this.assets; }
+    var src = this.currentValue('filter'),
+      state = this.currentValue('state'),
+      cat = this.categoryId,
+      disabled = this.disabled;
+    return this.assets.filter(function (a) {
+      return (!src || a.source === src) &&
+        (!cat || has(a.categories, cat)) &&
+        (!state || (state === 'off') === !!disabled[a.id]);
+    });
+  },
+
+  // Groups of one category: [{id, name}] + map assetId -> group id.
+  // Subcategories with fewer than MIN_SUB videos are merged into "Other".
+  // Returns null when the category has no usable subcategories (flat list).
+  groupsFor: function (catId) {
+    var cat = (this.categories || []).filter(function (c) { return c && c.id === catId; })[0],
+      subs = ((cat && cat.subcategories) || []).filter(function (x) { return x && x.id; }),
+      assets = this.assets.filter(function (a) { return has(a.categories, catId); }),
+      good = subs.filter(function (x) {
+        return assets.filter(function (a) { return has(a.subcategories, x.id); }).length >= MIN_SUB;
+      }),
+      of = {}, groups, usesOther = false;
+    if (!good.length) { return null; }
+    assets.forEach(function (a) {
+      var i;
+      for (i = 0; i < good.length; i++) {
+        if (has(a.subcategories, good[i].id)) { of[a.id] = good[i].id; return; }
+      }
+      of[a.id] = OTHER;
+      usesOther = true;
+    });
+    groups = good.map(function (x) { return {id: x.id, name: this.nameOf(x)}; }, this);
+    if (usesOther) { groups.push({id: OTHER, name: 'Other'}); }
+    return {groups: groups, of: of};
+  },
+
+  groupInfo: function (ids) {
+    var on = 0;
+    ids.forEach(function (id) { if (!this.disabled[id]) { on++; } }, this);
+    return on + ' / ' + ids.length;
   },
 
   renderTiles: function () {
     this.stopJob('batch');
     this.$.grid.destroyClientControls();
-    this.pending = this.visibleAssets().slice();
     this.updateCount();
+    if (this.mode === 'categories') {
+      this.renderCategories();
+      return;
+    }
+    var list = this.visibleAssets(),
+      grouping = this.categoryId ? this.groupsFor(this.categoryId) : null,
+      queue = [];
+    if (grouping) {
+      grouping.groups.forEach(function (g) {
+        var items = list.filter(function (a) { return grouping.of[a.id] === g.id; });
+        if (!items.length) { return; }
+        queue.push({header: g, ids: items.map(function (a) { return a.id; })});
+        items.forEach(function (a) { queue.push({asset: a}); });
+      });
+    } else {
+      list.forEach(function (a) { queue.push({asset: a}); });
+    }
+    this.pending = queue;
     this.renderBatch();
   },
 
   renderBatch: function () {
-    var batch = this.pending.splice(0, 12), i, a;
+    var batch = this.pending.splice(0, 12), i, it, a;
     for (i = 0; i < batch.length; i++) {
-      a = batch[i];
-      this.$.grid.createComponent({
-        kind: VideoTile,
-        assetId: a.id,
-        src: a.previewImage,
-        label: this.strings[a.localizedNameKey] || a.localizedNameKey,
-        selected: !this.disabled[a.id]
-      }).render();
+      it = batch[i];
+      if (it.header) {
+        this.$.grid.createComponent({
+          kind: SectionHeader,
+          groupIds: it.ids,
+          label: it.header.name,
+          info: this.groupInfo(it.ids)
+        }).render();
+      } else {
+        a = it.asset;
+        this.$.grid.createComponent({
+          kind: VideoTile,
+          assetId: a.id,
+          src: a.previewImage,
+          label: this.strings[a.localizedNameKey] || a.localizedNameKey,
+          selected: !this.disabled[a.id]
+        }).render();
+      }
     }
     if (this.pending.length) {
       this.startJob('batch', 'renderBatch', 40);
     }
+  },
+
+  // tap on a group header: everything on -> all off, otherwise all on
+  toggleGroup: function (sender, evt) {
+    var allOn = evt.ids.every(function (id) { return !this.disabled[id]; }, this);
+    evt.ids.forEach(function (id) {
+      if (allOn) { this.disabled[id] = true; } else { delete this.disabled[id]; }
+    }, this);
+    this.markDirty();
+    this.syncTiles();
+    return true;
+  },
+
+  syncHeaders: function () {
+    this.$.grid.getClientControls().forEach(function (t) {
+      if (t.groupIds) { t.setInfo(this.groupInfo(t.groupIds)); }
+    }, this);
+  },
+
+  // update existing tiles in place (no re-render, scroll position stays)
+  syncTiles: function () {
+    this.$.grid.getClientControls().forEach(function (t) {
+      if (t.assetId !== undefined) { t.set('selected', !this.disabled[t.assetId]); }
+    }, this);
+    this.syncHeaders();
+  },
+
+  previewVideo: function (sender, evt) {
+    var asset = this.assets.filter(function (a) { return a.id === evt.id; })[0],
+      url = asset && previewUrl(asset), node;
+    if (!url) {
+      this.$.hint.set('content', 'No preview available for this video');
+      return true;
+    }
+    this.$.previewTitle.set('content', this.strings[asset.localizedNameKey] || asset.localizedNameKey || '');
+    this.$.preview.show();
+    this.$.pv.setAttribute('src', url);
+    node = this.$.pv.hasNode();
+    if (node) {
+      try { node.load(); node.play(); } catch (e) { /* autoplay will start it */ }
+    }
+    return true;
+  },
+
+  // release the video decoder when the preview closes
+  stopPreview: function () {
+    var node = this.$.pv && this.$.pv.hasNode();
+    if (node) {
+      try {
+        node.pause();
+        node.removeAttribute('src');
+        node.load();
+      } catch (e) { /* ignore */ }
+    }
+  },
+
+  // Back (webOS 461, Esc / Backspace in the simulator) closes the preview and is swallowed
+  previewKey: function (sender, evt) {
+    if (evt.keyCode === 461 || evt.keyCode === 27 || evt.keyCode === 8) {
+      if (evt.type === 'keyup') {
+        this.$.preview.hide();
+      }
+      if (evt.preventDefault) { evt.preventDefault(); }
+      return true;
+    }
+  },
+
+  previewHidden: function () {
+    this.stopPreview();
   },
 
   filterChanged: function () {
@@ -196,6 +651,7 @@ module.exports = kind({
       this.disabled[evt.id] = true;
     }
     this.markDirty();
+    this.syncHeaders();
     return true;
   },
 
@@ -210,19 +666,34 @@ module.exports = kind({
   selectAll: function () { this.setVisible(true); },
   deselectAll: function () { this.setVisible(false); },
 
-  updateCount: function () {
-    var total = this.assets.length, off = 0, i;
-    for (i = 0; i < total; i++) {
-      if (this.disabled[this.assets[i].id]) { off++; }
+  // counters on the first level + header text; also called by the child panel
+  refreshCounts: function () {
+    this.updateCount();
+    if (this.mode === 'categories') {
+      this.$.grid.getClientControls().forEach(function (t) {
+        if (t.setInfo) { t.setInfo(this.infoText(t.categoryId)); }
+      }, this);
     }
-    var on = total - off;
-    this.$.count.set('content', on + ' of ' + total + ' videos in playlist' +
-      (on === 0 ? ' (nothing selected: all videos will be played)' : ''));
+  },
+
+  updateCount: function () {
+    var all = this.categoryStats(''), text;
+    if (this.mode === 'videos' && this.categoryId) {
+      var cat = this.categoryStats(this.categoryId);
+      text = cat.on + ' of ' + cat.total + ' videos of this category in playlist (' + all.on + ' of ' + all.total + ' in total)';
+    } else {
+      text = all.on + ' of ' + all.total + ' videos in playlist' +
+        (all.on === 0 ? ' (nothing selected: all videos will be played)' : '');
+    }
+    this.$.count.set('content', text);
   },
 
   markDirty: function () {
     this.dirty = true;
     this.updateCount();
+    if (this.isChild && this.shared && this.shared.onChange) {
+      this.shared.onChange();
+    }
     this.startJob('save', 'save', 800);
   },
 
@@ -234,3 +705,5 @@ module.exports = kind({
     });
   }
 });
+
+module.exports = VideoSelectPanel;
