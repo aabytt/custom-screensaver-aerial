@@ -1,7 +1,7 @@
 {
     "assets": [
         {
-            "source": "Apple Aerials",
+            "source": "Apple Aerials", 
             "id": "83C65C90-270C-4490-9C69-F51FE03D7F06",
             "localizedNameKey": "SE_A016_C009_NAME",
             "categories": [
@@ -6561,62 +6561,6 @@
                 "0": "content-0a1d2549-ab74-4f18-a9ed-b0b9cfa031ff_0"
             },
             "previewImage": "assets/tn/content-0a1d2549-ab74-4f18-a9ed-b0b9cfa031ff.webp"
-        },
-        {
-            "source": "Apple Aerials",
-            "id": "4DFE24ED-71CC-42D4-9FE8-3B8959B6CC19",
-            "localizedNameKey": "DYNAMIC_LIGHT_KEY",
-            "categories": [
-                "dynamic-aerials"
-            ],
-            "subcategories": [
-                "17647EAB-8357-48B0-BCD6-B892194267C5"
-            ],
-            "pointsOfInterest": {},
-            "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/GG_LM_H_v063_240fps-TSA.mov",
-            "previewImage": "assets/tn/4DFE24ED-71CC-42D4-9FE8-3B8959B6CC19.webp"
-        },
-        {
-            "source": "Apple Aerials",
-            "id": "11AB4259-C435-4F92-A108-D6B9CC6D2295",
-            "localizedNameKey": "DYNAMIC_LIGHT_KEY",
-            "categories": [
-                "dynamic-aerials"
-            ],
-            "subcategories": [
-                "17647EAB-8357-48B0-BCD6-B892194267C5"
-            ],
-            "pointsOfInterest": {},
-            "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/GG_LM_V_v016_40fps-TSA.mov",
-            "previewImage": "assets/tn/11AB4259-C435-4F92-A108-D6B9CC6D2295.webp"
-        },
-        {
-            "source": "Apple Aerials",
-            "id": "C6AECFD2-A365-4504-9E2C-F86343F9421F",
-            "localizedNameKey": "DYNAMIC_DARK_KEY",
-            "categories": [
-                "dynamic-aerials"
-            ],
-            "subcategories": [
-                "17647EAB-8357-48B0-BCD6-B892194267C5"
-            ],
-            "pointsOfInterest": {},
-            "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/GG_DM_H_v062_240fps-TSA.mov",
-            "previewImage": "assets/tn/C6AECFD2-A365-4504-9E2C-F86343F9421F.webp"
-        },
-        {
-            "source": "Apple Aerials",
-            "id": "731140AB-82EF-47B5-B62C-285BA7E112FD",
-            "localizedNameKey": "DYNAMIC_DARK_KEY",
-            "categories": [
-                "dynamic-aerials"
-            ],
-            "subcategories": [
-                "17647EAB-8357-48B0-BCD6-B892194267C5"
-            ],
-            "pointsOfInterest": {},
-            "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/GG_DM_V_v016_240fps-TSA.mov",
-            "previewImage": "assets/tn/731140AB-82EF-47B5-B62C-285BA7E112FD.webp"
         },
         {
             "source": "Apple Aerials",
