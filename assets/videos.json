@@ -2517,7 +2517,51 @@
             "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.7/GG_A_NIGHT_BatterySpencer_c9_v8_Final01_24comp_HFR_12Mbps.mp4",
             "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/GG_A_NIGHT_BatterySpencer_c9_v8_Final01_24comp_HFR_12Mbps.mov",
             "previewImage": "assets/tn/86E89C23-C39B-44C8-A985-E56EEA6456FE.webp"
-        },   
+        },
+        {
+            "source": "Apple Aerials",
+            "id": "D8C8FC8B-9D11-4803-944F-DF284B35FE58",
+            "localizedNameKey": "MAC_WP_PPL_NAME",
+            "pointsOfInterest": {
+                "0": "MAC_WP_PPL_0"
+            },
+            "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.7/Silver_Comp_2x_Crop_v0041_4xFRC_sdr_4k_rate10000_240p_t3524_grover74_tsa.mp4",            
+            "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/Silver_Comp_2x_Crop_v0041_4xFRC_sdr_4k_rate10000_240p_t3524_grover74_tsa.mov",
+            "previewImage": "assets/tn/D8C8FC8B-9D11-4803-944F-DF284B35FE58.webp"
+        },
+        {
+            "source": "Apple Aerials",
+            "id": "94383DC9-59D3-43EC-9E8E-A783DA633E06",
+            "localizedNameKey": "MAC_WP_BLU_NAME",
+            "pointsOfInterest": {
+                "0": "MAC_WP_BLU_0"
+            },
+            "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.7/Blue_Comp_2x_Crop_v0041_4xFRC_sdr_4k_rate10000_240p_t3524_grover74_tsa.mp4",                        
+            "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/Blue_Comp_2x_Crop_v0041_4xFRC_sdr_4k_rate10000_240p_t3524_grover74_tsa.mov",
+            "previewImage": "assets/tn/94383DC9-59D3-43EC-9E8E-A783DA633E06.webp"
+        },
+        {
+            "source": "Apple Aerials",
+            "id": "C42AADA1-9110-472A-BF86-B1EF306DA846",
+            "localizedNameKey": "MAC_WP_PNK_NAME",
+            "pointsOfInterest": {
+                "0": "MAC_WP_PNK_0"
+            },
+            "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.7/Pink_Comp_2x_Crop_v0041_4xFRC_sdr_4k_rate10000_240p_t3524_grover74_tsa.mp4",   
+            "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/Pink_Comp_2x_Crop_v0041_4xFRC_sdr_4k_rate10000_240p_t3524_grover74_tsa.mov",
+            "previewImage": "assets/tn/C42AADA1-9110-472A-BF86-B1EF306DA846.webp"
+        },
+        {
+            "source": "Apple Aerials",
+            "id": "DD7690D7-1B94-4FAA-910C-993C182B6874",
+            "localizedNameKey": "MAC_WP_YLW_NAME",
+            "pointsOfInterest": {
+                "0": "MAC_WP_YLW_0"
+            },
+            "url-4K-SDR": "https://github.com/aabytt/sonoma-screen-savers/releases/download/v1.0.7/Yellow_Comp_2x_Crop_v0041_4xFRC_sdr_4k_rate10000_240p_t3524_grover74_tsa.mp4",  
+            "url-4K-SDR-240FPS": "https://sylvan.apple.com/itunes-assets/Aerials116/v4/cb/5b/50/cb5b5035-6701-619f-9065-3d7d0e5fbef4/Yellow_Comp_2x_Crop_v0041_4xFRC_sdr_4k_rate10000_240p_t3524_grover74_tsa.mov",
+            "previewImage": "assets/tn/DD7690D7-1B94-4FAA-910C-993C182B6874.webp"
+        },  
         {
             "source":"Apple Aerials",
             "id": "2F11E857-4F77-4476-8033-4A1E4610AFCC",
