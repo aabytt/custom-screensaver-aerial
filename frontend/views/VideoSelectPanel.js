@@ -9,6 +9,7 @@ var
   ExpandablePicker = require('moonstone/ExpandablePicker'),
   Popup = require('moonstone/Popup'),
   Control = require('enyo/Control'),
+  Spotlight = require('spotlight'),
   LunaService = require('enyo-webos/LunaService');
 
 var TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:300px; margin:8px; padding:6px;';
@@ -26,20 +27,48 @@ var HIDDEN_CATEGORIES = ['dynamic'];
 // Merged: every group becomes one category (first one found is kept, the others are folded into it).
 var MERGED_CATEGORIES = [['mac', 'pattern', 'patterns']];
 
+// order of sources in the Source picker (others go after these, alphabetically)
+var SOURCE_ORDER = ['Apple Aerials', 'Amazon Fire OS', 'Jetson Creative', 'Robin Fourcade'];
+
 // how long OK / click has to be held to start a preview
 var LONG_PRESS_MS = 600;
 
-// best URL for a short preview: prefers 1080p / SDR / H.264, avoids 4K and HDR/Dolby Vision
-function previewUrl(a) {
-  var best = '', bestScore = -100;
-  Object.keys(a).forEach(function (k) {
-    var v = a[k], score;
-    if (!/^url/i.test(k) || typeof v !== 'string' || !v) { return; }
-    score = (/1080/.test(k) ? 2 : 0) + (/sdr/i.test(k) ? 1 : 0) + (/h264|avc/i.test(k) ? 1 : 0) -
-      (/4k|2160/i.test(k) ? 2 : 0) - (/hdr|dolby|\bdv\b/i.test(k) ? 3 : 0);
-    if (score > bestScore) { best = v; bestScore = score; }
+// give up on a preview source after this long without playback and try the next one
+var PREVIEW_TIMEOUT_MS = 15000;
+
+// All playable URLs of a video, best preview first: prefers 1080p / SDR / H.264 and avoids
+// 4K and HDR/Dolby Vision. The rest follow as fallbacks, so any existing video can be tried.
+function previewCandidates(a) {
+  var seen = {}, list = [];
+  Object.keys(a).forEach(function (k, index) {
+    var v = a[k];
+    if (!/^url/i.test(k) || typeof v !== 'string' || !v || seen[v]) { return; }
+    seen[v] = true;
+    list.push({
+      key: k,
+      url: v,
+      index: index,
+      score: (/1080/.test(k) ? 2 : 0) + (/sdr/i.test(k) ? 1 : 0) + (/h264|avc/i.test(k) ? 1 : 0) -
+        (/4k|2160/i.test(k) ? 2 : 0) - (/hdr|dolby|\bdv\b/i.test(k) ? 3 : 0)
+    });
   });
-  return best;
+  list.sort(function (x, y) { return (y.score - x.score) || (x.index - y.index); });
+  return list;
+}
+
+// "url-4K-HDR" -> "4K HDR", "url-1080-H264" -> "1080p H.264", "url-4K-SDR-240FPS" -> "4K SDR 240 FPS"
+function describeKey(key) {
+  var out = [];
+  String(key).replace(/^url[-_]?/i, '').split(/[-_]+/).forEach(function (p) {
+    var u = p.toUpperCase(), m;
+    if (!p) { return; }
+    if (u === '1080' || u === '1080P') { out.push('1080p'); }
+    else if (u === '2160' || u === '2160P') { out.push('4K'); }
+    else if (u === 'H264' || u === 'AVC') { out.push('H.264'); }
+    else if ((m = /^(\d+)FPS$/.exec(u))) { out.push(m[1] + ' FPS'); }
+    else { out.push(p.length <= 4 ? u : p); }
+  });
+  return out.join(' ') || String(key);
 }
 
 function has(list, id) {
@@ -188,6 +217,47 @@ var SectionHeader = kind({
   }
 });
 
+/**
+ * One source badge in the preview (1080p SDR, 4K HDR, ...). Focusable: OK / click plays this variant.
+ */
+var BADGE_STYLE = 'display:inline-block; margin:4px 6px; padding:4px 16px; border-radius:22px; font-size:24px; ' +
+  'color:#fff; border:3px solid transparent; pointer-events:auto; cursor:pointer;';
+
+var PreviewBadge = kind({
+  name: 'aerial.PreviewBadge',
+  tag: 'span',
+  spotlight: true,
+  style: BADGE_STYLE,
+  events: {
+    onPlayVariant: ''
+  },
+  handlers: {
+    ontap: 'tapped',
+    onSpotlightFocused: 'focused',
+    onSpotlightBlur: 'blurred'
+  },
+  tapped: function () {
+    this.doPlayVariant({index: this.index});
+    return true;
+  },
+  focused: function () {
+    this.applyStyle('border-color', '#fff');
+    this.applyStyle('transform', 'scale(1.12)');
+  },
+  blurred: function () {
+    this.applyStyle('border-color', 'transparent');
+    this.applyStyle('transform', 'scale(1)');
+  },
+  // st: {text, current, failed}
+  setState: function (st) {
+    this.set('content', st.text);
+    this.applyStyle('background', st.current ? '#cf0652' : 'rgba(0,0,0,0.6)');
+    this.applyStyle('font-weight', st.current ? 'bold' : 'normal');
+    this.applyStyle('text-decoration', st.failed ? 'line-through' : 'none');
+    this.applyStyle('opacity', st.failed ? '0.5' : (st.current ? '1' : '0.9'));
+  }
+});
+
 var VideoSelectPanel = kind({
   name: 'aerial.VideoSelectPanel',
   kind: Panel,
@@ -214,20 +284,14 @@ var VideoSelectPanel = kind({
         {kind: BodyText, name: 'count', content: 'Loading...'},
         {name: 'hint', showing: false, content: 'OK: add / remove \u00b7 hold OK: preview', style: 'font-size:22px; opacity:0.6; margin-bottom:8px;'},
         {name: 'filters', showing: false, components: [
-          {kind: ExpandablePicker, name: 'filter', content: 'Source', selectedIndex: 0, onChange: 'filterChanged', components: [
-            {content: 'All sources', value: ''},
-            {content: 'Apple Aerials', value: 'Apple Aerials'},
-            {content: 'Amazon Fire OS', value: 'Amazon Fire OS'},
-            {content: 'Jetson Creative', value: 'Jetson Creative'},
-            {content: 'Robin Fourcade', value: 'Robin Fourcade'}
-          ]},
+          {name: 'sourceBox'},
           {kind: ExpandablePicker, name: 'state', content: 'Show', selectedIndex: 0, onChange: 'filterChanged', components: [
             {content: 'All', value: ''},
             {content: 'In playlist', value: 'on'},
             {content: 'Not in playlist', value: 'off'}
           ]}
         ]},
-        {style: 'margin: 10px 0', components: [
+        {name: 'bulk', showing: false, style: 'margin: 10px 0', components: [
           {kind: Button, content: 'Select all', ontap: 'selectAll'},
           {kind: Button, content: 'Deselect all', ontap: 'deselectAll'}
         ]},
@@ -236,12 +300,15 @@ var VideoSelectPanel = kind({
     ]},
     // centered preview window; Back closes it (instead of leaving the panel)
     {kind: Popup, name: 'preview', modal: true, spotlightModal: true, autoDismiss: true,
-      onHide: 'previewHidden', onkeydown: 'previewKey', onkeyup: 'previewKey',
-      style: 'position:fixed; left:50%; top:50%; right:auto; bottom:auto; width:1280px; height:810px; margin:-405px 0 0 -640px; padding:12px; box-sizing:border-box;',
+      onHide: 'previewHidden', onkeydown: 'previewKey', onkeyup: 'previewKey', onPlayVariant: 'playVariant',
+      style: 'position:fixed; left:50%; top:50%; right:auto; bottom:auto; width:1280px; height:860px; margin:-430px 0 0 -640px; padding:12px; box-sizing:border-box;',
       components: [
-        {kind: Control, name: 'pvBox', spotlight: true, style: 'outline:none;', components: [
+        {kind: Control, name: 'pvBox', spotlight: 'container', style: 'outline:none; position:relative;', components: [
           {name: 'pv', tag: 'video', attributes: {autoplay: 'autoplay', loop: 'loop', muted: 'muted'}, style: 'display:block; width:100%; height:720px; background:#000;'},
-          {kind: BodyText, name: 'previewTitle', style: 'margin-top:8px; text-align:center;'}
+          {name: 'previewBadges', style: 'position:absolute; top:14px; left:0; right:0; text-align:center; z-index:2; pointer-events:none;'},
+          {name: 'previewHelp', showing: false, content: '\u25C0 \u25B6 choose variant \u00b7 OK play it \u00b7 Back close', style: 'position:absolute; left:0; right:0; top:672px; text-align:center; font-size:22px; color:#fff; opacity:0.8; text-shadow:0 0 6px #000; pointer-events:none;'},
+          {kind: BodyText, name: 'previewTitle', style: 'margin-top:8px; text-align:center;'},
+          {kind: BodyText, name: 'previewInfo', style: 'margin-top:0; text-align:center; font-size:26px; opacity:0.8;'}
         ]}
       ]},
     {kind: LunaService, name: 'cat', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onCat', onError: 'onCat'},
@@ -344,6 +411,9 @@ var VideoSelectPanel = kind({
     }
     this.$.filters.set('showing', this.mode === 'videos');
     this.$.hint.set('showing', this.mode === 'videos');
+    if (this.mode === 'videos') { this.buildSourcePicker(); }
+    // Select all / Deselect all only make sense inside a category, not on the categories page
+    this.$.bulk.set('showing', this.mode === 'videos');
     this.renderTiles();
   },
 
@@ -388,8 +458,40 @@ var VideoSelectPanel = kind({
   },
 
   currentValue: function (pickerName) {
-    var sel = this.$[pickerName].get('selected');
+    var picker = this.$[pickerName], sel = picker && picker.get('selected');
     return sel ? sel.value : '';
+  },
+
+  // Source picker with only the sources that are used by the videos of this category.
+  // With a single source there is nothing to choose, so the picker is not shown at all.
+  buildSourcePicker: function () {
+    var self = this, seen = {}, sources = [], items;
+    this.assets.forEach(function (a) {
+      if (a.source && !seen[a.source] && (!self.categoryId || has(a.categories, self.categoryId))) {
+        seen[a.source] = true;
+        sources.push(a.source);
+      }
+    });
+    sources.sort(function (x, y) {
+      var i = SOURCE_ORDER.indexOf(x), j = SOURCE_ORDER.indexOf(y);
+      if (i === -1 && j === -1) { return x < y ? -1 : (x > y ? 1 : 0); }
+      if (i === -1) { return 1; }
+      if (j === -1) { return -1; }
+      return i - j;
+    });
+    this.$.sourceBox.set('showing', sources.length > 1);
+    if (sources.length < 2) { return; }
+    items = [{content: 'All sources', value: ''}].concat(sources.map(function (name) {
+      return {content: name, value: name};
+    }));
+    this.$.sourceBox.createComponent({
+      name: 'filter',
+      kind: ExpandablePicker,
+      content: 'Source',
+      selectedIndex: 0,
+      onChange: 'filterChanged',
+      components: items
+    }, {owner: this}).render();
   },
 
   // {on, total} for a category ('' = everything)
@@ -598,24 +700,143 @@ var VideoSelectPanel = kind({
 
   previewVideo: function (sender, evt) {
     var asset = this.assets.filter(function (a) { return a.id === evt.id; })[0],
-      url = asset && previewUrl(asset), node;
-    if (!url) {
+      list = asset ? previewCandidates(asset) : [];
+    if (!list.length) {
       this.$.hint.set('content', 'No preview available for this video');
       return true;
     }
+    this.pvList = list;
+    this.pvIndex = 0;
+    this.pvFailed = {};
+    this.pvOk = {};
+    this.pvManual = false;
+    this.pvPlaying = false;
     this.$.previewTitle.set('content', this.strings[asset.localizedNameKey] || asset.localizedNameKey || '');
     this.$.preview.show();
-    this.$.pv.setAttribute('src', url);
-    node = this.$.pv.hasNode();
-    if (node) {
-      try { node.load(); node.play(); } catch (e) { /* autoplay will start it */ }
-    }
+    this.bindPreviewNode();
+    this.buildBadges();
+    this.playCandidate();
+    this.startJob('spotBadge', 'spotCurrentBadge', 150);
     return true;
+  },
+
+  // native <video> events (Enyo does not forward them): error -> next source, playing -> stop the timer
+  bindPreviewNode: function () {
+    var self = this, node = this.$.pv.hasNode();
+    if (!node || this.pvBoundNode === node) { return; }
+    this.pvBoundNode = node;
+    node.addEventListener('error', function () { self.previewFailed(); });
+    node.addEventListener('playing', function () {
+      self.clearPreviewTimer();
+      if (self.pvList && !self.pvPlaying) {
+        self.pvPlaying = true;
+        self.pvOk[self.pvIndex] = true;
+        self.refreshBadges();
+      }
+    });
+  },
+
+  // play the current candidate and show which variant it is (4K HDR, 1080p H.264, ...)
+  playCandidate: function () {
+    var self = this, list = this.pvList, item = list && list[this.pvIndex],
+      node = this.$.pv.hasNode(), p;
+    if (!item) { return; }
+    this.clearPreviewTimer();
+    this.$.previewInfo.set('content', describeKey(item.key) +
+      (!this.pvManual && this.pvIndex ? '  (fallback ' + (this.pvIndex + 1) + '/' + list.length + ')' : ''));
+    this.pvPlaying = false;
+    this.refreshBadges();
+    this.$.pv.setAttribute('src', item.url);
+    if (node) {
+      try {
+        node.load();
+        p = node.play();
+        if (p && p.catch) { p.catch(function () { /* autoplay / error handled by events */ }); }
+      } catch (e) { /* autoplay will start it */ }
+    }
+    this.pvTimer = setTimeout(function () {
+      self.pvTimer = null;
+      self.previewFailed();
+    }, PREVIEW_TIMEOUT_MS);
+  },
+
+  // this source cannot be played (404, unsupported codec, too slow): try the next one
+  previewFailed: function () {
+    this.clearPreviewTimer();
+    if (!this.pvList) { return; }
+    this.pvFailed[this.pvIndex] = true;
+    this.pvPlaying = false;
+    if (this.pvManual) {
+      // the user picked this variant by hand: report it, do not jump to another one
+      this.$.previewInfo.set('content', describeKey(this.pvList[this.pvIndex].key) + ': cannot be played on this TV');
+      this.refreshBadges();
+    } else if (this.pvIndex + 1 < this.pvList.length) {
+      this.pvIndex++;
+      this.playCandidate();
+    } else {
+      this.$.previewInfo.set('content', 'Preview unavailable: none of ' + this.pvList.length + ' sources could be played');
+      this.refreshBadges();
+    }
+  },
+
+  // one focusable badge per available source (created once per preview, so focus is not lost)
+  buildBadges: function () {
+    var box = this.$.previewBadges;
+    box.destroyClientControls();
+    (this.pvList || []).forEach(function (item, i) {
+      box.createComponent({kind: PreviewBadge, index: i}).render();
+    });
+    this.$.previewHelp.set('showing', !!this.pvList && this.pvList.length > 1);
+    this.refreshBadges();
+  },
+
+  // current = red (\u25B6 playing, \u2026 loading), \u2713 = played fine, \u2715 + strike-through = failed
+  refreshBadges: function () {
+    var self = this, list = this.pvList || [];
+    try {
+      this.$.previewBadges.getClientControls().forEach(function (b, i) {
+        var item = list[i], failed, current, mark;
+        if (!item || !b.setState) { return; }
+        failed = !!self.pvFailed[i];
+        current = i === self.pvIndex && !failed;
+        mark = failed ? '\u2715 ' : (current ? (self.pvPlaying ? '\u25B6 ' : '\u2026 ') : (self.pvOk[i] ? '\u2713 ' : ''));
+        b.setState({text: mark + describeKey(item.key), current: current, failed: failed});
+      });
+    } catch (e) {
+      console.error('refreshBadges failed', e);
+    }
+  },
+
+  // put the remote focus on the badge that is playing, so left / right browse the variants
+  spotCurrentBadge: function () {
+    var b = this.$.previewBadges.getClientControls()[this.pvIndex || 0];
+    if (b) {
+      try { Spotlight.spot(b); } catch (e) { /* focus is a convenience only */ }
+    }
+  },
+
+  // OK / click on a badge: play exactly this variant
+  playVariant: function (sender, evt) {
+    if (!this.pvList || !this.pvList[evt.index]) { return true; }
+    this.pvManual = true;
+    this.pvIndex = evt.index;
+    delete this.pvFailed[evt.index];
+    this.playCandidate();
+    return true;
+  },
+
+  clearPreviewTimer: function () {
+    if (this.pvTimer) {
+      clearTimeout(this.pvTimer);
+      this.pvTimer = null;
+    }
   },
 
   // release the video decoder when the preview closes
   stopPreview: function () {
     var node = this.$.pv && this.$.pv.hasNode();
+    this.pvList = null;
+    this.clearPreviewTimer();
     if (node) {
       try {
         node.pause();
