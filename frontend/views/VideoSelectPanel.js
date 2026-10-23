@@ -23,9 +23,6 @@ var OTHER = '__other';
 
 // Videos reference categories / subcategories directly by their localizedNameKey
 // (e.g. "AerialCategoryLandscapes"); the list of categories is built from the videos themselves.
-// Categories matched by key (without the "AerialCategory" prefix) or by shown name, case-insensitive.
-// Hidden: never shown as a category.
-var HIDDEN_CATEGORIES = ['dynamic'];
 
 // order of the categories on the first level (others go after these, alphabetically)
 var CATEGORY_ORDER = ['AerialCategoryLandscapes', 'AerialCategoryCities', 'AerialCategoryUnderwater',
@@ -427,12 +424,6 @@ var VideoSelectPanel = kind({
     return this.strings[item.localizedNameKey] || this.prettyKey(item.localizedNameKey || item.id);
   },
 
-  categoryMatches: function (c, list) {
-    var key = String(c.localizedNameKey || c.id || '').replace(/^aerialcategory/i, '').toLowerCase(),
-      name = String(this.strings[c.localizedNameKey] || '').toLowerCase();
-    return list.indexOf(key) !== -1 || (name && list.indexOf(name) !== -1);
-  },
-
   // "AerialSubcategoryPalauJellies" -> "Palau Jellies" (only used when there is no translation)
   prettyKey: function (key) {
     return String(key || '')
@@ -463,7 +454,6 @@ var VideoSelectPanel = kind({
         });
       });
     });
-    list = list.filter(function (c) { return !self.categoryMatches(c, HIDDEN_CATEGORIES); });
     list.forEach(function (c) {
       delete c.subMap;
       c.subcategories.sort(function (x, y) {
@@ -537,10 +527,10 @@ var VideoSelectPanel = kind({
     }, this);
   },
 
-  // thumbnail of a category: preview of any video that belongs to it
+  // thumbnail of a category: preview of the LAST video (in the array) that belongs to it
   previewFor: function (category) {
     var i, a;
-    for (i = 0; i < this.assets.length; i++) {
+    for (i = this.assets.length - 1; i >= 0; i--) {
       a = this.assets[i];
       if ((!category || has(a.categories, category.id)) && a.previewImage) {
         return a.previewImage;
