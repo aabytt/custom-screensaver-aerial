@@ -1,5 +1,13 @@
 {
   "strings": {
+    "MAC_WP_PPL_NAME": "Mac paars",
+    "MAC_WP_PPL_0": "Abstracte vormen met kleurverloop in wisselende tinten paars",
+    "MAC_WP_YLW_NAME": "Mac geel",
+    "MAC_WP_YLW_0": "Abstracte vormen met kleurverloop in wisselende tinten geel",
+    "MAC_WP_BLU_NAME": "Mac blauw",
+    "MAC_WP_BLU_0": "Abstracte vormen met kleurverloop in wisselende tinten blauw",
+    "MAC_WP_PNK_NAME": "Mac roze",
+    "MAC_WP_PNK_0": "Abstracte vormen met kleurverloop in wisselende tinten roze",
     "PA_A010_C007_NAME": "Kwallen in Palau (licht)",
     "GMT026_363A_103NC_E1027_195": "Je bevindt je boven Japan en kijkt in de richting van de Stille Oceaan",
     "DB_D008_C010_NAME": "Dubai van boven",

@@ -1,5 +1,13 @@
 {
   "strings": {
+    "MAC_WP_PPL_NAME": "Mor Mac",
+    "MAC_WP_PPL_0": "Değişen mor tonlarında soyut gradyan şekiller",
+    "MAC_WP_YLW_NAME": "Sarı Mac",
+    "MAC_WP_YLW_0": "Değişen sarı tonlarında soyut gradyan şekiller",
+    "MAC_WP_BLU_NAME": "Mavi Mac",
+    "MAC_WP_BLU_0": "Değişen mavi tonlarında soyut gradyan şekiller",
+    "MAC_WP_PNK_NAME": "Pembe Mac",
+    "MAC_WP_PNK_0": "Değişen pembe tonlarında soyut gradyan şekiller",
     "Y003_C009_244": "Amerika Birleşik Devletleri’ndeki Yosemite Ulusal Parkı üzerinde seyahat ediliyor",
     "GMT312_162NC_139M_1041_140": "Güney İtalya üzerinde uzakta görünen Türkiye’ye doğru Balkan Yarımadası’na yaklaşılıyor",
     "A083_C002_1130KZ_0": "İran sınırlarında güneşin yansıması",

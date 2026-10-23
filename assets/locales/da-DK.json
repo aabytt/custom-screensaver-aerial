@@ -1,5 +1,13 @@
 {
   "strings": {
+    "MAC_WP_PPL_NAME": "Mac-lilla",
+    "MAC_WP_PPL_0": "Abstrakte former med farveovergange i skiftende nuancer af lilla",
+    "MAC_WP_YLW_NAME": "Mac-gul",
+    "MAC_WP_YLW_0": "Abstrakte former med farveovergange i skiftende nuancer af gul",
+    "MAC_WP_BLU_NAME": "Mac-blå",
+    "MAC_WP_BLU_0": "Abstrakte former med farveovergange i skiftende nuancer af blå",
+    "MAC_WP_PNK_NAME": "Mac-lyserød",
+    "MAC_WP_PNK_0": "Abstrakte former med farveovergange i skiftende nuancer af lyserød",
     "GMT329_117NC_401C_1037_195": "Over Rusland bevæger sig mod Centralasien",
     "A007_C017_150": "På vej forbi Coit Tower med retning mod downtown San Francisco og Bay Bridge",
     "M007_C007_F01_NAME": "Monument Valley i Utah",

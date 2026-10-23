@@ -1,5 +1,13 @@
 {
   "strings": {
+    "MAC_WP_PPL_NAME": "Lila Mac",
+    "MAC_WP_PPL_0": "Abstrakta former med färgövergångar i skiftande nyanser av lila",
+    "MAC_WP_YLW_NAME": "Gul Mac",
+    "MAC_WP_YLW_0": "Abstrakta former med färgövergångar i skiftande nyanser av gult",
+    "MAC_WP_BLU_NAME": "Blå Mac",
+    "MAC_WP_BLU_0": "Abstrakta former med färgövergångar i skiftande nyanser av blått",
+    "MAC_WP_PNK_NAME": "Rosa Mac",
+    "MAC_WP_PNK_0": "Abstrakta former med färgövergångar i skiftande nyanser av rosa",
     "LA_A009_C009_NAME": "Los Angeles solnedgång",
     "S011_C003_F01_NAME": "Moln i Sonoma",
     "L012_C002_20": "Korsar Themsen i London",

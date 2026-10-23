@@ -1,5 +1,13 @@
 {
   "strings": {
+    "MAC_WP_PPL_NAME": "Fialový Mac",
+    "MAC_WP_PPL_0": "Abstraktné tvary s farebným prechodom v meniacich sa odtieňoch fialovej",
+    "MAC_WP_YLW_NAME": "Žltý Mac",
+    "MAC_WP_YLW_0": "Abstraktné tvary s farebným prechodom v meniacich sa odtieňoch žltej",
+    "MAC_WP_BLU_NAME": "Modrý Mac",
+    "MAC_WP_BLU_0": "Abstraktné tvary s farebným prechodom v meniacich sa odtieňoch modrej",
+    "MAC_WP_PNK_NAME": "Ružový Mac",
+    "MAC_WP_PNK_0": "Abstraktné tvary s farebným prechodom v meniacich sa odtieňoch ružovej",
     "LA_A008_C004_NAME": "Pláž v Los Angeles",
     "M005_C017_205": "Smerom k útesu Tapestry Wall pri jazere Powell v Utahu",
     "A050_C004_1027V8_50": "Let ponad Apeninský polostrov a Jadranské more",

@@ -1,5 +1,13 @@
 {
   "strings": {
+    "MAC_WP_PPL_NAME": "Máy Mac tím",
+    "MAC_WP_PPL_0": "Các hình khối trừu tượng chuyển sắc với những sắc thái tím thay đổi",
+    "MAC_WP_YLW_NAME": "Máy Mac vàng",
+    "MAC_WP_YLW_0": "Các hình khối trừu tượng chuyển sắc với những sắc thái vàng thay đổi",
+    "MAC_WP_BLU_NAME": "Máy Mac lam",
+    "MAC_WP_BLU_0": "Các hình khối trừu tượng chuyển sắc với những sắc thái lam thay đổi",
+    "MAC_WP_PNK_NAME": "Máy Mac hồng",
+    "MAC_WP_PNK_0": "Các hình khối trừu tượng chuyển sắc với những sắc thái hồng thay đổi",
     "P006_C002_11106T_0": "Đi qua Lago Nordenskjöld tại Công viên quốc gia Torres del Paine, Chile",
     "A083_C002_1130KZ_0": "Ánh mặt trời phản chiếu dọc theo bờ biển Iran",
     "Y005_C003_0228SC_NAME": "Mây ở Yosemite",

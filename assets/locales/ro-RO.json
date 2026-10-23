@@ -1,5 +1,13 @@
 {
   "strings": {
+    "MAC_WP_PPL_NAME": "Violet Mac",
+    "MAC_WP_PPL_0": "Forme abstracte cu degrade în nuanțe schimbătoare de violet",
+    "MAC_WP_YLW_NAME": "Galben Mac",
+    "MAC_WP_YLW_0": "Forme abstracte cu degrade în nuanțe schimbătoare de galben",
+    "MAC_WP_BLU_NAME": "Albastru Mac",
+    "MAC_WP_BLU_0": "Forme abstracte cu degrade în nuanțe schimbătoare de albastru",
+    "MAC_WP_PNK_NAME": "Roz Mac",
+    "MAC_WP_PNK_0": "Forme abstracte cu degrade în nuanțe schimbătoare de roz",
     "GMT329_113NC_396B_1105_ITALY_TO_ASIA_NAME": "Europa meridională noaptea",
     "I003_C004_NAME": "Coasta Islandei",
     "H012_C009_0": "Urmând linia de coastă Kohala pe insula Hawaii",

@@ -1,5 +1,13 @@
 {
   "strings": {
+    "MAC_WP_PPL_NAME": "Mac Purple",
+    "MAC_WP_PPL_0": "Abstract gradient shapes in shifting shades of purple",
+    "MAC_WP_YLW_NAME": "Mac Yellow",
+    "MAC_WP_YLW_0": "Abstract gradient shapes in shifting shades of yellow",
+    "MAC_WP_BLU_NAME": "Mac Blue",
+    "MAC_WP_BLU_0": "Abstract gradient shapes in shifting shades of blue",
+    "MAC_WP_PNK_NAME": "Mac Pink",
+    "MAC_WP_PNK_0": "Abstract gradient shapes in shifting shades of pink",
     "AerialSubcategoryCownoseRays": "Cownose Rays",
     "GMT060_117NC_363D_335": "Over the Arafura Sea travelling towards New Guinea",
     "G009_C014_0106B9_NAME": "Grand Canyon Sediment",

@@ -1,5 +1,13 @@
 {
   "strings": {
+    "MAC_WP_PPL_NAME": "Mac ljubičasti",
+    "MAC_WP_PPL_0": "Apstraktni oblici s prijelazima u promjenjivim nijansama ljubičaste",
+    "MAC_WP_YLW_NAME": "Mac žuti",
+    "MAC_WP_YLW_0": "Apstraktni oblici s prijelazima u promjenjivim nijansama žute",
+    "MAC_WP_BLU_NAME": "Mac plavi",
+    "MAC_WP_BLU_0": "Apstraktni oblici s prijelazima u promjenjivim nijansama plave",
+    "MAC_WP_PNK_NAME": "Mac ružičasti",
+    "MAC_WP_PNK_0": "Apstraktni oblici s prijelazima u promjenjivim nijansama ružičaste",
     "M007_C007_0": "Prelazak preko Doline spomenika u Arizoni",
     "A014_C023_NAME": "Jato bitnica",
     "AerialSubcategoryDescriptionChina": "Kina",

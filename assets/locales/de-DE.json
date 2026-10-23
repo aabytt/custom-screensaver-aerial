@@ -1,5 +1,13 @@
 {
   "strings": {
+    "MAC_WP_PPL_NAME": "Mac lila",
+    "MAC_WP_PPL_0": "Abstrakte Formen mit Farbverlauf in changierenden Lilatönen",
+    "MAC_WP_YLW_NAME": "Mac gelb",
+    "MAC_WP_YLW_0": "Abstrakte Formen mit Farbverlauf in changierenden Gelbtönen",
+    "MAC_WP_BLU_NAME": "Mac blau",
+    "MAC_WP_BLU_0": "Abstrakte Formen mit Farbverlauf in changierenden Blautönen",
+    "MAC_WP_PNK_NAME": "Mac rosa",
+    "MAC_WP_PNK_0": "Abstrakte Formen mit Farbverlauf in changierenden Rosatönen",
     "Y003_C009_244": "Über dem Yosemite-Nationalpark, USA",
     "GMT312_162NC_139M_1041_140": "Über Süditalien in Annäherung an die Balkanhalbinsel mit der Türkei im Hintergrund",
     "A083_C002_1130KZ_0": "Die Spiegelung der Sonne entlang der Küste von Iran",

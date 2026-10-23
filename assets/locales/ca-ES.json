@@ -1,5 +1,13 @@
 {
   "strings": {
+    "MAC_WP_PPL_NAME": "Mac morat",
+    "MAC_WP_PPL_0": "Formes abstractes amb degradats en tons canviants de morat",
+    "MAC_WP_YLW_NAME": "Mac groc",
+    "MAC_WP_YLW_0": "Formes abstractes amb degradats en tons canviants de groc",
+    "MAC_WP_BLU_NAME": "Mac blau",
+    "MAC_WP_BLU_0": "Formes abstractes amb degradats en tons canviants de blau",
+    "MAC_WP_PNK_NAME": "Mac rosa",
+    "MAC_WP_PNK_0": "Formes abstractes amb degradats en tons canviants de rosa",
     "M007_C007_0": "Passant per sobre del Monument Valley, a Arizona",
     "A014_C023_NAME": "Banc de sorelles",
     "AerialSubcategoryDescriptionChina": "Xina",

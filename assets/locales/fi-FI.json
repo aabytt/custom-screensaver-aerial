@@ -1,5 +1,13 @@
 {
   "strings": {
+    "MAC_WP_PPL_NAME": "Mac (violetti)",
+    "MAC_WP_PPL_0": "Abstrakteja liukuvärimuotoja violetin muuttuvissa sävyissä",
+    "MAC_WP_YLW_NAME": "Mac (keltainen)",
+    "MAC_WP_YLW_0": "Abstrakteja liukuvärimuotoja keltaisen muuttuvissa sävyissä",
+    "MAC_WP_BLU_NAME": "Mac (sininen)",
+    "MAC_WP_BLU_0": "Abstrakteja liukuvärimuotoja sinisen muuttuvissa sävyissä",
+    "MAC_WP_PNK_NAME": "Mac (pinkki)",
+    "MAC_WP_PNK_0": "Abstrakteja liukuvärimuotoja pinkin muuttuvissa sävyissä",
     "A009_C001_10181A_195": "Tunisian rannikko ja Välimeri",
     "AerialSubcategoryRedwoods": "Punapuut",
     "A108_C001_0215V8_110": "Kuljetaan pilvien peittämän Jamaikan ohi Karibianmerellä",

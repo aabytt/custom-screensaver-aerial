@@ -1,5 +1,13 @@
 {
   "strings": {
+    "MAC_WP_PPL_NAME": "Mac violet",
+    "MAC_WP_PPL_0": "Formes abstraites en dégradé dans des tons changeants de violet",
+    "MAC_WP_YLW_NAME": "Mac jaune",
+    "MAC_WP_YLW_0": "Formes abstraites en dégradé dans des tons changeants de jaune",
+    "MAC_WP_BLU_NAME": "Mac bleu",
+    "MAC_WP_BLU_0": "Formes abstraites en dégradé dans des tons changeants de bleu",
+    "MAC_WP_PNK_NAME": "Mac rose",
+    "MAC_WP_PNK_0": "Formes abstraites en dégradé dans des tons changeants de rose",
     "Y002_C013_0226_0": "Au-dessus du parc national de Yosemite, aux États-Unis",
     "H005_C012_NAME": "Vallée hawaïenne",
     "AerialSubcategoryCitiesLondon": "Londres",

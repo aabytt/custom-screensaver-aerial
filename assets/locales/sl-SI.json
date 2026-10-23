@@ -1,5 +1,13 @@
 {
   "strings": {
+    "MAC_WP_PPL_NAME": "Mac, vijolično",
+    "MAC_WP_PPL_0": "Abstraktne oblike z barvnim prehodom v spreminjajočih se odtenkih vijolične",
+    "MAC_WP_YLW_NAME": "Mac, rumeno",
+    "MAC_WP_YLW_0": "Abstraktne oblike z barvnim prehodom v spreminjajočih se odtenkih rumene",
+    "MAC_WP_BLU_NAME": "Mac, modro",
+    "MAC_WP_BLU_0": "Abstraktne oblike z barvnim prehodom v spreminjajočih se odtenkih modre",
+    "MAC_WP_PNK_NAME": "Mac, rožnato",
+    "MAC_WP_PNK_0": "Abstraktne oblike z barvnim prehodom v spreminjajočih se odtenkih rožnate",
     "64EA30BD-C4B5-4CDD-86D7-DFE47E9CB9AA": "Victoria Harbour",
     "A001_C001_120530_0": "Čez severni Atlantski ocean proti Portugalski",
     "A001_C001_120530_115": "Čez Portugalsko in Španijo",

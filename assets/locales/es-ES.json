@@ -1,5 +1,13 @@
 {
   "strings": {
+    "MAC_WP_PPL_NAME": "Mac púrpura",
+    "MAC_WP_PPL_0": "Formas abstractas con degradados en tonos cambiantes de púrpura",
+    "MAC_WP_YLW_NAME": "Mac amarillo",
+    "MAC_WP_YLW_0": "Formas abstractas con degradados en tonos cambiantes de amarillo",
+    "MAC_WP_BLU_NAME": "Mac azul",
+    "MAC_WP_BLU_0": "Formas abstractas con degradados en tonos cambiantes de azul",
+    "MAC_WP_PNK_NAME": "Mac rosa",
+    "MAC_WP_PNK_0": "Formas abstractas con degradados en tonos cambiantes de rosa",
     "Y003_C009_244": "Recorriendo el Parque Nacional de Yosemite, Estados Unidos",
     "GMT312_162NC_139M_1041_140": "Vista aérea del sur de Italia llegando a la península de los Balcanes, con Turquía a lo lejos",
     "A083_C002_1130KZ_0": "El reflejo del sol a lo largo de la costa de Irán",

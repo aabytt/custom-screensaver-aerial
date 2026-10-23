@@ -1,5 +1,13 @@
 {
   "strings": {
+    "MAC_WP_PPL_NAME": "Fialový Mac",
+    "MAC_WP_PPL_0": "Abstraktní tvary s barevným přechodem v proměnlivých odstínech fialové",
+    "MAC_WP_YLW_NAME": "Žlutý Mac",
+    "MAC_WP_YLW_0": "Abstraktní tvary s barevným přechodem v proměnlivých odstínech žluté",
+    "MAC_WP_BLU_NAME": "Modrý Mac",
+    "MAC_WP_BLU_0": "Abstraktní tvary s barevným přechodem v proměnlivých odstínech modré",
+    "MAC_WP_PNK_NAME": "Růžový Mac",
+    "MAC_WP_PNK_0": "Abstraktní tvary s barevným přechodem v proměnlivých odstínech růžové",
     "AerialSubcategoryDescriptionNewYorkNight": "Noční New York",
     "C001_C005_NAME": "Velká čínská zeď ve dne",
     "GMT314_139M_170NC_235": "Polární záře nad severním Ontariem v Kanadě",

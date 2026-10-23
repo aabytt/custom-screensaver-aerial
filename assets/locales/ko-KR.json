@@ -1,5 +1,13 @@
 {
   "strings": {
+    "MAC_WP_PPL_NAME": "Mac 퍼플",
+    "MAC_WP_PPL_0": "변화하는 퍼플 색조의 추상적인 그라데이션 형태",
+    "MAC_WP_YLW_NAME": "Mac 옐로",
+    "MAC_WP_YLW_0": "변화하는 옐로 색조의 추상적인 그라데이션 형태",
+    "MAC_WP_BLU_NAME": "Mac 블루",
+    "MAC_WP_BLU_0": "변화하는 블루 색조의 추상적인 그라데이션 형태",
+    "MAC_WP_PNK_NAME": "Mac 핑크",
+    "MAC_WP_PNK_0": "변화하는 핑크 색조의 추상적인 그라데이션 형태",
     "S013_C001_F01_NAME": "소노마의 저녁",
     "AerialSubcategoryCaliforniaDolphins": "캘리포니아 돌고래",
     "AerialSubcategoryPalauCoral": "팔라우 산호초",
