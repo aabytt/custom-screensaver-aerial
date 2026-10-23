@@ -37,6 +37,30 @@ var LONG_PRESS_MS = 600;
 // give up on a preview source after this long without playback and try the next one
 var PREVIEW_TIMEOUT_MS = 15000;
 
+// Size and position of the preview window for a screen of vw x vh CSS pixels.
+// 16:9 video, never larger than 1280 wide, always inside the screen (30px margin) whatever the
+// real viewport is (1920x1080, 1280x720, ...).
+var PREVIEW_PAD = 12;     // padding inside the window
+var PREVIEW_TEXT = 92;    // two text lines under the video (title + variant)
+function previewGeometry(vw, vh) {
+  var margin = 30,
+    videoW = Math.min(1280, vw - 80) - 2 * PREVIEW_PAD,
+    videoH = Math.round(videoW * 9 / 16),
+    maxH = vh - 2 * PREVIEW_PAD - PREVIEW_TEXT - 2 * margin,
+    w, h;
+  if (videoH > maxH) {
+    videoH = Math.max(120, maxH);
+    videoW = Math.round(videoH * 16 / 9);
+  }
+  w = videoW + 2 * PREVIEW_PAD;
+  h = videoH + PREVIEW_TEXT + 2 * PREVIEW_PAD;
+  return {
+    videoW: videoW, videoH: videoH, width: w, height: h,
+    left: Math.max(0, Math.round((vw - w) / 2)),
+    top: Math.max(0, Math.round((vh - h) / 2))
+  };
+}
+
 // All playable URLs of a video, best preview first: prefers 1080p / SDR / H.264 and avoids
 // 4K and HDR/Dolby Vision. The rest follow as fallbacks, so any existing video can be tried.
 function previewCandidates(a) {
@@ -300,16 +324,17 @@ var VideoSelectPanel = kind({
       ]}
     ]},
     // centered preview window; Back closes it (instead of leaving the panel)
-    {kind: Popup, name: 'preview', modal: true, spotlightModal: true, autoDismiss: true,
+    {kind: Popup, name: 'preview', modal: true, spotlightModal: true, autoDismiss: true, animate: false,
       onHide: 'previewHidden', onkeydown: 'previewKey', onkeyup: 'previewKey', onPlayVariant: 'playVariant',
-      style: 'position:fixed; left:50%; top:50%; right:auto; bottom:auto; width:1280px; height:860px; margin:-430px 0 0 -640px; padding:12px; box-sizing:border-box;',
+      style: 'left:0; top:0; right:auto; bottom:auto; width:1280px; height:822px; margin:0; padding:12px; box-sizing:border-box; '
+        + 'transform:none !important; -webkit-transform:none !important; transition:none !important; -webkit-transition:none !important;',
       components: [
         {kind: Control, name: 'pvBox', spotlight: 'container', style: 'outline:none; position:relative;', components: [
-          {name: 'pv', tag: 'video', attributes: {autoplay: 'autoplay', loop: 'loop', muted: 'muted'}, style: 'display:block; width:100%; height:720px; background:#000;'},
+          {name: 'pv', tag: 'video', attributes: {autoplay: 'autoplay', loop: 'loop', muted: 'muted'}, style: 'display:block; width:100%; height:706px; background:#000;'},
           {name: 'previewBadges', style: 'position:absolute; top:14px; left:0; right:0; text-align:center; z-index:2; pointer-events:none;'},
-          {name: 'previewHelp', showing: false, content: '\u25C0 \u25B6 choose variant \u00b7 OK play it \u00b7 Back close', style: 'position:absolute; left:0; right:0; top:672px; text-align:center; font-size:22px; color:#fff; opacity:0.8; text-shadow:0 0 6px #000; pointer-events:none;'},
-          {kind: BodyText, name: 'previewTitle', style: 'margin-top:8px; text-align:center;'},
-          {kind: BodyText, name: 'previewInfo', style: 'margin-top:0; text-align:center; font-size:26px; opacity:0.8;'}
+          {name: 'previewHelp', showing: false, content: '\u25C0 \u25B6 choose variant \u00b7 OK play it \u00b7 Back close', style: 'position:absolute; left:0; right:0; top:654px; text-align:center; font-size:22px; color:#fff; opacity:0.8; text-shadow:0 0 6px #000; pointer-events:none;'},
+          {kind: BodyText, name: 'previewTitle', style: 'margin:0; padding:0; height:46px; line-height:46px; font-size:30px; text-align:center; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;'},
+          {kind: BodyText, name: 'previewInfo', style: 'margin:0; padding:0; height:46px; line-height:46px; font-size:26px; text-align:center; opacity:0.8; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;'}
         ]}
       ]},
     {kind: LunaService, name: 'cat', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onCat', onError: 'onCat'},
@@ -318,6 +343,8 @@ var VideoSelectPanel = kind({
 
   create: function () {
     this.inherited(arguments);
+    // Moonstone Popup resets inline `bottom` when animate is off; the preview positions itself with top/left
+    this.$.preview.applyStyle('bottom', 'auto');
     this.dirty = false;
     this.settings = this.settings || {};
 
@@ -726,12 +753,28 @@ var VideoSelectPanel = kind({
     this.pvManual = false;
     this.pvPlaying = false;
     this.$.previewTitle.set('content', this.strings[asset.localizedNameKey] || asset.localizedNameKey || '');
+    this.layoutPreview();
     this.$.preview.show();
     this.bindPreviewNode();
     this.buildBadges();
     this.playCandidate();
     this.startJob('spotBadge', 'spotCurrentBadge', 150);
     return true;
+  },
+
+  // fit the window to the real screen: centered, 16:9, never outside the visible area
+  layoutPreview: function () {
+    var layer = Control.floatingLayer && Control.floatingLayer.hasNode(),
+      vw = (layer && layer.clientWidth) || window.innerWidth || document.documentElement.clientWidth || 1920,
+      vh = (layer && layer.clientHeight) || window.innerHeight || document.documentElement.clientHeight || 1080,
+      g = previewGeometry(vw, vh), popup = this.$.preview;
+    console.info('preview layout', vw + 'x' + vh, JSON.stringify(g));
+    popup.applyStyle('left', g.left + 'px');
+    popup.applyStyle('top', g.top + 'px');
+    popup.applyStyle('width', g.width + 'px');
+    popup.applyStyle('height', g.height + 'px');
+    this.$.pv.applyStyle('height', g.videoH + 'px');
+    this.$.previewHelp.applyStyle('top', Math.max(0, g.videoH - 50) + 'px');
   },
 
   // native <video> events (Enyo does not forward them): error -> next source, playing -> stop the timer
