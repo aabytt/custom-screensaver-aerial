@@ -1,5 +1,13 @@
 {
   "strings": {
+    "MAC_WP_PPL_NAME": "Mac lila",
+    "MAC_WP_PPL_0": "Abstrakte Formen mit Farbverlauf in changierenden Lilatönen",
+    "MAC_WP_YLW_NAME": "Mac gelb",
+    "MAC_WP_YLW_0": "Abstrakte Formen mit Farbverlauf in changierenden Gelbtönen",
+    "MAC_WP_BLU_NAME": "Mac blau",
+    "MAC_WP_BLU_0": "Abstrakte Formen mit Farbverlauf in changierenden Blautönen",
+    "MAC_WP_PNK_NAME": "Mac rosa",
+    "MAC_WP_PNK_0": "Abstrakte Formen mit Farbverlauf in changierenden Rosatönen",
     "Y003_C009_244": "Über dem Yosemite-Nationalpark, USA",
     "GMT312_162NC_139M_1041_140": "Über Süditalien in Annäherung an die Balkanhalbinsel mit der Türkei im Hintergrund",
     "A083_C002_1130KZ_0": "Die Spiegelung der Sonne entlang der Küste von Iran",
@@ -1043,6 +1051,14 @@
     "video_m3_ch_zurich_20250712_013": "Zürich, Schweiz",
     "video_m3_ch_zurich_20250712_013_0": "Wunderschöne Luftaufnahme der Stadt Zürich und der Limmat",
     "video_m3_it_bolzano_20250717_013": "Bozen, Italien",
-    "video_m3_it_bolzano_20250717_013_0": "Weinberge und Obstgärten im Südtiroler Tal bei Bozen"
+    "video_m3_it_bolzano_20250717_013_0": "Weinberge und Obstgärten im Südtiroler Tal bei Bozen",
+    "GG_A_SUNSET_NAME": "Golden Gate bei Sonnenuntergang",
+    "GG_A_SUNSET_0": "Sonnenuntergang über der Golden Gate Bridge vom Marshall’s Beach in San Francisco",
+    "GG_A_DAY_NAME": "Golden Gate bei Tag",
+    "GG_A_DAY_0": "Die Golden Gate Bridge, gesehen von den Küstenklippen San Franciscos",
+    "GG_A_EVENING_NAME": "Golden Gate am Abend",
+    "GG_A_EVENING_0": "Abendlicht auf der Golden Gate Bridge vom Torpedo Wharf im Presidio von San Francisco",
+    "GG_A_NIGHT_NAME": "Golden Gate bei Nacht",
+    "GG_A_NIGHT_0": "Die nachts beleuchtete Golden Gate Bridge von Battery Spencer in den Marin Headlands"
   }
 }

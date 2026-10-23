@@ -1,5 +1,13 @@
 {
   "strings": {
+    "MAC_WP_PPL_NAME": "Mac paars",
+    "MAC_WP_PPL_0": "Abstracte vormen met kleurverloop in wisselende tinten paars",
+    "MAC_WP_YLW_NAME": "Mac geel",
+    "MAC_WP_YLW_0": "Abstracte vormen met kleurverloop in wisselende tinten geel",
+    "MAC_WP_BLU_NAME": "Mac blauw",
+    "MAC_WP_BLU_0": "Abstracte vormen met kleurverloop in wisselende tinten blauw",
+    "MAC_WP_PNK_NAME": "Mac roze",
+    "MAC_WP_PNK_0": "Abstracte vormen met kleurverloop in wisselende tinten roze",
     "PA_A010_C007_NAME": "Kwallen in Palau (licht)",
     "GMT026_363A_103NC_E1027_195": "Je bevindt je boven Japan en kijkt in de richting van de Stille Oceaan",
     "DB_D008_C010_NAME": "Dubai van boven",
@@ -1043,6 +1051,14 @@
     "video_m3_ch_zurich_20250712_013": "Zürich, Zwitserland",
     "video_m3_ch_zurich_20250712_013_0": "Prachtige luchtfoto van de stad Zürich en de Limmat",
     "video_m3_it_bolzano_20250717_013": "Bolzano, Italië",
-    "video_m3_it_bolzano_20250717_013_0": "Wijngaarden en boomgaarden in de Zuid-Tiroolse vallei bij Bolzano"
+    "video_m3_it_bolzano_20250717_013_0": "Wijngaarden en boomgaarden in de Zuid-Tiroolse vallei bij Bolzano",
+    "GG_A_SUNSET_NAME": "Golden Gate zonsondergang",
+    "GG_A_SUNSET_0": "Zonsondergang boven de Golden Gate Bridge vanaf Marshall’s Beach in San Francisco",
+    "GG_A_DAY_NAME": "Golden Gate dag",
+    "GG_A_DAY_0": "De Golden Gate Bridge gezien vanaf de kustkliffen van San Francisco",
+    "GG_A_EVENING_NAME": "Golden Gate avond",
+    "GG_A_EVENING_0": "Avondlicht op de Golden Gate Bridge vanaf Torpedo Wharf in de Presidio van San Francisco",
+    "GG_A_NIGHT_NAME": "Golden Gate nacht",
+    "GG_A_NIGHT_0": "De verlichte Golden Gate Bridge ’s nachts vanaf Battery Spencer in de Marin Headlands"
   }
 }

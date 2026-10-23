@@ -1,5 +1,13 @@
 {
   "strings": {
+    "MAC_WP_PPL_NAME": "Violet Mac",
+    "MAC_WP_PPL_0": "Forme abstracte cu degrade în nuanțe schimbătoare de violet",
+    "MAC_WP_YLW_NAME": "Galben Mac",
+    "MAC_WP_YLW_0": "Forme abstracte cu degrade în nuanțe schimbătoare de galben",
+    "MAC_WP_BLU_NAME": "Albastru Mac",
+    "MAC_WP_BLU_0": "Forme abstracte cu degrade în nuanțe schimbătoare de albastru",
+    "MAC_WP_PNK_NAME": "Roz Mac",
+    "MAC_WP_PNK_0": "Forme abstracte cu degrade în nuanțe schimbătoare de roz",
     "GMT329_113NC_396B_1105_ITALY_TO_ASIA_NAME": "Europa meridională noaptea",
     "I003_C004_NAME": "Coasta Islandei",
     "H012_C009_0": "Urmând linia de coastă Kohala pe insula Hawaii",
@@ -1043,6 +1051,14 @@
     "video_m3_ch_zurich_20250712_013": "Zürich, Elveția",
     "video_m3_ch_zurich_20250712_013_0": "Frumoasă vedere aeriană a orașului Zürich și a râului Limmat",
     "video_m3_it_bolzano_20250717_013": "Bolzano, Italia",
-    "video_m3_it_bolzano_20250717_013_0": "Podgorii și livezi în valea Tirolului de Sud, lângă Bolzano"
+    "video_m3_it_bolzano_20250717_013_0": "Podgorii și livezi în valea Tirolului de Sud, lângă Bolzano",
+    "GG_A_SUNSET_NAME": "Golden Gate la apus",
+    "GG_A_SUNSET_0": "Apus de soare peste podul Golden Gate, văzut de pe Marshall’s Beach, în San Francisco",
+    "GG_A_DAY_NAME": "Golden Gate ziua",
+    "GG_A_DAY_0": "Podul Golden Gate văzut de pe falezele de coastă din San Francisco",
+    "GG_A_EVENING_NAME": "Golden Gate seara",
+    "GG_A_EVENING_0": "Lumina serii peste podul Golden Gate, văzut de la Torpedo Wharf, în Presidio of San Francisco",
+    "GG_A_NIGHT_NAME": "Golden Gate noaptea",
+    "GG_A_NIGHT_0": "Podul Golden Gate luminat noaptea, văzut de la Battery Spencer, în Marin Headlands"
   }
 }
