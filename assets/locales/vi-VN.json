@@ -1,5 +1,13 @@
 {
   "strings": {
+    "MAC_WP_PPL_NAME": "Máy Mac tím",
+    "MAC_WP_PPL_0": "Các hình khối trừu tượng chuyển sắc với những sắc thái tím thay đổi",
+    "MAC_WP_YLW_NAME": "Máy Mac vàng",
+    "MAC_WP_YLW_0": "Các hình khối trừu tượng chuyển sắc với những sắc thái vàng thay đổi",
+    "MAC_WP_BLU_NAME": "Máy Mac lam",
+    "MAC_WP_BLU_0": "Các hình khối trừu tượng chuyển sắc với những sắc thái lam thay đổi",
+    "MAC_WP_PNK_NAME": "Máy Mac hồng",
+    "MAC_WP_PNK_0": "Các hình khối trừu tượng chuyển sắc với những sắc thái hồng thay đổi",
     "P006_C002_11106T_0": "Đi qua Lago Nordenskjöld tại Công viên quốc gia Torres del Paine, Chile",
     "A083_C002_1130KZ_0": "Ánh mặt trời phản chiếu dọc theo bờ biển Iran",
     "Y005_C003_0228SC_NAME": "Mây ở Yosemite",
@@ -1043,6 +1051,14 @@
     "video_m3_ch_zurich_20250712_013": "Zurich, Thụy Sĩ",
     "video_m3_ch_zurich_20250712_013_0": "Toàn cảnh tuyệt đẹp thành phố Zurich và sông Limmat từ trên cao",
     "video_m3_it_bolzano_20250717_013": "Bolzano, Ý",
-    "video_m3_it_bolzano_20250717_013_0": "Vườn nho và vườn cây ăn quả ở thung lũng Nam Tyrol gần Bolzano"
+    "video_m3_it_bolzano_20250717_013_0": "Vườn nho và vườn cây ăn quả ở thung lũng Nam Tyrol gần Bolzano",
+    "GG_A_SUNSET_NAME": "Cầu Cổng Vàng lúc hoàng hôn",
+    "GG_A_SUNSET_0": "Hoàng hôn trên Cầu Cổng vàng nhìn từ Marshall’s Beach ở San Francisco",
+    "GG_A_DAY_NAME": "Cầu Cổng Vàng ban ngày",
+    "GG_A_DAY_0": "Cầu Cổng vàng nhìn từ những vách đá ven biển của San Francisco",
+    "GG_A_EVENING_NAME": "Cầu Cổng Vàng buổi tối",
+    "GG_A_EVENING_0": "Ánh sáng buổi tối trên Cầu Cổng vàng nhìn từ Torpedo Wharf ở Presidio San Francisco",
+    "GG_A_NIGHT_NAME": "Cầu Cổng Vàng về đêm",
+    "GG_A_NIGHT_0": "Cầu Cổng vàng rực sáng về đêm nhìn từ Battery Spencer ở Marin Headlands"
   }
 }

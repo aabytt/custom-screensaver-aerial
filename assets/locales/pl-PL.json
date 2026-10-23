@@ -1,5 +1,13 @@
 {
   "strings": {
+    "MAC_WP_PPL_NAME": "Mac (purpurowy)",
+    "MAC_WP_PPL_0": "Abstrakcyjne kształty z gradientem w zmieniających się odcieniach purpury",
+    "MAC_WP_YLW_NAME": "Mac (żółty)",
+    "MAC_WP_YLW_0": "Abstrakcyjne kształty z gradientem w zmieniających się odcieniach żółci",
+    "MAC_WP_BLU_NAME": "Mac (niebieski)",
+    "MAC_WP_BLU_0": "Abstrakcyjne kształty z gradientem w zmieniających się odcieniach niebieskiego",
+    "MAC_WP_PNK_NAME": "Mac (różowy)",
+    "MAC_WP_PNK_0": "Abstrakcyjne kształty z gradientem w zmieniających się odcieniach różu",
     "LA_A008_C004_430": "Nad Santa Monica State Beach nieopodal Los Angeles",
     "Y003_C009_221": "Mijając szczyt Merced Peak w Parku Narodowym Yosemite (USA)",
     "AerialSubcategoryDescriptionRedwoods": "Sekwoje",
@@ -1043,6 +1051,14 @@
     "video_m3_ch_zurich_20250712_013": "Zurych, Szwajcaria",
     "video_m3_ch_zurich_20250712_013_0": "Piękny widok z lotu ptaka na Zurych i rzekę Limmat",
     "video_m3_it_bolzano_20250717_013": "Bolzano, Włochy",
-    "video_m3_it_bolzano_20250717_013_0": "Winnice i sady w dolinie Południowego Tyrolu niedaleko Bolzano"
+    "video_m3_it_bolzano_20250717_013_0": "Winnice i sady w dolinie Południowego Tyrolu niedaleko Bolzano",
+    "GG_A_SUNSET_NAME": "Most Golden Gate o zachodzie słońca",
+    "GG_A_SUNSET_0": "Zachód słońca nad Golden Gate Bridge widziany z plaży Marshall’s Beach w San Francisco",
+    "GG_A_DAY_NAME": "Most Golden Gate za dnia",
+    "GG_A_DAY_0": "Golden Gate Bridge widziany z nadmorskich klifów San Francisco",
+    "GG_A_EVENING_NAME": "Most Golden Gate wieczorem",
+    "GG_A_EVENING_0": "Wieczorne światło na Golden Gate Bridge z Torpedo Wharf w Presidio w San Francisco",
+    "GG_A_NIGHT_NAME": "Noc na moście Golden Gate",
+    "GG_A_NIGHT_0": "Rozświetlony nocą Golden Gate Bridge widziany z Battery Spencer w Marin Headlands"
   }
 }

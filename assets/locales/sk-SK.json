@@ -1,5 +1,13 @@
 {
   "strings": {
+    "MAC_WP_PPL_NAME": "Fialový Mac",
+    "MAC_WP_PPL_0": "Abstraktné tvary s farebným prechodom v meniacich sa odtieňoch fialovej",
+    "MAC_WP_YLW_NAME": "Žltý Mac",
+    "MAC_WP_YLW_0": "Abstraktné tvary s farebným prechodom v meniacich sa odtieňoch žltej",
+    "MAC_WP_BLU_NAME": "Modrý Mac",
+    "MAC_WP_BLU_0": "Abstraktné tvary s farebným prechodom v meniacich sa odtieňoch modrej",
+    "MAC_WP_PNK_NAME": "Ružový Mac",
+    "MAC_WP_PNK_0": "Abstraktné tvary s farebným prechodom v meniacich sa odtieňoch ružovej",
     "LA_A008_C004_NAME": "Pláž v Los Angeles",
     "M005_C017_205": "Smerom k útesu Tapestry Wall pri jazere Powell v Utahu",
     "A050_C004_1027V8_50": "Let ponad Apeninský polostrov a Jadranské more",
@@ -1043,6 +1051,14 @@
     "video_m3_ch_zurich_20250712_013": "Zürich, Švajčiarsko",
     "video_m3_ch_zurich_20250712_013_0": "Krásny letecký pohľad na mesto Zürich a rieku Limmat",
     "video_m3_it_bolzano_20250717_013": "Bolzano, Taliansko",
-    "video_m3_it_bolzano_20250717_013_0": "Vinice a sady v údolí Južného Tirolska neďaleko Bolzana"
+    "video_m3_it_bolzano_20250717_013_0": "Vinice a sady v údolí Južného Tirolska neďaleko Bolzana",
+    "GG_A_SUNSET_NAME": "Golden Gate pri západe slnka",
+    "GG_A_SUNSET_0": "Západ slnka nad mostom Golden Gate z pláže Marshall’s Beach v San Franciscu",
+    "GG_A_DAY_NAME": "Golden Gate cez deň",
+    "GG_A_DAY_0": "Most Golden Gate s výhľadom z pobrežných útesov San Francisca",
+    "GG_A_EVENING_NAME": "Golden Gate večer",
+    "GG_A_EVENING_0": "Večerné svetlo na moste Golden Gate z móla Torpedo Wharf v parku Presidio of San Francisco",
+    "GG_A_NIGHT_NAME": "Golden Gate v noci",
+    "GG_A_NIGHT_0": "Osvetlený most Golden Gate v noci z Battery Spencer v Marin Headlands"
   }
 }

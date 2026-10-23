@@ -1,5 +1,13 @@
 {
   "strings": {
+    "MAC_WP_PPL_NAME": "Mor Mac",
+    "MAC_WP_PPL_0": "Değişen mor tonlarında soyut gradyan şekiller",
+    "MAC_WP_YLW_NAME": "Sarı Mac",
+    "MAC_WP_YLW_0": "Değişen sarı tonlarında soyut gradyan şekiller",
+    "MAC_WP_BLU_NAME": "Mavi Mac",
+    "MAC_WP_BLU_0": "Değişen mavi tonlarında soyut gradyan şekiller",
+    "MAC_WP_PNK_NAME": "Pembe Mac",
+    "MAC_WP_PNK_0": "Değişen pembe tonlarında soyut gradyan şekiller",
     "Y003_C009_244": "Amerika Birleşik Devletleri’ndeki Yosemite Ulusal Parkı üzerinde seyahat ediliyor",
     "GMT312_162NC_139M_1041_140": "Güney İtalya üzerinde uzakta görünen Türkiye’ye doğru Balkan Yarımadası’na yaklaşılıyor",
     "A083_C002_1130KZ_0": "İran sınırlarında güneşin yansıması",
@@ -1043,6 +1051,14 @@
     "video_m3_ch_zurich_20250712_013": "Zürih, İsviçre",
     "video_m3_ch_zurich_20250712_013_0": "Zürih şehri ve Limmat Nehri’nin güzel havadan görünümü",
     "video_m3_it_bolzano_20250717_013": "Bolzano, İtalya",
-    "video_m3_it_bolzano_20250717_013_0": "Bolzano yakınlarında Güney Tirol vadisindeki bağlar ve meyve bahçeleri"
+    "video_m3_it_bolzano_20250717_013_0": "Bolzano yakınlarında Güney Tirol vadisindeki bağlar ve meyve bahçeleri",
+    "GG_A_SUNSET_NAME": "Golden Gate Gün Batımı",
+    "GG_A_SUNSET_0": "San Francisco’daki Marshall’s Beach’ten Golden Gate Köprüsü’nde gün batımı",
+    "GG_A_DAY_NAME": "Golden Gate Gündüz",
+    "GG_A_DAY_0": "San Francisco’nun kıyı kayalıklarından Golden Gate Köprüsü manzarası",
+    "GG_A_EVENING_NAME": "Golden Gate Akşam",
+    "GG_A_EVENING_0": "Presidio of San Francisco’daki Torpedo Wharf’tan Golden Gate Köprüsü’nde akşam ışığı",
+    "GG_A_NIGHT_NAME": "Golden Gate Gece",
+    "GG_A_NIGHT_0": "Marin Headlands’teki Battery Spencer’dan geceleri ışıklandırılmış Golden Gate Köprüsü"
   }
 }

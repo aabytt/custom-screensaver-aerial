@@ -1,5 +1,13 @@
 {
   "strings": {
+    "MAC_WP_PPL_NAME": "Mac violet",
+    "MAC_WP_PPL_0": "Formes abstraites en dégradé dans des tons changeants de violet",
+    "MAC_WP_YLW_NAME": "Mac jaune",
+    "MAC_WP_YLW_0": "Formes abstraites en dégradé dans des tons changeants de jaune",
+    "MAC_WP_BLU_NAME": "Mac bleu",
+    "MAC_WP_BLU_0": "Formes abstraites en dégradé dans des tons changeants de bleu",
+    "MAC_WP_PNK_NAME": "Mac rose",
+    "MAC_WP_PNK_0": "Formes abstraites en dégradé dans des tons changeants de rose",
     "GMT329_1_113NC_396B_1105_0": "Au-dessus de la Tunisie, en direction de l’Italie",
     "A351_C001_1213SK_45": "En voyage au-dessus de la mer Rouge, vers l’Arabie",
     "GMT060_117NC_363D_50": "En voyage vers le nord-est à travers l’Australie occidentale",
@@ -1043,6 +1051,14 @@
     "video_m3_ch_zurich_20250712_013": "Zurich, Suisse",
     "video_m3_ch_zurich_20250712_013_0": "Magnifique vue aérienne de la ville de Zurich et de la Limmat",
     "video_m3_it_bolzano_20250717_013": "Bolzano, Italie",
-    "video_m3_it_bolzano_20250717_013_0": "Vignobles et vergers dans la vallée du Tyrol du Sud, près de Bolzano"
+    "video_m3_it_bolzano_20250717_013_0": "Vignobles et vergers dans la vallée du Tyrol du Sud, près de Bolzano",
+    "GG_A_SUNSET_NAME": "Golden Gate au coucher du soleil",
+    "GG_A_SUNSET_0": "Coucher de soleil sur le Golden Gate depuis Marshall’s Beach, à San Francisco",
+    "GG_A_DAY_NAME": "Golden Gate le jour",
+    "GG_A_DAY_0": "Le Golden Gate vu depuis les falaises côtières de San Francisco",
+    "GG_A_EVENING_NAME": "Golden Gate le soir",
+    "GG_A_EVENING_0": "Lumière du soir sur le Golden Gate depuis Torpedo Wharf, dans le Presidio de San Francisco",
+    "GG_A_NIGHT_NAME": "Golden Gate de nuit",
+    "GG_A_NIGHT_0": "Le Golden Gate illuminé la nuit depuis Battery Spencer, dans les Marin Headlands"
   }
 }
