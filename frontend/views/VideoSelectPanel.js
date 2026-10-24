@@ -20,9 +20,18 @@ var TOAST_STYLE = 'display:none; position:fixed; left:50%; bottom:50px; -webkit-
   'background:rgba(0,0,0,0.88); border:2px solid #cf0652; pointer-events:none;';
 var TOAST_MS = 5000;
 
+// When a group header gets the focus at the top or bottom edge of the list (Moonstone only scrolls
+// it into view), it is moved to HEADER_AT of the visible height: some of the previous group stays
+// visible above it and its first rows below it. Set HEADER_SCROLL to false for plain Moonstone scrolling.
+var HEADER_SCROLL = true;
+var HEADER_AT = 0.4;            // wanted position of the header: 40% from the top of the list
+var HEADER_EDGE_TOP = 0.15;     // header above 15% ...
+var HEADER_EDGE_BOTTOM = 0.6;   // ... or below 60% of the visible height is moved
+var HEADER_SCROLL_DELAY_MS = 300;   // let Moonstone finish its own scroll first
+
 var TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:300px; margin:8px; padding:6px;';
-var CAT_TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:520px; margin:12px; padding:8px;';
-var CAT_IMG_STYLE = 'display:block; width:100%; height:290px; object-fit:cover; background:#2d353d;';
+var CAT_TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:470px; margin:10px; padding:6px;';
+var CAT_IMG_STYLE = 'display:block; width:100%; height:250px; object-fit:cover; background:#2d353d;';
 var IMG_STYLE = 'display:block; width:100%; height:170px; object-fit:cover; background:#2d353d;';
 
 // subcategories with fewer videos than this are merged into one "Other" group
@@ -212,8 +221,8 @@ var CategoryTile = kind({
   },
   components: [
     {name: 'img', tag: 'img', style: CAT_IMG_STYLE},
-    {kind: Marquee.Text, name: 'label', style: 'margin-top:10px; font-size:32px;'},
-    {name: 'info', style: 'font-size:26px; opacity:0.7;'}
+    {kind: Marquee.Text, name: 'label', style: 'margin-top:8px; font-size:28px;'},
+    {name: 'info', style: 'font-size:22px; opacity:0.7;'}
   ],
   create: function () {
     this.inherited(arguments);
@@ -251,10 +260,12 @@ var SectionHeader = kind({
   kind: Item,
   style: 'display:block; margin:18px 8px 4px; padding:8px 12px;',
   events: {
-    onToggleGroup: ''
+    onToggleGroup: '',
+    onHeaderFocused: ''
   },
   handlers: {
-    ontap: 'toggleAll'
+    ontap: 'toggleAll',
+    onSpotlightFocused: 'focused'
   },
   components: [
     {name: 'label', tag: 'span', style: 'font-size:28px;'},
@@ -267,6 +278,10 @@ var SectionHeader = kind({
   },
   setInfo: function (text) {
     this.$.info.set('content', text);
+  },
+  // not swallowed: Moonstone still does its own scroll to the header first
+  focused: function (sender, evt) {
+    if (evt.originator === this) { this.doHeaderFocused({header: this}); }
   },
   toggleAll: function () {
     this.doToggleGroup({ids: this.groupIds});
@@ -350,6 +365,7 @@ var VideoSelectPanel = kind({
     onToggled: 'tileToggled',
     onOpenCategory: 'openCategory',
     onToggleGroup: 'toggleGroup',
+    onHeaderFocused: 'headerFocused',
     onPreview: 'previewVideo'
   },
   components: [
@@ -425,6 +441,7 @@ var VideoSelectPanel = kind({
     }
     this.stopJob('batch');
     this.stopJob('toastHide');
+    this.stopJob('headerScroll');
     if (this.toastNode && this.toastNode.parentNode) { this.toastNode.parentNode.removeChild(this.toastNode); }
     this.toastNode = null;
     this.stopPreview();
@@ -812,6 +829,33 @@ var VideoSelectPanel = kind({
     this.markDirty();
     this.syncTiles();
     return true;
+  },
+
+  headerFocused: function (sender, evt) {
+    // with the pointer (magic remote hover) the list must not move under the cursor
+    var pointer = Spotlight.getPointerMode && Spotlight.getPointerMode();
+    if (HEADER_SCROLL && !pointer) {
+      this.focusedHeader = evt.header;
+      this.startJob('headerScroll', 'centerHeader', HEADER_SCROLL_DELAY_MS);   // restarted while the key is held
+    }
+    return true;
+  },
+
+  centerHeader: function () {
+    var scroller = this.$.scroller,
+      viewport = scroller.hasNode(),
+      headerNode = this.focusedHeader && this.focusedHeader.hasNode(),
+      contentNode = this.$.count.hasNode() && this.$.count.hasNode().parentNode,
+      v, h, c, pos, b;
+    if (!viewport || !headerNode || !contentNode) { return; }
+    v = viewport.getBoundingClientRect();
+    h = headerNode.getBoundingClientRect();
+    pos = (h.top - v.top) / v.height;
+    if (pos >= HEADER_EDGE_TOP && pos <= HEADER_EDGE_BOTTOM) { return; }   // already in a comfortable place
+    c = contentNode.getBoundingClientRect();
+    b = scroller.getScrollBounds();
+    // header position inside the scrolled content does not depend on the current scroll offset
+    scroller.scrollTo(b.left, Math.max(0, Math.min((h.top - c.top) - HEADER_AT * v.height, b.maxTop)));
   },
 
   syncHeaders: function () {
