@@ -12,6 +12,11 @@ var
   Spotlight = require('spotlight'),
   LunaService = require('enyo-webos/LunaService');
 
+var TOAST_STYLE = 'position:absolute; left:50%; bottom:50px; -webkit-transform:translateX(-50%); transform:translateX(-50%); ' +
+  'z-index:100; padding:16px 36px; border-radius:40px; font-size:30px; color:#fff; white-space:nowrap; ' +
+  'background:rgba(0,0,0,0.88); border:2px solid #cf0652; pointer-events:none;';
+var TOAST_MS = 5000;
+
 var TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:300px; margin:8px; padding:6px;';
 var CAT_TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:520px; margin:12px; padding:8px;';
 var CAT_IMG_STYLE = 'display:block; width:100%; height:290px; object-fit:cover; background:#2d353d;';
@@ -356,11 +361,14 @@ var VideoSelectPanel = kind({
         {kind: Control, name: 'pvBox', spotlight: 'container', style: 'outline:none; position:relative;', components: [
           {name: 'pv', tag: 'video', attributes: {autoplay: 'autoplay', loop: 'loop', muted: 'muted'}, style: 'display:block; width:100%; height:706px; background:#000;'},
           {name: 'previewBadges', style: 'position:absolute; top:14px; left:0; right:0; text-align:center; z-index:2; pointer-events:none;'},
+          {name: 'poi', showing: false, style: 'position:absolute; left:0; right:0; top:560px; text-align:center; z-index:2; pointer-events:none;'},
           {name: 'previewHelp', showing: false, content: '\u25C0 \u25B6 choose variant \u00b7 OK play it \u00b7 Back close', style: 'position:absolute; left:0; right:0; top:654px; text-align:center; font-size:22px; color:#fff; opacity:0.8; text-shadow:0 0 6px #000; pointer-events:none;'},
           {kind: BodyText, name: 'previewTitle', style: 'margin:0; padding:0; height:46px; line-height:46px; font-size:30px; text-align:center; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;'},
           {kind: BodyText, name: 'previewInfo', style: 'margin:0; padding:0; height:46px; line-height:46px; font-size:26px; text-align:center; opacity:0.8; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;'}
         ]}
       ]},
+    // toast with the controls hint (shown when a category is opened and when the preview is closed)
+    {name: 'toast', kind: Control, showing: false, allowHtml: true, style: TOAST_STYLE},
     {kind: LunaService, name: 'cat', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onCat', onError: 'onCat'},
     {kind: LunaService, name: 'save', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec'}
   ],
@@ -399,6 +407,7 @@ var VideoSelectPanel = kind({
       this.save();
     }
     this.stopJob('batch');
+    this.stopJob('toastHide');
     this.stopPreview();
     this.inherited(arguments);
   },
@@ -451,6 +460,7 @@ var VideoSelectPanel = kind({
       categories: this.categories,
       strings: this.strings,
       disabled: this.disabled,
+      thumbs: {},
       onChange: this.bindSafely('refreshCounts')
     };
     this.start();
@@ -463,7 +473,10 @@ var VideoSelectPanel = kind({
     }
     this.$.filters.set('showing', this.mode === 'videos');
     this.$.hint.set('showing', this.mode === 'videos');
-    if (this.mode === 'videos') { this.buildSourcePicker(); }
+    if (this.mode === 'videos') {
+      this.buildSourcePicker();
+      this.showToast('<b>OK</b>: preview &nbsp;\u00b7&nbsp; <b>Hold OK</b>: add / remove');
+    }
     // Select all / Deselect all only make sense inside a category, not on the categories page
     this.$.bulk.set('showing', this.mode === 'videos');
     this.renderTiles();
@@ -578,16 +591,19 @@ var VideoSelectPanel = kind({
     }, this);
   },
 
-  // thumbnail of a category: preview of the LAST video (in the array) that belongs to it
+  // thumbnail of a category: preview of a RANDOM video of that category.
+  // The choice is cached in `shared`, so the tile keeps its picture while the app is open.
   previewFor: function (category) {
-    var i, a;
-    for (i = this.assets.length - 1; i >= 0; i--) {
-      a = this.assets[i];
-      if ((!category || has(a.categories, category.id)) && a.previewImage) {
-        return a.previewImage;
-      }
-    }
-    return '';
+    var key = category ? category.id : '',
+      cache = this.shared && this.shared.thumbs,
+      pool, pick;
+    if (cache && cache[key]) { return cache[key]; }
+    pool = this.assets.filter(function (a) {
+      return (!category || has(a.categories, category.id)) && a.previewImage;
+    });
+    pick = pool.length ? pool[Math.floor(Math.random() * pool.length)].previewImage : '';
+    if (cache && pick) { cache[key] = pick; }
+    return pick;
   },
 
   infoText: function (id) {
@@ -776,6 +792,9 @@ var VideoSelectPanel = kind({
     this.pvOk = {};
     this.pvManual = false;
     this.pvPlaying = false;
+    this.pvPoi = this.poiList(asset);
+    this.pvPoiText = null;
+    this.showPoi('');
     this.$.previewTitle.set('content', this.strings[asset.localizedNameKey] || asset.localizedNameKey || '');
     this.buildBadges();     // before show(): the popup must already be spottable when it opens
     this.layoutPreview();
@@ -784,6 +803,37 @@ var VideoSelectPanel = kind({
     this.playCandidate();
     this.startJob('spotBadge', 'spotCurrentBadge', 150);
     return true;
+  },
+
+  // points of interest: {"0": key, "12": key, ...} -> [{t, text}] sorted by time (only translated ones)
+  poiList: function (asset) {
+    var poi = asset && asset.pointsOfInterest, list = [];
+    if (!poi || typeof poi !== 'object') { return list; }
+    Object.keys(poi).forEach(function (k) {
+      var text = this.strings[poi[k]];
+      if (text && !isNaN(parseFloat(k))) { list.push({t: parseFloat(k), text: text}); }
+    }, this);
+    list.sort(function (x, y) { return x.t - y.t; });
+    return list;
+  },
+
+  // caption for the current playback time (the video loops, so this follows it naturally)
+  updatePoi: function (time) {
+    var list = this.pvPoi || [], text = '', i;
+    for (i = 0; i < list.length && list[i].t <= time; i++) { text = list[i].text; }
+    if (text !== this.pvPoiText) {
+      this.pvPoiText = text;
+      this.showPoi(text);
+    }
+  },
+
+  showPoi: function (text) {
+    var poi = this.$.poi;
+    poi.destroyClientControls();
+    if (text) {
+      poi.createComponent({tag: 'span', content: text, style: 'display:inline-block; max-width:80%; padding:8px 24px; border-radius:8px; font-size:30px; color:#fff; background:rgba(0,0,0,0.65); text-shadow:0 0 6px #000;'}).render();
+    }
+    poi.set('showing', !!text);
   },
 
   // fit the window to the real screen: centered, 16:9, never outside the visible area
@@ -799,6 +849,7 @@ var VideoSelectPanel = kind({
     popup.applyStyle('height', g.height + 'px');
     this.$.pv.applyStyle('height', g.videoH + 'px');
     this.$.previewHelp.applyStyle('top', Math.max(0, g.videoH - 50) + 'px');
+    this.$.poi.applyStyle('top', Math.max(0, g.videoH - 130) + 'px');
   },
 
   // native <video> events (Enyo does not forward them): error -> next source, playing -> stop the timer
@@ -807,6 +858,7 @@ var VideoSelectPanel = kind({
     if (!node || this.pvBoundNode === node) { return; }
     this.pvBoundNode = node;
     node.addEventListener('error', function () { self.previewFailed(); });
+    node.addEventListener('timeupdate', function () { self.updatePoi(node.currentTime); });
     node.addEventListener('playing', function () {
       self.clearPreviewTimer();
       if (self.pvList && !self.pvPlaying) {
@@ -918,6 +970,7 @@ var VideoSelectPanel = kind({
   stopPreview: function () {
     var node = this.$.pv && this.$.pv.hasNode();
     this.pvList = null;
+    this.pvPoi = null;
     this.clearPreviewTimer();
     if (node) {
       try {
@@ -941,6 +994,17 @@ var VideoSelectPanel = kind({
 
   previewHidden: function () {
     this.stopPreview();
+    this.showToast('<b>Hold OK</b> on a video to add / remove it');
+  },
+
+  showToast: function (html) {
+    this.$.toast.set('content', html);
+    this.$.toast.set('showing', true);
+    this.startJob('toastHide', 'hideToast', TOAST_MS);
+  },
+
+  hideToast: function () {
+    this.$.toast.set('showing', false);
   },
 
   filterChanged: function () {
