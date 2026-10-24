@@ -20,13 +20,17 @@ var TOAST_STYLE = 'display:none; position:fixed; left:50%; bottom:50px; -webkit-
   'background:rgba(0,0,0,0.88); border:2px solid #cf0652; pointer-events:none;';
 var TOAST_MS = 5000;
 
-// When a group header gets the focus at the top or bottom edge of the list (Moonstone only scrolls
-// it into view), it is moved to HEADER_AT of the visible height: some of the previous group stays
-// visible above it and its first rows below it. Set HEADER_SCROLL to false for plain Moonstone scrolling.
+// Scrolling inside a category with groups (Moonstone only scrolls the focused item into view):
+//  - a group header focused at the top / bottom edge of the list is moved to HEADER_AT of the visible
+//    height (part of the previous group above it, its first rows below it);
+//  - a tile of the FIRST row of a group focused while the header is out of view (moving up) scrolls
+//    the list until the header is visible too.
+// Set HEADER_SCROLL to false for plain Moonstone scrolling.
 var HEADER_SCROLL = true;
 var HEADER_AT = 0.4;            // wanted position of the header: 40% from the top of the list
 var HEADER_EDGE_TOP = 0.15;     // header above 15% ...
 var HEADER_EDGE_BOTTOM = 0.6;   // ... or below 60% of the visible height is moved
+var HEADER_PAD = 16;            // free space above the header when it is scrolled into view
 var HEADER_SCROLL_DELAY_MS = 300;   // let Moonstone finish its own scroll first
 
 var TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:300px; margin:8px; padding:6px;';
@@ -141,10 +145,12 @@ var VideoTile = kind({
   },
   events: {
     onToggled: '',
-    onPreview: ''
+    onPreview: '',
+    onTileFocused: ''
   },
   handlers: {
     ontap: 'tapped',
+    onSpotlightFocused: 'focused',
     // magic remote / mouse: click and hold
     onholdpulse: 'holdPulse',
     onrelease: 'released',
@@ -168,6 +174,10 @@ var VideoTile = kind({
   selectedChanged: function () {
     this.$.badge.set('showing', !!this.selected);
     this.$.img.applyStyle('opacity', this.selected ? 1 : 0.3);
+  },
+  // not swallowed: Moonstone still does its own scroll to the tile first
+  focused: function (sender, evt) {
+    if (evt.originator === this) { this.doTileFocused({tile: this}); }
   },
   // short press / click: preview the video
   tapped: function () {
@@ -265,7 +275,9 @@ var SectionHeader = kind({
   },
   handlers: {
     ontap: 'toggleAll',
-    onSpotlightFocused: 'focused'
+    onSpotlightFocused: 'focused',
+    onSpotlightDown: 'spotDown',
+    onSpotlightUp: 'spotUp'
   },
   components: [
     {name: 'label', tag: 'span', style: 'font-size:28px;'},
@@ -282,6 +294,25 @@ var SectionHeader = kind({
   // not swallowed: Moonstone still does its own scroll to the header first
   focused: function (sender, evt) {
     if (evt.originator === this) { this.doHeaderFocused({header: this}); }
+  },
+  // The header is as wide as the list, so Spotlight would pick the tile closest to its middle.
+  // Down goes to the first (left) tile of the group, up to the left tile of the last row above.
+  spotDown: function () {
+    var list = this.container.getClientControls(),
+      next = list[list.indexOf(this) + 1];
+    return !!(next && next.assetId !== undefined && Spotlight.spot(next));
+  },
+  spotUp: function () {
+    var list = this.container.getClientControls(),
+      i = list.indexOf(this) - 1,
+      lastNode = list[i] && list[i].assetId !== undefined && list[i].hasNode(),
+      left = i;
+    if (!lastNode) { return false; }
+    while (left > 0 && list[left - 1].assetId !== undefined && list[left - 1].hasNode() &&
+      Math.abs(list[left - 1].hasNode().offsetTop - lastNode.offsetTop) < 3) {
+      left--;
+    }
+    return !!Spotlight.spot(list[left]);
   },
   toggleAll: function () {
     this.doToggleGroup({ids: this.groupIds});
@@ -365,7 +396,8 @@ var VideoSelectPanel = kind({
     onToggled: 'tileToggled',
     onOpenCategory: 'openCategory',
     onToggleGroup: 'toggleGroup',
-    onHeaderFocused: 'headerFocused',
+    onHeaderFocused: 'itemFocused',
+    onTileFocused: 'itemFocused',
     onPreview: 'previewVideo'
   },
   components: [
@@ -441,7 +473,7 @@ var VideoSelectPanel = kind({
     }
     this.stopJob('batch');
     this.stopJob('toastHide');
-    this.stopJob('headerScroll');
+    this.stopJob('focusScroll');
     if (this.toastNode && this.toastNode.parentNode) { this.toastNode.parentNode.removeChild(this.toastNode); }
     this.toastNode = null;
     this.stopPreview();
@@ -831,31 +863,58 @@ var VideoSelectPanel = kind({
     return true;
   },
 
-  headerFocused: function (sender, evt) {
+  itemFocused: function (sender, evt) {
     // with the pointer (magic remote hover) the list must not move under the cursor
     var pointer = Spotlight.getPointerMode && Spotlight.getPointerMode();
     if (HEADER_SCROLL && !pointer) {
-      this.focusedHeader = evt.header;
-      this.startJob('headerScroll', 'centerHeader', HEADER_SCROLL_DELAY_MS);   // restarted while the key is held
+      this.focusedItem = evt.header || evt.tile;
+      this.startJob('focusScroll', 'adjustScroll', HEADER_SCROLL_DELAY_MS);   // restarted while the key is held
     }
     return true;
   },
 
-  centerHeader: function () {
-    var scroller = this.$.scroller,
-      viewport = scroller.hasNode(),
-      headerNode = this.focusedHeader && this.focusedHeader.hasNode(),
-      contentNode = this.$.count.hasNode() && this.$.count.hasNode().parentNode,
-      v, h, c, pos, b;
-    if (!viewport || !headerNode || !contentNode) { return; }
-    v = viewport.getBoundingClientRect();
-    h = headerNode.getBoundingClientRect();
-    pos = (h.top - v.top) / v.height;
+  adjustScroll: function () {
+    var item = this.focusedItem;
+    if (!item || !item.hasNode()) { return; }
+    if (item.groupIds) { this.centerHeader(item); } else { this.revealHeader(item); }
+  },
+
+  // geometry of the list: viewport, content origin and the scroll position that puts `node` at `top` px
+  scrollGeometry: function () {
+    var viewport = this.$.scroller.hasNode(),
+      content = this.$.count.hasNode() && this.$.count.hasNode().parentNode;
+    return viewport && content ? {v: viewport.getBoundingClientRect(), c: content.getBoundingClientRect()} : null;
+  },
+
+  scrollNodeTo: function (g, node, top) {
+    var scroller = this.$.scroller, b = scroller.getScrollBounds(),
+      // the position of the node inside the scrolled content does not depend on the current scroll offset
+      y = (node.getBoundingClientRect().top - g.c.top) - top;
+    scroller.scrollTo(b.left, Math.max(0, Math.min(y, b.maxTop)));
+  },
+
+  // header left at the top / bottom edge by Moonstone -> to HEADER_AT of the visible height
+  centerHeader: function (header) {
+    var g = this.scrollGeometry(), pos;
+    if (!g) { return; }
+    pos = (header.hasNode().getBoundingClientRect().top - g.v.top) / g.v.height;
     if (pos >= HEADER_EDGE_TOP && pos <= HEADER_EDGE_BOTTOM) { return; }   // already in a comfortable place
-    c = contentNode.getBoundingClientRect();
-    b = scroller.getScrollBounds();
-    // header position inside the scrolled content does not depend on the current scroll offset
-    scroller.scrollTo(b.left, Math.max(0, Math.min((h.top - c.top) - HEADER_AT * v.height, b.maxTop)));
+    this.scrollNodeTo(g, header.hasNode(), HEADER_AT * g.v.height);
+  },
+
+  // tile of the first row of a group: its header must be visible too
+  revealHeader: function (tile) {
+    var list = this.$.grid.getClientControls(), j = list.indexOf(tile), header, first, g;
+    while (j >= 0 && !list[j].groupIds) { j--; }
+    if (j < 0) { return; }   // flat list: no headers
+    header = list[j];
+    first = list[j + 1];
+    if (!first || !first.hasNode() || !tile.hasNode() || !header.hasNode() ||
+      Math.abs(first.hasNode().offsetTop - tile.hasNode().offsetTop) > 2) { return; }   // not the first row
+    g = this.scrollGeometry();
+    if (g && header.hasNode().getBoundingClientRect().top < g.v.top + HEADER_PAD - 1) {
+      this.scrollNodeTo(g, header.hasNode(), HEADER_PAD);
+    }
   },
 
   syncHeaders: function () {
