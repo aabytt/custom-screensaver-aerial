@@ -19,12 +19,6 @@ var TOAST_STYLE = 'position:absolute; left:50%; bottom:50px; -webkit-transform:t
   'background:rgba(0,0,0,0.88); border:2px solid #cf0652; pointer-events:none;';
 var TOAST_MS = 5000;
 
-// A group header that Moonstone scrolled to the bottom edge is moved to the top, so its videos are visible.
-// Set to false to get plain Moonstone scrolling.
-var HEADER_SCROLL = false;
-var HEADER_SCROLL_DELAY_MS = 250;   // let Moonstone finish its own scroll first
-var HEADER_SCROLL_PAD = 24;         // space above the header after the scroll
-
 var TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:300px; margin:8px; padding:6px;';
 var CAT_TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:520px; margin:12px; padding:8px;';
 var CAT_IMG_STYLE = 'display:block; width:100%; height:290px; object-fit:cover; background:#2d353d;';
@@ -256,12 +250,10 @@ var SectionHeader = kind({
   kind: Item,
   style: 'display:block; margin:18px 8px 4px; padding:8px 12px;',
   events: {
-    onToggleGroup: '',
-    onHeaderFocused: ''
+    onToggleGroup: ''
   },
   handlers: {
-    ontap: 'toggleAll',
-    onSpotlightFocused: 'focused'
+    ontap: 'toggleAll'
   },
   components: [
     {name: 'label', tag: 'span', style: 'font-size:28px;'},
@@ -274,10 +266,6 @@ var SectionHeader = kind({
   },
   setInfo: function (text) {
     this.$.info.set('content', text);
-  },
-  // not swallowed: Moonstone still does its own scroll to the header
-  focused: function (sender, evt) {
-    if (evt.originator === this) { this.doHeaderFocused({header: this}); }
   },
   toggleAll: function () {
     this.doToggleGroup({ids: this.groupIds});
@@ -361,7 +349,6 @@ var VideoSelectPanel = kind({
     onToggled: 'tileToggled',
     onOpenCategory: 'openCategory',
     onToggleGroup: 'toggleGroup',
-    onHeaderFocused: 'headerFocused',
     onPreview: 'previewVideo'
   },
   components: [
@@ -439,7 +426,6 @@ var VideoSelectPanel = kind({
     }
     this.stopJob('batch');
     this.stopJob('toastHide');
-    this.stopJob('headerScroll');
     this.stopPreview();
     this.inherited(arguments);
   },
@@ -826,29 +812,6 @@ var VideoSelectPanel = kind({
     this.markDirty();
     this.syncTiles();
     return true;
-  },
-
-  headerFocused: function (sender, evt) {
-    if (HEADER_SCROLL) {
-      this.focusedHeader = evt.header;
-      this.startJob('headerScroll', 'scrollHeaderUp', HEADER_SCROLL_DELAY_MS);
-    }
-    return true;
-  },
-
-  // header ended up in the lower half of the screen (moving down) -> put it near the top
-  scrollHeaderUp: function () {
-    var scroller = this.$.scroller,
-      viewport = scroller.hasNode(),
-      headerNode = this.focusedHeader && this.focusedHeader.hasNode(),
-      b, v, h;
-    if (!viewport || !headerNode) { return; }
-    v = viewport.getBoundingClientRect();
-    h = headerNode.getBoundingClientRect();
-    if (h.top - v.top > v.height / 2) {
-      b = scroller.getScrollBounds();
-      scroller.scrollTo(b.left, Math.min(b.top + (h.top - v.top) - HEADER_SCROLL_PAD, b.maxTop));
-    }
   },
 
   syncHeaders: function () {
