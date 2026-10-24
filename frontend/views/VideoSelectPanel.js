@@ -12,9 +12,18 @@ var
   Spotlight = require('spotlight'),
   LunaService = require('enyo-webos/LunaService');
 
-// when a group header gets the focus, scroll until the first row below it is visible too
-var REVEAL_DELAY_MS = 220;   // let the scroller finish its own scroll to the header first
-var REVEAL_PAD = 16;
+
+// toast: bottom center
+var TOAST_STYLE = 'position:absolute; left:50%; bottom:50px; -webkit-transform:translateX(-50%); transform:translateX(-50%); ' +
+  'z-index:100; padding:16px 36px; border-radius:40px; font-size:30px; color:#fff; white-space:nowrap; ' +
+  'background:rgba(0,0,0,0.88); border:2px solid #cf0652; pointer-events:none;';
+var TOAST_MS = 5000;
+
+// A group header that Moonstone scrolled to the bottom edge is moved to the top, so its videos are visible.
+// Set to false to get plain Moonstone scrolling.
+var HEADER_SCROLL = true;
+var HEADER_SCROLL_DELAY_MS = 250;   // let Moonstone finish its own scroll first
+var HEADER_SCROLL_PAD = 24;         // space above the header after the scroll
 
 var TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:300px; margin:8px; padding:6px;';
 var CAT_TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:520px; margin:12px; padding:8px;';
@@ -246,7 +255,6 @@ var SectionHeader = kind({
   name: 'aerial.SectionHeader',
   kind: Item,
   style: 'display:block; margin:18px 8px 4px; padding:8px 12px;',
-  spotlight: true,
   events: {
     onToggleGroup: '',
     onHeaderFocused: ''
@@ -267,7 +275,7 @@ var SectionHeader = kind({
   setInfo: function (text) {
     this.$.info.set('content', text);
   },
-  // not swallowed: the scroller still does its own scroll to the header
+  // not swallowed: Moonstone still does its own scroll to the header
   focused: function (sender, evt) {
     if (evt.originator === this) { this.doHeaderFocused({header: this}); }
   },
@@ -360,7 +368,6 @@ var VideoSelectPanel = kind({
     {kind: Scroller, name: 'scroller', fit: true, components: [
       {style: 'margin: 0 20px', components: [
         {kind: BodyText, name: 'count', content: 'Loading...'},
-        {name: 'hint', showing: false, content: 'OK: preview \u00b7 hold OK: add / remove', style: 'font-size:22px; opacity:0.6; margin-bottom:8px;'},
         {name: 'filters', showing: false, components: [
           {name: 'sourceBox'},
           {kind: ExpandablePicker, name: 'state', content: 'Show', selectedIndex: 0, onChange: 'filterChanged', components: [
@@ -391,6 +398,8 @@ var VideoSelectPanel = kind({
           {kind: BodyText, name: 'previewInfo', style: 'margin:0; padding:0; height:46px; line-height:46px; font-size:26px; text-align:center; opacity:0.8; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;'}
         ]}
       ]},
+    // toast with the controls hint (when a category is opened / the preview is closed)
+    {name: 'toast', kind: Control, showing: false, allowHtml: true, style: TOAST_STYLE},
     {kind: LunaService, name: 'cat', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onCat', onError: 'onCat'},
     {kind: LunaService, name: 'save', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec'}
   ],
@@ -429,7 +438,8 @@ var VideoSelectPanel = kind({
       this.save();
     }
     this.stopJob('batch');
-    this.stopJob('reveal');
+    this.stopJob('toastHide');
+    this.stopJob('headerScroll');
     this.stopPreview();
     this.inherited(arguments);
   },
@@ -523,8 +533,10 @@ var VideoSelectPanel = kind({
       this.mode = 'videos';
     }
     this.$.filters.set('showing', this.mode === 'videos');
-    this.$.hint.set('showing', this.mode === 'videos');
-    if (this.mode === 'videos') { this.buildSourcePicker(); }
+    if (this.mode === 'videos') {
+      this.buildSourcePicker();
+      this.showToast('<b>OK</b>: preview &nbsp;\u00b7&nbsp; <b>Hold OK</b>: add / remove');
+    }
     // Select all / Deselect all only make sense inside a category, not on the categories page
     this.$.bulk.set('showing', this.mode === 'videos');
     this.renderTiles();
@@ -802,8 +814,6 @@ var VideoSelectPanel = kind({
     }
     if (this.pending.length) {
       this.startJob('batch', 'renderBatch', 40);
-    } else {
-      this.$.scroller.resized();   // tiles were added in batches: refresh the scroll bounds
     }
   },
 
@@ -819,25 +829,25 @@ var VideoSelectPanel = kind({
   },
 
   headerFocused: function (sender, evt) {
-    this.focusedHeader = evt.header;
-    this.startJob('reveal', 'revealRow', REVEAL_DELAY_MS);
+    if (HEADER_SCROLL) {
+      this.focusedHeader = evt.header;
+      this.startJob('headerScroll', 'scrollHeaderUp', HEADER_SCROLL_DELAY_MS);
+    }
     return true;
   },
 
-  // header focused while moving down: scroll a bit more so the first row of its group is visible,
-  // instead of the header hanging alone at the bottom edge
-  revealRow: function () {
-    var list = this.$.grid.getClientControls(),
-      next = list[list.indexOf(this.focusedHeader) + 1],
-      scroller = this.$.scroller,
+  // header ended up in the lower half of the screen (moving down) -> put it near the top
+  scrollHeaderUp: function () {
+    var scroller = this.$.scroller,
       viewport = scroller.hasNode(),
-      node = next && !next.groupIds && next.hasNode(),
-      need, b;
-    if (!node || !viewport) { return; }
-    need = node.getBoundingClientRect().bottom + REVEAL_PAD - viewport.getBoundingClientRect().bottom;
-    if (need > 0) {
+      headerNode = this.focusedHeader && this.focusedHeader.hasNode(),
+      b, v, h;
+    if (!viewport || !headerNode) { return; }
+    v = viewport.getBoundingClientRect();
+    h = headerNode.getBoundingClientRect();
+    if (h.top - v.top > v.height / 2) {
       b = scroller.getScrollBounds();
-      scroller.scrollTo(b.left, Math.min(b.top + need, b.maxTop));
+      scroller.scrollTo(b.left, Math.min(b.top + (h.top - v.top) - HEADER_SCROLL_PAD, b.maxTop));
     }
   },
 
@@ -859,7 +869,7 @@ var VideoSelectPanel = kind({
     var asset = this.assets.filter(function (a) { return a.id === evt.id; })[0],
       list = asset ? previewCandidates(asset) : [];
     if (!list.length) {
-      this.$.hint.set('content', 'No preview available for this video');
+      this.showToast('No preview available for this video');
       return true;
     }
     this.pvList = list;
@@ -1069,6 +1079,17 @@ var VideoSelectPanel = kind({
 
   previewHidden: function () {
     this.stopPreview();
+    this.showToast('<b>Hold OK</b> on a video to add / remove it');
+  },
+
+  showToast: function (html) {
+    this.$.toast.set('content', html);
+    this.$.toast.set('showing', true);
+    this.startJob('toastHide', 'hideToast', TOAST_MS);
+  },
+
+  hideToast: function () {
+    this.$.toast.set('showing', false);
   },
 
   filterChanged: function () {
