@@ -149,7 +149,6 @@ var VideoTile = kind({
   },
   handlers: {
     ontap: 'tapped',
-    onSpotlightFocused: 'focused',
     // magic remote / mouse: click and hold
     onholdpulse: 'holdPulse',
     onrelease: 'released',
@@ -174,8 +173,10 @@ var VideoTile = kind({
     this.$.badge.set('showing', !!this.selected);
     this.$.img.applyStyle('opacity', this.selected ? 1 : 0.3);
   },
-  // not swallowed: Moonstone still does its own scroll to the tile first
-  focused: function (sender, evt) {
+  // Item's own handler (onRequestScrollIntoView: the list follows the focus) must keep working,
+  // so it is extended here, not replaced through `handlers`
+  spotlightFocused: function (sender, evt) {
+    this.inherited(arguments);
     if (evt.originator === this) { this.doTileFocused({tile: this}); }
   },
   // short press / click: preview the video
@@ -274,7 +275,6 @@ var SectionHeader = kind({
   },
   handlers: {
     ontap: 'toggleAll',
-    onSpotlightFocused: 'focused',
     onSpotlightDown: 'spotDown',
     onSpotlightUp: 'spotUp'
   },
@@ -290,8 +290,9 @@ var SectionHeader = kind({
   setInfo: function (text) {
     this.$.info.set('content', text);
   },
-  // not swallowed: Moonstone still does its own scroll to the header first
-  focused: function (sender, evt) {
+  // extends Item's own handler (the list follows the focus), see VideoTile
+  spotlightFocused: function (sender, evt) {
+    this.inherited(arguments);
     if (evt.originator === this) { this.doHeaderFocused({header: this}); }
   },
   // The header is as wide as the list, so Spotlight would pick the tile closest to its middle.
