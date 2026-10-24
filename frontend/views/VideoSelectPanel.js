@@ -12,7 +12,6 @@ var
   Spotlight = require('spotlight'),
   LunaService = require('enyo-webos/LunaService');
 
-
 // toast: bottom center
 var TOAST_STYLE = 'position:absolute; left:50%; bottom:50px; -webkit-transform:translateX(-50%); transform:translateX(-50%); ' +
   'z-index:100; padding:16px 36px; border-radius:40px; font-size:30px; color:#fff; white-space:nowrap; ' +
@@ -28,19 +27,8 @@ var IMG_STYLE = 'display:block; width:100%; height:170px; object-fit:cover; back
 var MIN_SUB = 3;
 var OTHER = '__other';
 
-// Nothing below is a filter: categories, subcategories and sources are all discovered from the
-// videos themselves. These lists only set the ORDER of known names; anything not listed (new
-// categories / sources) is shown after them, alphabetically. Empty lists are fine.
-//
-// Data contract (videos.json): {assets: [{id, localizedNameKey | name, source?, categories?: [key],
-//   subcategories?: [key], previewImage?, url*: '...', pointsOfInterest?: {seconds: key}}],
-//   categories?: [{localizedNameKey, previewImage}]}   <- optional thumbnails of the categories,
-//   e.g. {localizedNameKey: 'AerialCategoryCities', previewImage: 'assets/tn/cities.webp'}
-//   (a plain map {key: 'path'} works too). No entry / image fails to load -> a random video
-//   of the category is used as the thumbnail.
-// Names are looked up in assets/locales/<lang>.json ({strings: {key: text}}); a missing
-// translation falls back to the asset's `name` or a prettified key.
-var DEFAULT_LANG = 'en-GB';
+// Videos reference categories / subcategories directly by their localizedNameKey
+// (e.g. "AerialCategoryLandscapes"); the list of categories is built from the videos themselves.
 
 // order of the categories on the first level (others go after these, alphabetically)
 var CATEGORY_ORDER = ['AerialCategoryLandscapes', 'AerialCategoryCities', 'AerialCategoryUnderwater',
@@ -328,6 +316,11 @@ var PreviewPopup = kind({
       Spotlight.spot(this);
     }
     return true;
+  },
+  // log who closes the preview (handy when debugging with ares-inspect)
+  hide: function () {
+    console.info('preview popup hide() called from', new Error().stack);
+    return this.inherited(arguments);
   }
 });
 
@@ -430,41 +423,37 @@ var VideoSelectPanel = kind({
     this.inherited(arguments);
   },
 
-  // XHR first (app files are local), luna `cat` as fallback; `fallback` runs if both fail
-  loadJSON: function (url, lunaPath, callback, fallback) {
+  // XHR first (app files are local), luna `cat` as fallback
+  loadJSON: function (url, lunaPath, callback) {
     var self = this, xhr = new XMLHttpRequest();
-    function viaLuna() { self.lunaLoad(lunaPath, callback, fallback); }
     xhr.open('GET', url);
     xhr.onload = function () {
-      var data;
       if (xhr.status === 200 || (xhr.status === 0 && xhr.responseText)) {
-        try { data = JSON.parse(xhr.responseText); } catch (e) { viaLuna(); return; }
-        callback.call(self, data);
-        return;
+        try {
+          callback.call(self, JSON.parse(xhr.responseText));
+          return;
+        } catch (e) { /* fall through */ }
       }
-      viaLuna();
+      self.lunaLoad(lunaPath, callback);
     };
-    xhr.onerror = viaLuna;
+    xhr.onerror = function () { self.lunaLoad(lunaPath, callback); };
     xhr.send();
   },
 
-  lunaLoad: function (path, callback, fallback) {
+  lunaLoad: function (path, callback) {
     this.catCallback = callback;
-    this.catFallback = fallback;
     this.$.cat.send({command: 'cat ' + path});
   },
 
   onCat: function (sender, evt) {
-    var cb = this.catCallback, fb = this.catFallback, data;
-    this.catCallback = this.catFallback = null;
+    var cb = this.catCallback;
+    this.catCallback = null;
     if (!cb) { return; }
     try {
-      data = JSON.parse(evt.stdoutString);
+      cb.call(this, JSON.parse(evt.stdoutString));
     } catch (e) {
-      if (fb) { fb.call(this); } else { this.$.count.set('content', 'Failed to load video list'); }
-      return;
+      this.$.count.set('content', 'Failed to load video list');
     }
-    cb.call(this, data);
   },
 
   // data.categories -> {categoryKey: imagePath}; accepts [{localizedNameKey|id, previewImage|image|thumbnail}] or {key: path}
@@ -486,16 +475,8 @@ var VideoSelectPanel = kind({
     this.assets = data.assets || [];
     this.categoryImages = this.parseCategoryImages(data.categories);
     this.categories = [];
-    this.loadLocale(this.settings.localeLang || DEFAULT_LANG);
-  },
-
-  // missing locale -> default language -> no translations at all (names fall back to keys)
-  loadLocale: function (lang) {
-    var self = this;
-    this.loadJSON('assets/locales/' + lang + '.json', this.basePath + '/assets/locales/' + lang + '.json',
-      this.onLocale, function () {
-        if (lang !== DEFAULT_LANG) { self.loadLocale(DEFAULT_LANG); } else { self.onLocale({}); }
-      });
+    var lang = this.settings.localeLang || 'en-GB';
+    this.loadJSON('assets/locales/' + lang + '.json', this.basePath + '/assets/locales/' + lang + '.json', this.onLocale);
   },
 
   onLocale: function (data) {
@@ -531,13 +512,13 @@ var VideoSelectPanel = kind({
   // ---- helpers ----
 
   nameOf: function (item) {
-    return item.name || this.strings[item.localizedNameKey] || this.prettyKey(item.localizedNameKey || item.id);
+    return this.strings[item.localizedNameKey] || this.prettyKey(item.localizedNameKey || item.id);
   },
 
   // "AerialSubcategoryPalauJellies" -> "Palau Jellies" (only used when there is no translation)
   prettyKey: function (key) {
     return String(key || '')
-      .replace(/^[A-Za-z]*?(Sub)?[Cc]ategory(Description)?(?=[A-Z0-9])/, '')
+      .replace(/^Aerial(Sub)?Category(Description)?/, '')
       .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
       .replace(/_/g, ' ') || String(key || '');
   },
@@ -545,18 +526,15 @@ var VideoSelectPanel = kind({
   // Build the category / subcategory lists from the videos: each video holds the localizedNameKey
   // of its categories and subcategories (no separate categories list in the data any more).
   normalizeCategories: function () {
-    var self = this, map = {}, list = [],
-      anyCat = this.assets.some(function (a) { return a.categories && a.categories.length; });
+    var self = this, map = {}, list = [];
     this.assets.forEach(function (a) {
       var subs = a.subcategories || [];
       a.categories = a.categories || [];
-      // videos without a category go to an "Other" category so none of them is unreachable
-      if (anyCat && !a.categories.length) { a.categories = [OTHER]; }
       a.subcategories = subs;
       a.categories.forEach(function (key) {
         var cat = map[key];
         if (!cat) {
-          cat = map[key] = {id: key, localizedNameKey: key, name: key === OTHER ? 'Other' : '', subcategories: [], subMap: {}};
+          cat = map[key] = {id: key, localizedNameKey: key, subcategories: [], subMap: {}};
           list.push(cat);
         }
         subs.forEach(function (sk) {
@@ -575,7 +553,6 @@ var VideoSelectPanel = kind({
       });
     });
     list.sort(function (x, y) {
-      if (x.id === OTHER || y.id === OTHER) { return x.id === OTHER ? 1 : -1; }
       var i = CATEGORY_ORDER.indexOf(x.id), j = CATEGORY_ORDER.indexOf(y.id);
       if (i === -1 && j === -1) { return self.nameOf(x) < self.nameOf(y) ? -1 : 1; }
       if (i === -1) { return 1; }
@@ -662,12 +639,11 @@ var VideoSelectPanel = kind({
   // ---- first level: categories ----
 
   renderCategories: function () {
-    var self = this;
     var images = (this.shared && this.shared.categoryImages) || {};
     this.visibleCategories().forEach(function (c) {
       // thumbnail from videos.json first; a random video of the category as the fallback
       var fallback = this.randomPreviewFor(c);
-      self.$.grid.createComponent({
+      this.$.grid.createComponent({
         kind: CategoryTile,
         categoryId: c.id,
         src: images[c.id] || fallback,
@@ -793,7 +769,7 @@ var VideoSelectPanel = kind({
           kind: VideoTile,
           assetId: a.id,
           src: a.previewImage,
-          label: this.nameOf(a),
+          label: this.strings[a.localizedNameKey] || a.localizedNameKey,
           selected: !this.disabled[a.id]
         }).render();
       }
@@ -844,7 +820,7 @@ var VideoSelectPanel = kind({
     this.pvPoi = this.poiList(asset);
     this.pvPoiText = null;
     this.showPoi('');
-    this.$.previewTitle.set('content', this.nameOf(asset));
+    this.$.previewTitle.set('content', this.strings[asset.localizedNameKey] || asset.localizedNameKey || '');
     this.buildBadges();     // before show(): the popup must already be spottable when it opens
     this.layoutPreview();
     this.$.preview.show();
@@ -891,6 +867,7 @@ var VideoSelectPanel = kind({
       vw = (layer && layer.clientWidth) || window.innerWidth || document.documentElement.clientWidth || 1920,
       vh = (layer && layer.clientHeight) || window.innerHeight || document.documentElement.clientHeight || 1080,
       g = previewGeometry(vw, vh), popup = this.$.preview;
+    console.info('preview layout', vw + 'x' + vh, JSON.stringify(g));
     popup.applyStyle('left', g.left + 'px');
     popup.applyStyle('top', g.top + 'px');
     popup.applyStyle('width', g.width + 'px');
@@ -1075,7 +1052,7 @@ var VideoSelectPanel = kind({
       if (selected) { delete this.disabled[a.id]; } else { this.disabled[a.id] = true; }
     }, this);
     this.markDirty();
-    if (this.currentValue('state')) { this.renderTiles(); } else { this.syncTiles(); }
+    this.renderTiles();
   },
 
   selectAll: function () { this.setVisible(true); },
@@ -1115,8 +1092,9 @@ var VideoSelectPanel = kind({
   save: function () {
     this.dirty = false;
     this.settings.disabledVideos = Object.keys(this.disabled);
-    var json = JSON.stringify(this.settings).replace(/'/g, "'\\''");
-    this.$.save.send({command: "echo '" + json + "' > " + this.settingsPath});
+    this.$.save.send({
+      command: "echo '" + JSON.stringify(this.settings) + "' > " + this.settingsPath
+    });
   }
 });
 
