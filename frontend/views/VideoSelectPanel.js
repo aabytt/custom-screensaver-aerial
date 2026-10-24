@@ -12,10 +12,14 @@ var
   Spotlight = require('spotlight'),
   LunaService = require('enyo-webos/LunaService');
 
-var TOAST_STYLE = 'position:absolute; left:50%; bottom:50px; -webkit-transform:translateX(-50%); transform:translateX(-50%); ' +
-  'z-index:100; padding:16px 36px; border-radius:40px; font-size:30px; color:#fff; white-space:nowrap; ' +
-  'background:rgba(0,0,0,0.88); border:2px solid #cf0652; pointer-events:none;';
+// toast sits in the header zone (top right): it never covers the tiles that have the focus
+var TOAST_STYLE = 'position:absolute; top:18px; right:48px; z-index:100; padding:10px 28px; border-radius:36px; ' +
+  'font-size:26px; color:#fff; white-space:nowrap; background:rgba(0,0,0,0.88); border:2px solid #cf0652; pointer-events:none;';
 var TOAST_MS = 5000;
+
+// when a group header gets the focus, scroll until the first row below it is visible too
+var REVEAL_DELAY_MS = 220;   // let the scroller finish its own scroll to the header first
+var REVEAL_PAD = 16;
 
 var TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:300px; margin:8px; padding:6px;';
 var CAT_TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:520px; margin:12px; padding:8px;';
@@ -232,11 +236,14 @@ var SectionHeader = kind({
   name: 'aerial.SectionHeader',
   kind: Item,
   style: 'display:block; margin:18px 8px 4px; padding:8px 12px;',
+  spotlight: true,
   events: {
-    onToggleGroup: ''
+    onToggleGroup: '',
+    onHeaderFocused: ''
   },
   handlers: {
-    ontap: 'toggleAll'
+    ontap: 'toggleAll',
+    onSpotlightFocused: 'focused'
   },
   components: [
     {name: 'label', tag: 'span', style: 'font-size:28px;'},
@@ -249,6 +256,10 @@ var SectionHeader = kind({
   },
   setInfo: function (text) {
     this.$.info.set('content', text);
+  },
+  // not swallowed: the scroller still does its own scroll to the header
+  focused: function (sender, evt) {
+    if (evt.originator === this) { this.doHeaderFocused({header: this}); }
   },
   toggleAll: function () {
     this.doToggleGroup({ids: this.groupIds});
@@ -311,11 +322,6 @@ var PreviewPopup = kind({
       Spotlight.spot(this);
     }
     return true;
-  },
-  // log who closes the preview (handy when debugging with ares-inspect)
-  hide: function () {
-    console.info('preview popup hide() called from', new Error().stack);
-    return this.inherited(arguments);
   }
 });
 
@@ -337,6 +343,7 @@ var VideoSelectPanel = kind({
     onToggled: 'tileToggled',
     onOpenCategory: 'openCategory',
     onToggleGroup: 'toggleGroup',
+    onHeaderFocused: 'headerFocused',
     onPreview: 'previewVideo'
   },
   components: [
@@ -415,6 +422,7 @@ var VideoSelectPanel = kind({
     }
     this.stopJob('batch');
     this.stopJob('toastHide');
+    this.stopJob('reveal');
     this.stopPreview();
     this.inherited(arguments);
   },
@@ -774,6 +782,8 @@ var VideoSelectPanel = kind({
     }
     if (this.pending.length) {
       this.startJob('batch', 'renderBatch', 40);
+    } else {
+      this.$.scroller.resized();   // tiles were added in batches: refresh the scroll bounds
     }
   },
 
@@ -786,6 +796,29 @@ var VideoSelectPanel = kind({
     this.markDirty();
     this.syncTiles();
     return true;
+  },
+
+  headerFocused: function (sender, evt) {
+    this.focusedHeader = evt.header;
+    this.startJob('reveal', 'revealRow', REVEAL_DELAY_MS);
+    return true;
+  },
+
+  // header focused while moving down: scroll a bit more so the first row of its group is visible,
+  // instead of the header hanging alone at the bottom edge
+  revealRow: function () {
+    var list = this.$.grid.getClientControls(),
+      next = list[list.indexOf(this.focusedHeader) + 1],
+      scroller = this.$.scroller,
+      viewport = scroller.hasNode(),
+      node = next && !next.groupIds && next.hasNode(),
+      need, b;
+    if (!node || !viewport) { return; }
+    need = node.getBoundingClientRect().bottom + REVEAL_PAD - viewport.getBoundingClientRect().bottom;
+    if (need > 0) {
+      b = scroller.getScrollBounds();
+      scroller.scrollTo(b.left, Math.min(b.top + need, b.maxTop));
+    }
   },
 
   syncHeaders: function () {
@@ -865,7 +898,6 @@ var VideoSelectPanel = kind({
       vw = (layer && layer.clientWidth) || window.innerWidth || document.documentElement.clientWidth || 1920,
       vh = (layer && layer.clientHeight) || window.innerHeight || document.documentElement.clientHeight || 1080,
       g = previewGeometry(vw, vh), popup = this.$.preview;
-    console.info('preview layout', vw + 'x' + vh, JSON.stringify(g));
     popup.applyStyle('left', g.left + 'px');
     popup.applyStyle('top', g.top + 'px');
     popup.applyStyle('width', g.width + 'px');
@@ -1050,7 +1082,7 @@ var VideoSelectPanel = kind({
       if (selected) { delete this.disabled[a.id]; } else { this.disabled[a.id] = true; }
     }, this);
     this.markDirty();
-    this.renderTiles();
+    if (this.currentValue('state')) { this.renderTiles(); } else { this.syncTiles(); }
   },
 
   selectAll: function () { this.setVisible(true); },
@@ -1090,9 +1122,8 @@ var VideoSelectPanel = kind({
   save: function () {
     this.dirty = false;
     this.settings.disabledVideos = Object.keys(this.disabled);
-    this.$.save.send({
-      command: "echo '" + JSON.stringify(this.settings) + "' > " + this.settingsPath
-    });
+    var json = JSON.stringify(this.settings).replace(/'/g, "'\\''");
+    this.$.save.send({command: "echo '" + json + "' > " + this.settingsPath});
   }
 });
 
