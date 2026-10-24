@@ -20,17 +20,16 @@ var TOAST_STYLE = 'display:none; position:fixed; left:50%; bottom:50px; -webkit-
   'background:rgba(0,0,0,0.88); border:2px solid #cf0652; pointer-events:none;';
 var TOAST_MS = 5000;
 
-// Scrolling inside a category with groups (Moonstone only scrolls the focused item into view):
-//  - a group header focused at the top / bottom edge of the list is moved to HEADER_AT of the visible
-//    height (part of the previous group above it, its first rows below it);
-//  - a tile of the FIRST row of a group focused while the header is out of view (moving up) scrolls
-//    the list until the header is visible too.
+// Scrolling inside a category with groups (Moonstone only scrolls the focused item into view).
+// The position depends on the number of tile rows in the group (header + rows = the "block"):
+//  - up to CENTER_MAX_ROWS rows: if the whole block is not visible, it is centered in the list
+//    (it has to fit, otherwise the next rule applies);
+//  - more rows: the header goes to the very top, the rows below it scroll as usual (Moonstone).
 // Set HEADER_SCROLL to false for plain Moonstone scrolling.
 var HEADER_SCROLL = true;
-var HEADER_AT = 0.4;            // wanted position of the header: 40% from the top of the list
-var HEADER_EDGE_TOP = 0.15;     // header above 15% ...
-var HEADER_EDGE_BOTTOM = 0.6;   // ... or below 60% of the visible height is moved
-var HEADER_PAD = 16;            // free space above the header when it is scrolled into view
+var CENTER_MAX_ROWS = 2;
+var HEADER_PAD = 16;            // free space above the header / minimal space around a centered block
+var GROUP_BOTTOM_PAD = 8;       // bottom margin of a tile
 var HEADER_SCROLL_DELAY_MS = 300;   // let Moonstone finish its own scroll first
 
 var TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:300px; margin:8px; padding:6px;';
@@ -873,19 +872,14 @@ var VideoSelectPanel = kind({
     return true;
   },
 
-  adjustScroll: function () {
-    var item = this.focusedItem;
-    if (!item || !item.hasNode()) { return; }
-    if (item.groupIds) { this.centerHeader(item); } else { this.revealHeader(item); }
-  },
-
-  // geometry of the list: viewport, content origin and the scroll position that puts `node` at `top` px
+  // geometry of the list: viewport and content origin
   scrollGeometry: function () {
     var viewport = this.$.scroller.hasNode(),
       content = this.$.count.hasNode() && this.$.count.hasNode().parentNode;
     return viewport && content ? {v: viewport.getBoundingClientRect(), c: content.getBoundingClientRect()} : null;
   },
 
+  // scroll so that `node` ends up `top` px below the top of the list
   scrollNodeTo: function (g, node, top) {
     var scroller = this.$.scroller, b = scroller.getScrollBounds(),
       // the position of the node inside the scrolled content does not depend on the current scroll offset
@@ -893,27 +887,38 @@ var VideoSelectPanel = kind({
     scroller.scrollTo(b.left, Math.max(0, Math.min(y, b.maxTop)));
   },
 
-  // header left at the top / bottom edge by Moonstone -> to HEADER_AT of the visible height
-  centerHeader: function (header) {
-    var g = this.scrollGeometry(), pos;
-    if (!g) { return; }
-    pos = (header.hasNode().getBoundingClientRect().top - g.v.top) / g.v.height;
-    if (pos >= HEADER_EDGE_TOP && pos <= HEADER_EDGE_BOTTOM) { return; }   // already in a comfortable place
-    this.scrollNodeTo(g, header.hasNode(), HEADER_AT * g.v.height);
+  // the group of a focused header / tile: its header, tiles and the number of tile rows
+  groupOf: function (item) {
+    var list = this.$.grid.getClientControls(), h = list.indexOf(item), end, tiles, tops = {};
+    while (h >= 0 && !list[h].groupIds) { h--; }
+    if (h < 0 || !list[h].hasNode()) { return null; }   // flat list: no headers
+    end = h + 1;
+    while (end < list.length && !list[end].groupIds) { end++; }
+    tiles = list.slice(h + 1, end).filter(function (t) { return t.hasNode(); });
+    tiles.forEach(function (t) { tops[t.hasNode().offsetTop] = true; });
+    return tiles.length ? {header: list[h], tiles: tiles, rows: Object.keys(tops).length} : null;
   },
 
-  // tile of the first row of a group: its header must be visible too
-  revealHeader: function (tile) {
-    var list = this.$.grid.getClientControls(), j = list.indexOf(tile), header, first, g;
-    while (j >= 0 && !list[j].groupIds) { j--; }
-    if (j < 0) { return; }   // flat list: no headers
-    header = list[j];
-    first = list[j + 1];
-    if (!first || !first.hasNode() || !tile.hasNode() || !header.hasNode() ||
-      Math.abs(first.hasNode().offsetTop - tile.hasNode().offsetTop) > 2) { return; }   // not the first row
-    g = this.scrollGeometry();
-    if (g && header.hasNode().getBoundingClientRect().top < g.v.top + HEADER_PAD - 1) {
-      this.scrollNodeTo(g, header.hasNode(), HEADER_PAD);
+  adjustScroll: function () {
+    var item = this.focusedItem, g = this.scrollGeometry(), grp, headerNode, bottom, height;
+    if (!item || !item.hasNode() || !g) { return; }
+    grp = this.groupOf(item);
+    if (!grp) { return; }
+    headerNode = grp.header.hasNode();
+    bottom = grp.tiles[grp.tiles.length - 1].hasNode().getBoundingClientRect().bottom + GROUP_BOTTOM_PAD;
+    height = bottom - headerNode.getBoundingClientRect().top;
+
+    if (grp.rows <= CENTER_MAX_ROWS && height <= g.v.height - 2 * HEADER_PAD) {
+      // small group: the whole block should be visible, in the middle if it has to be moved
+      if (headerNode.getBoundingClientRect().top >= g.v.top && bottom <= g.v.bottom) { return; }
+      this.scrollNodeTo(g, headerNode, Math.max(HEADER_PAD, (g.v.height - height) / 2));
+    } else if (item === grp.header || (
+      // a tile of the first row focused while the header is out of view (moving up) brings it back;
+      // lower rows scroll as usual, otherwise going down inside the group would jump back
+      Math.abs(item.hasNode().offsetTop - grp.tiles[0].hasNode().offsetTop) < 3 &&
+      headerNode.getBoundingClientRect().top < g.v.top + HEADER_PAD - 1)) {
+      // big group: header to the very top, the rows below it scroll as usual
+      this.scrollNodeTo(g, headerNode, HEADER_PAD);
     }
   },
 
