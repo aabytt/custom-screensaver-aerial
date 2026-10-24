@@ -6631,7 +6631,12 @@
       "previewImage": "assets/tn/content-0a1d2549-ab74-4f18-a9ed-b0b9cfa031ff.webp"
     }
   ],
-  "initialAssetCount": 0,
-  "localizationVersion": "0",
-  "version": 1
+  "categories": [
+  {"localizedNameKey": "AerialCategoryCities", "previewImage": "assets/tn/cities.webp"},
+  {"localizedNameKey": "AerialCategoryLandscapes", "previewImage": "assets/tn/landscapes.webp"},
+  {"localizedNameKey": "AerialCategorySpace", "previewImage": "assets/tn/space.webp"},
+  {"localizedNameKey": "AerialCategoryFire", "previewImage": "assets/tn/fire.webp"},
+  {"localizedNameKey": "AerialCategoryPatterns", "previewImage": "assets/tn/patterns.webp"},
+  {"localizedNameKey": "AerialCategoryUnderwater", "previewImage": "assets/tn/underwater.webp"}
+  ]
 }
