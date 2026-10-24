@@ -101,7 +101,7 @@ function has(list, id) {
 }
 
 /**
- * One video tile. Tap / OK on the remote toggles it.
+ * One video tile. Tap / OK opens the preview; a long press (hold OK / click and hold) toggles it.
  * Selected = video is in the playlist.
  */
 var VideoTile = kind({
@@ -116,7 +116,7 @@ var VideoTile = kind({
     onPreview: ''
   },
   handlers: {
-    ontap: 'toggle',
+    ontap: 'tapped',
     // magic remote / mouse: click and hold
     onholdpulse: 'holdPulse',
     onrelease: 'released',
@@ -141,16 +141,18 @@ var VideoTile = kind({
     this.$.badge.set('showing', !!this.selected);
     this.$.img.applyStyle('opacity', this.selected ? 1 : 0.3);
   },
-  toggle: function () {
+  // short press / click: preview the video
+  tapped: function () {
     if (this.heldFired) { return true; }   // the tap that ends a long press
-    this.set('selected', !this.selected);
-    this.doToggled({id: this.assetId, selected: this.selected});
+    this.doPreview({id: this.assetId});
     return true;
   },
+  // long press: add to / remove from the playlist
   fireHold: function () {
     this.heldFired = true;
     this.startJob('clearHeld', 'clearHeld', 1500);
-    this.doPreview({id: this.assetId});
+    this.set('selected', !this.selected);
+    this.doToggled({id: this.assetId, selected: this.selected});
   },
   clearHeld: function () {
     this.heldFired = false;
@@ -283,6 +285,28 @@ var PreviewBadge = kind({
   }
 });
 
+/**
+ * Preview window. Moonstone closes a popup as soon as Spotlight focus lands on a control outside
+ * of it (a short OK press, pointer jitter of the magic remote, ...). The preview must only be
+ * closed with Back, so focus that tries to leave is pulled back instead.
+ */
+var PreviewPopup = kind({
+  name: 'aerial.PreviewPopup',
+  kind: Popup,
+  capturedFocus: function () {
+    var cur = Spotlight.getCurrent();
+    if (!cur || !cur.isDescendantOf(this)) {
+      Spotlight.spot(this);
+    }
+    return true;
+  },
+  // log who closes the preview (handy when debugging with ares-inspect)
+  hide: function () {
+    console.info('preview popup hide() called from', new Error().stack);
+    return this.inherited(arguments);
+  }
+});
+
 var VideoSelectPanel = kind({
   name: 'aerial.VideoSelectPanel',
   kind: Panel,
@@ -307,7 +331,7 @@ var VideoSelectPanel = kind({
     {kind: Scroller, name: 'scroller', fit: true, components: [
       {style: 'margin: 0 20px', components: [
         {kind: BodyText, name: 'count', content: 'Loading...'},
-        {name: 'hint', showing: false, content: 'OK: add / remove \u00b7 hold OK: preview', style: 'font-size:22px; opacity:0.6; margin-bottom:8px;'},
+        {name: 'hint', showing: false, content: 'OK: preview \u00b7 hold OK: add / remove', style: 'font-size:22px; opacity:0.6; margin-bottom:8px;'},
         {name: 'filters', showing: false, components: [
           {name: 'sourceBox'},
           {kind: ExpandablePicker, name: 'state', content: 'Show', selectedIndex: 0, onChange: 'filterChanged', components: [
@@ -324,7 +348,7 @@ var VideoSelectPanel = kind({
       ]}
     ]},
     // centered preview window; Back closes it (instead of leaving the panel)
-    {kind: Popup, name: 'preview', modal: true, spotlightModal: true, autoDismiss: true, animate: false,
+    {kind: PreviewPopup, name: 'preview', modal: true, spotlightModal: true, autoDismiss: true, animate: false,
       onHide: 'previewHidden', onkeydown: 'previewKey', onkeyup: 'previewKey', onPlayVariant: 'playVariant',
       style: 'left:0; top:0; right:auto; bottom:auto; width:1280px; height:822px; margin:0; padding:12px; box-sizing:border-box; '
         + 'transform:none !important; -webkit-transform:none !important; transition:none !important; -webkit-transition:none !important;',
@@ -753,10 +777,10 @@ var VideoSelectPanel = kind({
     this.pvManual = false;
     this.pvPlaying = false;
     this.$.previewTitle.set('content', this.strings[asset.localizedNameKey] || asset.localizedNameKey || '');
+    this.buildBadges();     // before show(): the popup must already be spottable when it opens
     this.layoutPreview();
     this.$.preview.show();
     this.bindPreviewNode();
-    this.buildBadges();
     this.playCandidate();
     this.startJob('spotBadge', 'spotCurrentBadge', 150);
     return true;
@@ -841,7 +865,8 @@ var VideoSelectPanel = kind({
     var box = this.$.previewBadges;
     box.destroyClientControls();
     (this.pvList || []).forEach(function (item, i) {
-      box.createComponent({kind: PreviewBadge, index: i}).render();
+      var badge = box.createComponent({kind: PreviewBadge, index: i});
+      if (box.generated) { badge.render(); }
     });
     this.$.previewHelp.set('showing', !!this.pvList && this.pvList.length > 1);
     this.refreshBadges();
