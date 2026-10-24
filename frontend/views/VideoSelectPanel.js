@@ -12,6 +12,14 @@ var
   Spotlight = require('spotlight'),
   LunaService = require('enyo-webos/LunaService');
 
+// Toast: bottom center. It is a plain DOM node in the floating layer, NOT an Enyo control inside the
+// panel: a control next to the fit:true scroller makes the Fittable layout resize the scroller every
+// time the toast is shown / hidden, and the focus then ends up outside of the visible area.
+var TOAST_STYLE = 'display:none; position:fixed; left:50%; bottom:50px; -webkit-transform:translateX(-50%); transform:translateX(-50%); ' +
+  'z-index:100000; padding:16px 36px; border-radius:40px; font-family:inherit; font-size:30px; color:#fff; white-space:nowrap; ' +
+  'background:rgba(0,0,0,0.88); border:2px solid #cf0652; pointer-events:none;';
+var TOAST_MS = 5000;
+
 var TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:300px; margin:8px; padding:6px;';
 var CAT_TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:520px; margin:12px; padding:8px;';
 var CAT_IMG_STYLE = 'display:block; width:100%; height:290px; object-fit:cover; background:#2d353d;';
@@ -21,8 +29,19 @@ var IMG_STYLE = 'display:block; width:100%; height:170px; object-fit:cover; back
 var MIN_SUB = 3;
 var OTHER = '__other';
 
-// Videos reference categories / subcategories directly by their localizedNameKey
-// (e.g. "AerialCategoryLandscapes"); the list of categories is built from the videos themselves.
+// Nothing below is a filter: categories, subcategories and sources are all discovered from the
+// videos themselves. These lists only set the ORDER of known names; anything not listed (new
+// categories / sources) is shown after them, alphabetically. Empty lists are fine.
+//
+// Data contract (videos.json): {assets: [{id, localizedNameKey | name, source?, categories?: [key],
+//   subcategories?: [key], previewImage?, url*: '...', pointsOfInterest?: {seconds: key}}],
+//   categories?: [{localizedNameKey, previewImage}]}   <- optional thumbnails of the categories,
+//   e.g. {localizedNameKey: 'AerialCategoryCities', previewImage: 'assets/tn/cities.webp'}
+//   (a plain map {key: 'path'} works too). No entry / image fails to load -> a random video
+//   of the category is used as the thumbnail.
+// Names are looked up in assets/locales/<lang>.json ({strings: {key: text}}); a missing
+// translation falls back to the asset's `name` or a prettified key.
+var DEFAULT_LANG = 'en-GB';
 
 // order of the categories on the first level (others go after these, alphabetically)
 var CATEGORY_ORDER = ['AerialCategoryLandscapes', 'AerialCategoryCities', 'AerialCategoryUnderwater',
@@ -207,6 +226,17 @@ var CategoryTile = kind({
   setInfo: function (text) {
     this.$.info.set('content', text);
   },
+  // the configured image is missing / broken: show the fallback one instead
+  rendered: function () {
+    this.inherited(arguments);
+    var img = this.$.img.hasNode(), fallback = this.fallback;
+    if (img && fallback && fallback !== this.src) {
+      img.onerror = function () {
+        img.onerror = null;
+        img.src = fallback;
+      };
+    }
+  },
   open: function () {
     this.doOpenCategory({id: this.categoryId, name: this.label});
     return true;
@@ -299,11 +329,6 @@ var PreviewPopup = kind({
       Spotlight.spot(this);
     }
     return true;
-  },
-  // log who closes the preview (handy when debugging with ares-inspect)
-  hide: function () {
-    console.info('preview popup hide() called from', new Error().stack);
-    return this.inherited(arguments);
   }
 });
 
@@ -331,7 +356,6 @@ var VideoSelectPanel = kind({
     {kind: Scroller, name: 'scroller', fit: true, components: [
       {style: 'margin: 0 20px', components: [
         {kind: BodyText, name: 'count', content: 'Loading...'},
-        {name: 'hint', showing: false, content: 'OK: preview \u00b7 hold OK: add / remove', style: 'font-size:22px; opacity:0.6; margin-bottom:8px;'},
         {name: 'filters', showing: false, components: [
           {name: 'sourceBox'},
           {kind: ExpandablePicker, name: 'state', content: 'Show', selectedIndex: 0, onChange: 'filterChanged', components: [
@@ -356,6 +380,7 @@ var VideoSelectPanel = kind({
         {kind: Control, name: 'pvBox', spotlight: 'container', style: 'outline:none; position:relative;', components: [
           {name: 'pv', tag: 'video', attributes: {autoplay: 'autoplay', loop: 'loop', muted: 'muted'}, style: 'display:block; width:100%; height:706px; background:#000;'},
           {name: 'previewBadges', style: 'position:absolute; top:14px; left:0; right:0; text-align:center; z-index:2; pointer-events:none;'},
+          {name: 'poi', showing: false, style: 'position:absolute; left:0; right:0; top:560px; text-align:center; z-index:2; pointer-events:none;'},
           {name: 'previewHelp', showing: false, content: '\u25C0 \u25B6 choose variant \u00b7 OK play it \u00b7 Back close', style: 'position:absolute; left:0; right:0; top:654px; text-align:center; font-size:22px; color:#fff; opacity:0.8; text-shadow:0 0 6px #000; pointer-events:none;'},
           {kind: BodyText, name: 'previewTitle', style: 'margin:0; padding:0; height:46px; line-height:46px; font-size:30px; text-align:center; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;'},
           {kind: BodyText, name: 'previewInfo', style: 'margin:0; padding:0; height:46px; line-height:46px; font-size:26px; text-align:center; opacity:0.8; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;'}
@@ -399,48 +424,79 @@ var VideoSelectPanel = kind({
       this.save();
     }
     this.stopJob('batch');
+    this.stopJob('toastHide');
+    if (this.toastNode && this.toastNode.parentNode) { this.toastNode.parentNode.removeChild(this.toastNode); }
+    this.toastNode = null;
     this.stopPreview();
     this.inherited(arguments);
   },
 
-  // XHR first (app files are local), luna `cat` as fallback
-  loadJSON: function (url, lunaPath, callback) {
+  // XHR first (app files are local), luna `cat` as fallback; `fallback` runs if both fail
+  loadJSON: function (url, lunaPath, callback, fallback) {
     var self = this, xhr = new XMLHttpRequest();
+    function viaLuna() { self.lunaLoad(lunaPath, callback, fallback); }
     xhr.open('GET', url);
     xhr.onload = function () {
+      var data;
       if (xhr.status === 200 || (xhr.status === 0 && xhr.responseText)) {
-        try {
-          callback.call(self, JSON.parse(xhr.responseText));
-          return;
-        } catch (e) { /* fall through */ }
+        try { data = JSON.parse(xhr.responseText); } catch (e) { viaLuna(); return; }
+        callback.call(self, data);
+        return;
       }
-      self.lunaLoad(lunaPath, callback);
+      viaLuna();
     };
-    xhr.onerror = function () { self.lunaLoad(lunaPath, callback); };
+    xhr.onerror = viaLuna;
     xhr.send();
   },
 
-  lunaLoad: function (path, callback) {
+  lunaLoad: function (path, callback, fallback) {
     this.catCallback = callback;
+    this.catFallback = fallback;
     this.$.cat.send({command: 'cat ' + path});
   },
 
   onCat: function (sender, evt) {
-    var cb = this.catCallback;
-    this.catCallback = null;
+    var cb = this.catCallback, fb = this.catFallback, data;
+    this.catCallback = this.catFallback = null;
     if (!cb) { return; }
     try {
-      cb.call(this, JSON.parse(evt.stdoutString));
+      data = JSON.parse(evt.stdoutString);
     } catch (e) {
-      this.$.count.set('content', 'Failed to load video list');
+      if (fb) { fb.call(this); } else { this.$.count.set('content', 'Failed to load video list'); }
+      return;
     }
+    cb.call(this, data);
+  },
+
+  // data.categories -> {categoryKey: imagePath}; accepts [{localizedNameKey|id, previewImage|image|thumbnail}] or {key: path}
+  parseCategoryImages: function (section) {
+    var map = {};
+    function add(key, item) {
+      var img = typeof item === 'string' ? item : (item && (item.previewImage || item.image || item.thumbnail));
+      if (key && img) { map[key] = img; }
+    }
+    if (Array.isArray(section)) {
+      section.forEach(function (c) { if (c) { add(c.localizedNameKey || c.id, c); } });
+    } else if (section && typeof section === 'object') {
+      Object.keys(section).forEach(function (k) { add(k, section[k]); });
+    }
+    return map;
   },
 
   onVideos: function (data) {
     this.assets = data.assets || [];
+    this.categoryImages = this.parseCategoryImages(data.categories);
     this.categories = [];
-    var lang = this.settings.localeLang || 'en-GB';
-    this.loadJSON('assets/locales/' + lang + '.json', this.basePath + '/assets/locales/' + lang + '.json', this.onLocale);
+    this.loadLocale(this.settings.localeLang || DEFAULT_LANG);
+  },
+
+  // missing locale -> default language -> no translations at all (names fall back to keys)
+  loadLocale: function (lang) {
+    var self = this;
+    this.loadJSON('assets/locales/' + lang + '.json', this.basePath + '/assets/locales/' + lang + '.json',
+      this.onLocale, function () {
+        if (lang !== DEFAULT_LANG) { self.loadLocale(DEFAULT_LANG); } else { self.onLocale({}); }
+      });
   },
 
   onLocale: function (data) {
@@ -451,6 +507,8 @@ var VideoSelectPanel = kind({
       categories: this.categories,
       strings: this.strings,
       disabled: this.disabled,
+      thumbs: {},
+      categoryImages: this.categoryImages,
       onChange: this.bindSafely('refreshCounts')
     };
     this.start();
@@ -462,8 +520,10 @@ var VideoSelectPanel = kind({
       this.mode = 'videos';
     }
     this.$.filters.set('showing', this.mode === 'videos');
-    this.$.hint.set('showing', this.mode === 'videos');
-    if (this.mode === 'videos') { this.buildSourcePicker(); }
+    if (this.mode === 'videos') {
+      this.buildSourcePicker();
+      this.showToast('<b>OK</b>: preview &nbsp;\u00b7&nbsp; <b>Hold OK</b>: add / remove');
+    }
     // Select all / Deselect all only make sense inside a category, not on the categories page
     this.$.bulk.set('showing', this.mode === 'videos');
     this.renderTiles();
@@ -472,13 +532,13 @@ var VideoSelectPanel = kind({
   // ---- helpers ----
 
   nameOf: function (item) {
-    return this.strings[item.localizedNameKey] || this.prettyKey(item.localizedNameKey || item.id);
+    return item.name || this.strings[item.localizedNameKey] || this.prettyKey(item.localizedNameKey || item.id);
   },
 
   // "AerialSubcategoryPalauJellies" -> "Palau Jellies" (only used when there is no translation)
   prettyKey: function (key) {
     return String(key || '')
-      .replace(/^Aerial(Sub)?Category(Description)?/, '')
+      .replace(/^[A-Za-z]*?(Sub)?[Cc]ategory(Description)?(?=[A-Z0-9])/, '')
       .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
       .replace(/_/g, ' ') || String(key || '');
   },
@@ -486,15 +546,18 @@ var VideoSelectPanel = kind({
   // Build the category / subcategory lists from the videos: each video holds the localizedNameKey
   // of its categories and subcategories (no separate categories list in the data any more).
   normalizeCategories: function () {
-    var self = this, map = {}, list = [];
+    var self = this, map = {}, list = [],
+      anyCat = this.assets.some(function (a) { return a.categories && a.categories.length; });
     this.assets.forEach(function (a) {
       var subs = a.subcategories || [];
       a.categories = a.categories || [];
+      // videos without a category go to an "Other" category so none of them is unreachable
+      if (anyCat && !a.categories.length) { a.categories = [OTHER]; }
       a.subcategories = subs;
       a.categories.forEach(function (key) {
         var cat = map[key];
         if (!cat) {
-          cat = map[key] = {id: key, localizedNameKey: key, subcategories: [], subMap: {}};
+          cat = map[key] = {id: key, localizedNameKey: key, name: key === OTHER ? 'Other' : '', subcategories: [], subMap: {}};
           list.push(cat);
         }
         subs.forEach(function (sk) {
@@ -513,6 +576,7 @@ var VideoSelectPanel = kind({
       });
     });
     list.sort(function (x, y) {
+      if (x.id === OTHER || y.id === OTHER) { return x.id === OTHER ? 1 : -1; }
       var i = CATEGORY_ORDER.indexOf(x.id), j = CATEGORY_ORDER.indexOf(y.id);
       if (i === -1 && j === -1) { return self.nameOf(x) < self.nameOf(y) ? -1 : 1; }
       if (i === -1) { return 1; }
@@ -578,16 +642,17 @@ var VideoSelectPanel = kind({
     }, this);
   },
 
-  // thumbnail of a category: preview of the LAST video (in the array) that belongs to it
-  previewFor: function (category) {
-    var i, a;
-    for (i = this.assets.length - 1; i >= 0; i--) {
-      a = this.assets[i];
-      if ((!category || has(a.categories, category.id)) && a.previewImage) {
-        return a.previewImage;
-      }
-    }
-    return '';
+  // Random video of a category (fallback thumbnail). Cached in `shared`, so the choice is stable
+  // while the app is open.
+  randomPreviewFor: function (category) {
+    var key = category.id,
+      cache = this.shared && this.shared.thumbs,
+      pool, pick;
+    if (cache && cache[key]) { return cache[key]; }
+    pool = this.assets.filter(function (a) { return has(a.categories, key) && a.previewImage; });
+    pick = pool.length ? pool[Math.floor(Math.random() * pool.length)].previewImage : '';
+    if (cache && pick) { cache[key] = pick; }
+    return pick;
   },
 
   infoText: function (id) {
@@ -598,18 +663,18 @@ var VideoSelectPanel = kind({
   // ---- first level: categories ----
 
   renderCategories: function () {
-    var self = this;
-    function add(id, name, src) {
-      self.$.grid.createComponent({
-        kind: CategoryTile,
-        categoryId: id,
-        src: src,
-        label: name,
-        info: self.infoText(id)
-      }).render();
-    }
+    var images = (this.shared && this.shared.categoryImages) || {};
     this.visibleCategories().forEach(function (c) {
-      add(c.id, this.nameOf(c), this.previewFor(c));
+      // thumbnail from videos.json first; a random video of the category as the fallback
+      var fallback = this.randomPreviewFor(c);
+      this.$.grid.createComponent({
+        kind: CategoryTile,
+        categoryId: c.id,
+        src: images[c.id] || fallback,
+        fallback: fallback,
+        label: this.nameOf(c),
+        info: this.infoText(c.id)
+      }).render();
     }, this);
   },
 
@@ -728,7 +793,7 @@ var VideoSelectPanel = kind({
           kind: VideoTile,
           assetId: a.id,
           src: a.previewImage,
-          label: this.strings[a.localizedNameKey] || a.localizedNameKey,
+          label: this.nameOf(a),
           selected: !this.disabled[a.id]
         }).render();
       }
@@ -767,7 +832,7 @@ var VideoSelectPanel = kind({
     var asset = this.assets.filter(function (a) { return a.id === evt.id; })[0],
       list = asset ? previewCandidates(asset) : [];
     if (!list.length) {
-      this.$.hint.set('content', 'No preview available for this video');
+      this.showToast('No preview available for this video');
       return true;
     }
     this.pvList = list;
@@ -776,7 +841,10 @@ var VideoSelectPanel = kind({
     this.pvOk = {};
     this.pvManual = false;
     this.pvPlaying = false;
-    this.$.previewTitle.set('content', this.strings[asset.localizedNameKey] || asset.localizedNameKey || '');
+    this.pvPoi = this.poiList(asset);
+    this.pvPoiText = null;
+    this.showPoi('');
+    this.$.previewTitle.set('content', this.nameOf(asset));
     this.buildBadges();     // before show(): the popup must already be spottable when it opens
     this.layoutPreview();
     this.$.preview.show();
@@ -786,19 +854,50 @@ var VideoSelectPanel = kind({
     return true;
   },
 
+  // points of interest: {"0": key, "12": key, ...} -> [{t, text}] sorted by time (only translated ones)
+  poiList: function (asset) {
+    var poi = asset && asset.pointsOfInterest, list = [];
+    if (!poi || typeof poi !== 'object') { return list; }
+    Object.keys(poi).forEach(function (k) {
+      var text = this.strings[poi[k]];
+      if (text && !isNaN(parseFloat(k))) { list.push({t: parseFloat(k), text: text}); }
+    }, this);
+    list.sort(function (x, y) { return x.t - y.t; });
+    return list;
+  },
+
+  // caption for the current playback time (the video loops, so this follows it naturally)
+  updatePoi: function (time) {
+    var list = this.pvPoi || [], text = '', i;
+    for (i = 0; i < list.length && list[i].t <= time; i++) { text = list[i].text; }
+    if (text !== this.pvPoiText) {
+      this.pvPoiText = text;
+      this.showPoi(text);
+    }
+  },
+
+  showPoi: function (text) {
+    var poi = this.$.poi;
+    poi.destroyClientControls();
+    if (text) {
+      poi.createComponent({tag: 'span', content: text, style: 'display:inline-block; max-width:80%; padding:8px 24px; border-radius:8px; font-size:30px; color:#fff; background:rgba(0,0,0,0.65); text-shadow:0 0 6px #000;'}).render();
+    }
+    poi.set('showing', !!text);
+  },
+
   // fit the window to the real screen: centered, 16:9, never outside the visible area
   layoutPreview: function () {
     var layer = Control.floatingLayer && Control.floatingLayer.hasNode(),
       vw = (layer && layer.clientWidth) || window.innerWidth || document.documentElement.clientWidth || 1920,
       vh = (layer && layer.clientHeight) || window.innerHeight || document.documentElement.clientHeight || 1080,
       g = previewGeometry(vw, vh), popup = this.$.preview;
-    console.info('preview layout', vw + 'x' + vh, JSON.stringify(g));
     popup.applyStyle('left', g.left + 'px');
     popup.applyStyle('top', g.top + 'px');
     popup.applyStyle('width', g.width + 'px');
     popup.applyStyle('height', g.height + 'px');
     this.$.pv.applyStyle('height', g.videoH + 'px');
     this.$.previewHelp.applyStyle('top', Math.max(0, g.videoH - 50) + 'px');
+    this.$.poi.applyStyle('top', Math.max(0, g.videoH - 130) + 'px');
   },
 
   // native <video> events (Enyo does not forward them): error -> next source, playing -> stop the timer
@@ -807,6 +906,7 @@ var VideoSelectPanel = kind({
     if (!node || this.pvBoundNode === node) { return; }
     this.pvBoundNode = node;
     node.addEventListener('error', function () { self.previewFailed(); });
+    node.addEventListener('timeupdate', function () { self.updatePoi(node.currentTime); });
     node.addEventListener('playing', function () {
       self.clearPreviewTimer();
       if (self.pvList && !self.pvPlaying) {
@@ -918,6 +1018,7 @@ var VideoSelectPanel = kind({
   stopPreview: function () {
     var node = this.$.pv && this.$.pv.hasNode();
     this.pvList = null;
+    this.pvPoi = null;
     this.clearPreviewTimer();
     if (node) {
       try {
@@ -941,6 +1042,23 @@ var VideoSelectPanel = kind({
 
   previewHidden: function () {
     this.stopPreview();
+    this.showToast('<b>Hold OK</b> on a video to add / remove it');
+  },
+
+  showToast: function (html) {
+    var node = this.toastNode;
+    if (!node) {
+      node = this.toastNode = document.createElement('div');
+      node.style.cssText = TOAST_STYLE;
+      ((Control.floatingLayer && Control.floatingLayer.hasNode()) || document.body).appendChild(node);
+    }
+    node.innerHTML = html;
+    node.style.display = 'block';
+    this.startJob('toastHide', 'hideToast', TOAST_MS);
+  },
+
+  hideToast: function () {
+    if (this.toastNode) { this.toastNode.style.display = 'none'; }
   },
 
   filterChanged: function () {
@@ -963,7 +1081,8 @@ var VideoSelectPanel = kind({
       if (selected) { delete this.disabled[a.id]; } else { this.disabled[a.id] = true; }
     }, this);
     this.markDirty();
-    this.renderTiles();
+    // no full re-render (keeps focus and scroll), unless the filter has to hide tiles
+    if (this.currentValue('state')) { this.renderTiles(); } else { this.syncTiles(); }
   },
 
   selectAll: function () { this.setVisible(true); },
@@ -1003,9 +1122,8 @@ var VideoSelectPanel = kind({
   save: function () {
     this.dirty = false;
     this.settings.disabledVideos = Object.keys(this.disabled);
-    this.$.save.send({
-      command: "echo '" + JSON.stringify(this.settings) + "' > " + this.settingsPath
-    });
+    var json = JSON.stringify(this.settings).replace(/'/g, "'\\''");   // apostrophes would break the shell command
+    this.$.save.send({command: "echo '" + json + "' > " + this.settingsPath});
   }
 });
 
