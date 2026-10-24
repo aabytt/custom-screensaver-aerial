@@ -21,7 +21,7 @@ var TOAST_MS = 5000;
 
 // A group header that Moonstone scrolled to the bottom edge is moved to the top, so its videos are visible.
 // Set to false to get plain Moonstone scrolling.
-var HEADER_SCROLL = true;
+var HEADER_SCROLL = false;
 var HEADER_SCROLL_DELAY_MS = 250;   // let Moonstone finish its own scroll first
 var HEADER_SCROLL_PAD = 24;         // space above the header after the scroll
 
