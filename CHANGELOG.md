@@ -10,3 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   web version of the screensaver that uses the same settings, videos and locales.
 - webOS 25 (10.x): if another app has a paused video, the web screensaver no longer takes its
   video decoder, and shows a moving clock instead of video.
+
+### Changed
+- webOS 25/26 (10.x/11.x): `apply.sh` makes SAM reread the screensaver's manifest with
+  `blockSystemApp` + `releaseBlockSystemApp` (as Glasshouse and Luma do) instead of restarting
+  `sam.service`, so applying no longer closes every running app. webOS 26 needs
+  `forceBlockSystemApp` on the block, which is sent where SAM's schema asks for it. Restarting SAM
+  is kept as a fallback where the block is refused or SAM doesn't reread in time (#50).
