@@ -1,24 +1,24 @@
 var
   kind = require('enyo/kind'),
   Panel = require('moonstone/Panel'),
-  FittableRows = require('layout/FittableRows'),
   FittableColumns = require('layout/FittableColumns'),
   BodyText = require('moonstone/BodyText'),
   Marquee = require('moonstone/Marquee'),
   ExpandablePicker = require('moonstone/ExpandablePicker'),
   Button = require('moonstone/Button'),
-  SimpleIntegerPicker = require('moonstone/SimpleIntegerPicker'),
   LunaService = require('enyo-webos/LunaService'),
   Divider = require('moonstone/Divider'),
   Scroller = require('moonstone/Scroller'),
   Item = require('moonstone/Item'),
   ToggleItem = require('moonstone/ToggleItem'),
-  Group = require('enyo/Group'),
-  VideoSelectPanel = require('./VideoSelectPanel.js');
+  VideoSelectPanel = require('./VideoSelectPanel.js'),
+  DisplayPanel = require('./DisplayPanel.js');
 var basePath = "/media/developer/apps/usr/palm/applications/org.aabytt.webos.custom-screensaver-aerial";
 var applyPath = basePath + "/assets/apply.sh";
 var linkPath = "/var/lib/webosbrew/init.d/50-custom-screensaver-aerial";
 var settingsPath = basePath + "/assets/settings.json";
+// One object for the whole lifetime of the app: sub-panels keep a reference to it,
+// so applySettings() fills it in place instead of replacing it.
 var settings = {};
 module.exports = kind({
   name: 'MainPanel',
@@ -31,81 +31,34 @@ module.exports = kind({
   components: [
     {kind: FittableColumns, fit: true, components: [
       {kind: Scroller, fit: true, components: [
-        {classes: 'moon-hspacing',  style: 'margin-left: 10%', controlClasses: 'moon-12h', components: [
+        {classes: 'moon-hspacing', style: 'margin-left: 10%', controlClasses: 'moon-12h', components: [
           {components: [
-            {kind: ToggleItem, name: "autostart", content: 'Autostart', disabled: true, onchange: "autostartToggle"},
+            {kind: ToggleItem, name: 'autostart', content: 'Autostart', disabled: true, onchange: 'autostartToggle'},
             {kind: Item, components: [
-              {kind: Marquee.Text, content: 'Apply temporarily'},
-              {kind: BodyText, style: 'margin: 10px 0', content: 'This will only enable custom screensaver until a reboot'},
-            ], ontap: "temporaryApply"},
-            {kind: ExpandablePicker, name: "source", content: 'Source video type', selectedIndex: settings.sourceTypeIndex,  onChange: 'selectSource', components: [
-			  {content: 'FullHD (H265)', value: 'url-1080-SDR'},
-			  {content: 'FullHD (H264)', value: 'url-1080-H264'},
-			  {content: 'FullHD Dolby Vision (HEVC)', value: 'url-1080-HDR'},
-			  {content: '4k (HEVC)', value: 'url-4K-SDR'},
-			  {content: '4k Dolby Vision (HEVC)', value: 'url-4K-HDR'},
-			  {content: '4k 240FPS (HEVC) - unlikely working in webOS', value: 'url-4K-SDR-240FPS'}	  
+              {kind: Marquee.Text, content: 'Apply until reboot'},
+              {kind: BodyText, style: 'margin: 10px 0', content: 'Turns on the custom screensaver for this session only'}
+            ], ontap: 'temporaryApply'},
+            {kind: ExpandablePicker, name: 'source', content: 'Video format', onChange: 'selectSource', components: [
+              {content: 'FullHD (H265)', value: 'url-1080-SDR'},
+              {content: 'FullHD (H264)', value: 'url-1080-H264'},
+              {content: 'FullHD Dolby Vision (HEVC)', value: 'url-1080-HDR'},
+              {content: '4k (HEVC)', value: 'url-4K-SDR'},
+              {content: '4k Dolby Vision (HEVC)', value: 'url-4K-HDR'},
+              {content: '4k 240FPS (HEVC) - unlikely working in webOS', value: 'url-4K-SDR-240FPS'}
             ]},
             {kind: Item, components: [
-              {kind: Marquee.Text, content: 'Choose videos'},
-              {kind: BodyText, style: 'margin: 10px 0', name: 'videoSelectInfo', content: 'Select which videos are played'},
-            ], ontap: "openVideoSelect"},
-            {kind: ToggleItem, name: "playLowerQuality", content: 'Try SDR source if Dolby Vision video does not exist', checked: settings.playLowerQuality, onchange: 'playLowerQualityToggle'},		  
-            {kind: ExpandablePicker, name: "language", content: 'On-screen display text language', selectedIndex: settings.localeLangIndex , onChange: 'selectLang',
-			components: [
-				{value:'ar-AE', content:'العربية'},
-				{value:'be-BY', content:'Беларуская'},
-				{value:'ca-ES', content:'Català'},
-				{value:'cs-CZ', content:'Čeština'},
-				{value:'da-DK', content:'Dansk'},
-				{value:'de-DE', content:'Deutsch'},
-				{value:'el-GR', content:'ελληνικά'},
-				{value:'en-AU', content:'English (Australia)'},
-				{value:'en-GB', content:'English (United Kingdom)'},
-				{value:'en-US', content:'English (United States)'},
-				{value:'es-ES', content:'Español'},
-				{value:'es-419', content:'Español (Latinoamérica)'},
-				{value:'fi-FI', content:'Suomi'},
-				{value:'fr-CA', content:'Français (Canada)'},
-				{value:'fr-FR', content:'Français'},
-				{value:'he-IL', content:'עברית'},
-				{value:'hi-IN', content:'हिन्दी'},
-				{value:'hr-HR', content:'Hrvatski'},
-				{value:'hu-HU', content:'Magyar'},
-				{value:'id-ID', content:'Bahasa Indonesia'},
-				{value:'it-IT', content:'Italiano'},
-				{value:'ja-JP', content:'日本語'},
-				{value:'ko-KR', content:'한국어'},
-				{value:'mk-MK', content:'Македонски'},
-				{value:'ms-MY', content:'Bahasa Melayu'},
-				{value:'nl-NL', content:'Nederlands'},
-				{value:'nb-NO', content:'Norge'},
-				{value:'pl-PL', content:'Polski'},
-				{value:'pt-BR', content:'Português (Brasil)'},
-				{value:'pt-PT', content:'Português (Portugal)'},
-				{value:'ro-RO', content:'Română'},
-				{value:'ru-RU', content:'Русский'},
-				{value:'sk-SK', content:'Slovenčina'},
-				{value:'sl-SI', content:'Slovenski'},				
-				{value:'sv-SE', content:'Svenska'},
-				{value:'th-TH', content:'ไทย'},
-				{value:'tr-TR', content:'Türkçe'},
-				{value:'uk-UA', content:'Українська'},
-				{value:'vi-VN', content:'Tiếng Việt'},
-				{value:'zh-CN', content:'中文 (中国大陆)'},
-				{value:'zh-HK', content:'中文（香港）'},
-				{value:'zh-TW', content:'中文 (台灣)'}
-            ]
-            },
-            {kind: Item, components: [ 
-		{kind: Marquee.Text, content: 'Text opacity, %'},
-		{kind: SimpleIntegerPicker, name: 'opacityPicker', value: settings.osdOpacity, min: 0, max: 100, step: 5, unit: '', onChange: 'setOpacity' }
-            ]},
-            {kind: ToggleItem, name: "debug", content: 'Show debug info', checked: settings.debug, onchange: 'debugToggle'},
-            {kind: Button, style: 'margin: 20px 0', content: 'Test run', ontap: "testRun"},			  
-          ]},
-        ]},
-      ]},
+              {kind: Marquee.Text, content: 'Playlist'},
+              {kind: BodyText, style: 'margin: 10px 0', name: 'videoSelectInfo', content: 'Pick which videos are played'}
+            ], ontap: 'openVideoSelect'},
+            {kind: ToggleItem, name: 'playLowerQuality', content: 'Fall back to SDR if no Dolby Vision', onchange: 'playLowerQualityToggle'},
+            {kind: Item, components: [
+              {kind: Marquee.Text, content: 'On-screen display'},
+              {kind: BodyText, style: 'margin: 10px 0', name: 'displayInfo', content: 'Language, text opacity, debug info'}
+            ], ontap: 'openDisplay'},
+            {kind: Button, style: 'margin: 20px 0', content: 'Test run', ontap: 'testRun'}
+          ]}
+        ]}
+      ]}
     ]},
     {components: [
       {kind: Divider, content: 'Result'},
@@ -113,7 +66,7 @@ module.exports = kind({
     ]},
     {kind: LunaService, name: 'statusCheck', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onStatusCheck', onError: 'onStatusCheck'},
     {kind: LunaService, name: 'exec', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onExec', onError: 'onExec'},
-    {kind: LunaService, name: 'init', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onInit', onError: 'onInit'},	  
+    {kind: LunaService, name: 'init', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onInit', onError: 'onInit'}
   ],
 
   bindings: [],
@@ -121,11 +74,11 @@ module.exports = kind({
   create: function () {
     this.inherited(arguments);
     this.$.statusCheck.send({
-      command: 'readlink ' + linkPath,
+      command: 'readlink ' + linkPath
     });
     this.loadSettingsLocal();   // direct read of the packaged file
     this.$.init.send({
-      command: 'cat ' + settingsPath,
+      command: 'cat ' + settingsPath
     });
   },
 
@@ -147,12 +100,22 @@ module.exports = kind({
   },
 
   applySettings: function (s) {
-    settings = s;
-    this.$.language.set('selectedIndex', settings.localeLangIndex);
+    // in place: DisplayPanel / VideoSelectPanel hold a reference to this object
+    Object.keys(settings).forEach(function (k) { delete settings[k]; });
+    Object.keys(s).forEach(function (k) { settings[k] = s[k]; });
     this.$.source.set('selectedIndex', settings.sourceTypeIndex);
-    this.$.opacityPicker.set('value', settings.osdOpacity);
-    this.$.debug.set('checked', settings.debug);
     this.$.playLowerQuality.set('checked', settings.playLowerQuality);
+    this.updateDisplayInfo();
+  },
+
+  // summary line under "On-screen display"
+  updateDisplayInfo: function () {
+    var lang = DisplayPanel.LANGUAGES.filter(function (l) { return l.value === settings.localeLang; })[0],
+      parts = [];
+    if (lang) { parts.push(lang.content); }
+    if (settings.osdOpacity !== undefined) { parts.push('opacity ' + settings.osdOpacity + '%'); }
+    parts.push(settings.debug ? 'debug on' : 'debug off');
+    this.$.displayInfo.set('content', parts.join(' \u00b7 '));
   },
 
   onInit: function (sender, evt) {
@@ -168,20 +131,20 @@ module.exports = kind({
       this.$.result.set('content', 'settings.json is not valid JSON: ' + e.message);
     }
   },
-	
-  testRun: function (command) {
+
+  testRun: function () {
     this.exec("luna-send -n 1 'luna://com.webos.service.tvpower/power/turnOnScreenSaver' '{}'");
   },
 
-  temporaryApply: function (command) {
-    this.exec(applyPath); 
+  temporaryApply: function () {
+    this.exec(applyPath);
   },
 
   exec: function (command) {
     console.info(command);
     this.$.result.set('content', 'Processing...');
     this.$.exec.send({
-      command: command,
+      command: command
     });
   },
 
@@ -197,24 +160,17 @@ module.exports = kind({
   onStatusCheck: function (sender, evt) {
     console.info(sender, evt);
     this.$.autostart.set('disabled', false);
-    this.$.autostart.set('checked', evt.stdoutString.trim() == applyPath);
-  },
-  
-  selectSource: function (sender) {
-	if(settings.sourceTypeIndex != this.$.source.get('selectedIndex')){	  
-		settings.sourceType = this.$.source.get('selected').value;
-		settings.sourceTypeIndex = this.$.source.get('selectedIndex');	  
-		this.settingsSave();
-	}
+    this.$.autostart.set('checked', !!(evt && evt.stdoutString) && evt.stdoutString.trim() == applyPath);
   },
 
-  selectLang: function (sender) {
-    if(settings.localeLangIndex != this.$.language.get('selectedIndex')){
-	settings.localeLang = this.$.language.get('selected').value;
-	settings.localeLangIndex = this.$.language.get('selectedIndex');
-	this.settingsSave();
+  selectSource: function () {
+    var index = this.$.source.get('selectedIndex'), sel = this.$.source.get('selected');
+    if (sel && settings.sourceTypeIndex != index) {
+      settings.sourceType = sel.value;
+      settings.sourceTypeIndex = index;
+      this.settingsSave();
     }
-  },	
+  },
 
   autostartToggle: function (sender) {
     if (sender.active) {
@@ -223,34 +179,12 @@ module.exports = kind({
       this.exec('rm -rf ' + linkPath);
     }
   },
-  
-  debugToggle: function (sender) {
-    if (sender.active) {
-      settings.debug = true;
-      this.settingsSave();
-    } else {
-      settings.debug = false;
-      this.settingsSave();
-    }
-  }, 
-	
+
   playLowerQualityToggle: function (sender) {
-    if (sender.active) {
-      settings.playLowerQuality = true;
-      this.settingsSave();
-    } else {
-      settings.playLowerQuality = false;
-      this.settingsSave();
-    }
-  }, 	
-  
-  setOpacity: function (sender) {
-	if(settings.osdOpacity != this.$.opacityPicker.value){
-		settings.osdOpacity = this.$.opacityPicker.value;
-		this.settingsSave();
-	}
-  }, 
-  
+    settings.playLowerQuality = !!sender.active;
+    this.settingsSave();
+  },
+
   openVideoSelect: function () {
     console.info('openVideoSelect, settings:', settings);
     if (!settings.sourceType) {
@@ -270,7 +204,26 @@ module.exports = kind({
     }
   },
 
-  settingsSave: function (sender) {
-    this.exec("echo '" + JSON.stringify(settings)+"' > "+ settingsPath);
+  openDisplay: function () {
+    if (!settings.sourceType) {
+      this.$.result.set('content', 'Settings not loaded yet (settings.json could not be read), cannot open display options');
+      return;
+    }
+    try {
+      this.doRequestPushPanel({panel: {
+        kind: DisplayPanel,
+        settings: settings,
+        settingsPath: settingsPath,
+        onChange: this.bindSafely('updateDisplayInfo')
+      }});
+    } catch (e) {
+      console.error(e);
+      this.$.result.set('content', 'Failed to open display options: ' + e.message);
+    }
   },
+
+  settingsSave: function () {
+    var json = JSON.stringify(settings).replace(/'/g, "'\\''");   // apostrophes would break the shell command
+    this.exec("echo '" + json + "' > " + settingsPath);
+  }
 });

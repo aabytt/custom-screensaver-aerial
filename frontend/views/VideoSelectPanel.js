@@ -381,7 +381,7 @@ var PreviewPopup = kind({
 var VideoSelectPanel = kind({
   name: 'aerial.VideoSelectPanel',
   kind: Panel,
-  title: 'Choose videos',
+  title: 'Playlist',
   headerType: 'small',
   // passed in by MainPanel
   settings: null,
