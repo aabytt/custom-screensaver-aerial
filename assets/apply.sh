@@ -18,6 +18,8 @@ VA_STAGE="/tmp/aerial-videoads"
 VA_STATE_DIR="/var/lib/webosbrew/aerial-videoads"
 VA_RESTORE_HOOK="/var/lib/webosbrew/init.d/49-aerial-videoads-restore"
 BLOCKED_LIST_DIR="/var/preferences/com.webos.applicationManager/blockedSystemAppList"
+VA_FLAG_UNIT="aerial-videoads-flag"
+VA_FLAG_PIDFILE="$VA_STATE_DIR/flag.pid"
 SAM_WAIT=60   # seconds to wait for SAM at boot
 
 if [[ -f "$MOUNT_TARGET" ]]; then
@@ -195,6 +197,35 @@ va_restore_unless_kept() {
     fi
 }
 
+# LG's dmost service switches isVideoScreenSaverEnabled off again at every foreground app change
+# unless its own conditions hold (see videoads-flag.sh), so a watcher switches it back on while
+# the screensaver is applied. Run as a transient systemd unit where systemd-run exists, so the
+# restore hook can stop it with everything it started; otherwise in the background with a pidfile.
+# The fallback runs it in its own process group (setsid), so stopping it also stops a check or
+# sleep it's in the middle of.
+stop_flag_watcher() {
+    systemctl stop "$VA_FLAG_UNIT" >/dev/null 2>&1 || true
+    systemctl reset-failed "$VA_FLAG_UNIT" >/dev/null 2>&1 || true
+    if [[ -f "$VA_FLAG_PIDFILE" ]]; then
+        pid="$(cat "$VA_FLAG_PIDFILE")"
+        kill -s TERM "-$pid" >/dev/null 2>&1 || kill "$pid" >/dev/null 2>&1 || true
+        rm -f "$VA_FLAG_PIDFILE"
+    fi
+}
+start_flag_watcher() {
+    stop_flag_watcher
+    if command -v systemd-run >/dev/null 2>&1 &&
+       systemd-run --no-block --unit="$VA_FLAG_UNIT" /bin/sh "$ASSETS_DIR/videoads-flag.sh" >/dev/null 2>&1; then
+        return 0
+    fi
+    if command -v setsid >/dev/null 2>&1; then
+        setsid /bin/sh "$ASSETS_DIR/videoads-flag.sh" </dev/null >/dev/null 2>&1 &
+    else
+        nohup /bin/sh "$ASSETS_DIR/videoads-flag.sh" </dev/null >/dev/null 2>&1 &
+    fi
+    echo $! > "$VA_FLAG_PIDFILE"
+}
+
 apply_videoads() {
     # At boot SAM may still be starting
     for i in $(seq 1 $SAM_WAIT); do
@@ -279,6 +310,7 @@ apply_videoads() {
         exit 1
     fi
     VA_KEEP=1
+    start_flag_watcher
     if [[ $mounted -eq 1 ]]; then
         echo "[~] Enabled already (web screensaver as $VA_ID)" >&2
     else

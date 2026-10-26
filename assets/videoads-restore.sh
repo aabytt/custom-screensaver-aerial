@@ -7,8 +7,9 @@
 # so it also runs after Aerial is uninstalled. At boot it does nothing while Aerial's autostart
 # hook is there (that one applies again, after this). Otherwise, or when run as
 #   sh /var/lib/webosbrew/init.d/49-aerial-videoads-restore now
-# it puts both back, unmounts the screensaver copy if mounted, and removes itself. If something
-# can't be put back, it keeps itself and the saved state and tries again at the next boot.
+# it stops apply.sh's flag watcher, puts both back, unmounts the screensaver copy if mounted, and
+# removes itself. If something can't be put back, it keeps itself and the saved state and tries
+# again at the next boot.
 
 VA_ID="com.webos.app.videoads"
 VA_DIR="/usr/palm/applications/$VA_ID"
@@ -34,6 +35,15 @@ if [ "$1" != now ]; then
         sleep 1
     done
     trap 'rmdir "$LOCK" 2>/dev/null || true' EXIT
+fi
+# Stop apply.sh's watcher first, or it would switch the setting straight back on. Before the
+# state check, so it's stopped even if the state is gone.
+systemctl stop aerial-videoads-flag >/dev/null 2>&1
+systemctl reset-failed aerial-videoads-flag >/dev/null 2>&1
+if [ -f "$STATE_DIR/flag.pid" ]; then
+    pid="$(cat "$STATE_DIR/flag.pid")"
+    kill -s TERM "-$pid" >/dev/null 2>&1 || kill "$pid" >/dev/null 2>&1
+    rm -f "$STATE_DIR/flag.pid"
 fi
 if [ ! -f "$STATE_DIR/state" ]; then
     rm -f "$HOOK"

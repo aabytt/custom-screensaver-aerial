@@ -49,8 +49,12 @@ video screensaver running. So `apply.sh` first saves their earlier values to
 both back and removes itself; it also does this after Aerial is uninstalled. To undo it without a
 reboot, run `sh /var/lib/webosbrew/init.d/49-aerial-videoads-restore now`.
 
-If the TV switches `isVideoScreenSaverEnabled` back off by itself (seen once in testing, cause
-unknown), the TV shows LG's regular screensaver again until the next Apply or reboot with Autostart.
+LG's `dmost` service recalculates `isVideoScreenSaverEnabled` at every foreground app change and
+switches it off unless LG's own conditions for its video screensaver hold (LG's server allows it,
+LG Channels is enabled, the TV is online, `screenSaverAd` is on, among others), which on most TVs
+they never all do. So while the screensaver is applied, `assets/videoads-flag.sh` runs as the
+systemd unit `aerial-videoads-flag`, checks the setting every 5 seconds and switches it back on;
+the restore hook stops it first. `systemctl status aerial-videoads-flag` shows it.
 
 Features
 --------
