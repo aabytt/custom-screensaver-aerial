@@ -34,6 +34,11 @@ WebOSWindow {
     // Decoder guard: true once the check has finished / true if another app holds a video decoder
     property bool decoderDecided : false
     property bool decoderHeld : false
+    // Anti burn-in: in clock-only mode the clock fades out, reappears in the next corner and fades in
+    property int clockCorner : 0   // 0 = bottom-right, 1 = top-right, 2 = top-left, 3 = bottom-left
+    property bool clockLeft : false
+    property real clockShiftY : 0
+    property real clockFade : 1
     property string basePath : "file:///media/developer/apps/usr/palm/applications/org.aabytt.webos.custom-screensaver-aerial/assets/"
     Component.onCompleted : {
         init()
@@ -172,9 +177,10 @@ WebOSWindow {
         }
         Text {
             id : timeOSD
-            horizontalAlignment : Text.AlignRight
-            anchors.right : parent.right
-            opacity : name.opacity
+            horizontalAlignment : clockLeft ? Text.AlignLeft : Text.AlignRight
+            anchors.left : clockLeft ? parent.left : undefined
+            anchors.right : clockLeft ? undefined : parent.right
+            opacity : name.opacity * clockFade
             font.family : name.font.family
             font.letterSpacing : name.font.letterSpacing
             font.pixelSize : name.font.pixelSize + 23
@@ -186,17 +192,34 @@ WebOSWindow {
         }
         Text {
             id : dateOSD
-            horizontalAlignment : Text.AlignRight
-            anchors.right : parent.right
-            opacity : name.opacity
+            horizontalAlignment : clockLeft ? Text.AlignLeft : Text.AlignRight
+            anchors.left : clockLeft ? parent.left : undefined
+            anchors.right : clockLeft ? undefined : parent.right
+            opacity : name.opacity * clockFade
             font.family : name.font.family
             font.letterSpacing : name.font.letterSpacing
             font.pixelSize : name.font.pixelSize - 16
-            y : name.y + name.font.pixelSize + 5
+            y : name.y + name.font.pixelSize + 5 + clockShiftY
             color : name.color
             style : name.style
             styleColor : name.styleColor
             fontSizeMode : name.fontSizeMode
+        }
+    }
+    SequentialAnimation {
+        id : clockHop
+        NumberAnimation { target : window; property : "clockFade"; to : 0; duration : 1500 }
+        ScriptAction { script : applyClockCorner() }
+        NumberAnimation { target : window; property : "clockFade"; to : 1; duration : 1500 }
+    }
+    Timer {
+        id : clockMover
+        interval : 30000
+        running : decoderHeld
+        repeat : true
+        onTriggered : {
+            clockCorner = (clockCorner + 1) % 4
+            clockHop.restart()
         }
     }
     Text {
@@ -212,6 +235,11 @@ WebOSWindow {
         style : name.style
         styleColor : name.styleColor
         fontSizeMode : name.fontSizeMode
+    }
+    function applyClockCorner() {
+        var top = clockCorner === 1 || clockCorner === 2
+        clockLeft = clockCorner === 2 || clockCorner === 3
+        clockShiftY = top ? -(osd.height * 0.9 - 35) : 0
     }
     function init() {
         loadJSONData(basePath + 'settings.json', 'settings', loadResources)
