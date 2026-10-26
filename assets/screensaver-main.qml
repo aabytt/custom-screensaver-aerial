@@ -42,6 +42,9 @@ WebOSWindow {
         decoderCheck.callService({})
         decoderCheckTimeout.start()
     }
+    // Notifications are disabled on start and re-enabled only after 2 s of video;
+    // always re-enable on exit, otherwise Back loses the system "exit app?" popup (#52)
+    Component.onDestruction : notificationsService.set('enable')
     I.ILib {
         id : ilib
     }
