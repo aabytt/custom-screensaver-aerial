@@ -13,7 +13,7 @@
 * 40+ locales for OSD
 * Source type selection (FullHD/4k SDR or Dolby Vision)
 * Requires root and Homebrew channel
-* Compatible with webOS 5 (2020), webOS 6 (2021), webOS 22 (2022), webOS 23 (2023), webOS 25 (10.x)
+* Compatible with webOS 5 (2020), webOS 6 (2021), webOS 22 (2022), webOS 23 (2023), webOS 25 (10.x), webOS 26 (11.x)
 
 Disclaimer
 ---------------
@@ -25,10 +25,32 @@ The stock screensaver is a Flutter app on these TVs and QML apps can't be launch
 `apply.sh` uses a web version of the screensaver instead (`assets/web-screensaver.html`). It
 uses the same settings, videos and locales. Notes:
 
-- Applying restarts the app manager, so running apps close and the home screen reloads.
+- Applying makes the app manager reread the screensaver (`blockSystemApp` + `releaseBlockSystemApp`).
+  Only where it doesn't take that does it restart the app manager, which closes running apps.
 - Set text opacity to 0 to hide the on-screen text, e.g. to avoid burn-in on OLED TVs.
 - If another app has a paused video, the screensaver shows a clock that moves every minute
   instead of video, so that app keeps its video decoder and playback can resume.
+
+webOS 26 (11.x)
+---------------
+webOS 26 ends the regular screensaver (`com.webos.app.screensaver`) as soon as it starts a video,
+but it lets LG's own video screensaver, `com.webos.app.videoads`, play video. The TV uses that one
+when the LG Channels setting `isVideoScreenSaverEnabled` is on. So on webOS 26, `apply.sh`:
+
+- mounts a copy of the web screensaver, with the `videoads` app id, over `com.webos.app.videoads`
+  (the regular screensaver stays LG's),
+- takes `videoads` off LG's blocked system app list if a debloat tool put it there,
+- switches `isVideoScreenSaverEnabled` on.
+
+The setting and the block list survive a reboot but the mount doesn't, which would leave LG's own
+video screensaver running. So `apply.sh` first saves their earlier values to
+`/var/lib/webosbrew/aerial-videoads/state` and installs a boot hook,
+`/var/lib/webosbrew/init.d/49-aerial-videoads-restore`. At boot, unless Autostart is on, it puts
+both back and removes itself; it also does this after Aerial is uninstalled. To undo it without a
+reboot, run `sh /var/lib/webosbrew/init.d/49-aerial-videoads-restore now`.
+
+If the TV switches `isVideoScreenSaverEnabled` back off by itself (seen once in testing, cause
+unknown), the TV shows LG's regular screensaver again until the next Apply or reboot with Autostart.
 
 Features
 --------

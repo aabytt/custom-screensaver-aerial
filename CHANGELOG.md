@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - webOS 25 (10.x): if another app has a paused video, the web screensaver no longer takes its
   video decoder, and shows a moving clock instead of video.
 
+- webOS 26 (11.x) support: `apply.sh` runs the web screensaver as `com.webos.app.videoads`, LG's
+  video screensaver, with the `isVideoScreenSaverEnabled` setting on, since webOS 26 ends the
+  regular screensaver as soon as it plays video (#50). A boot hook puts the setting and the
+  `videoads` block back unless Autostart is on, including after Aerial is uninstalled.
+
 ### Changed
 - webOS 25/26 (10.x/11.x): `apply.sh` makes SAM reread the screensaver's manifest with
   `blockSystemApp` + `releaseBlockSystemApp` (as Glasshouse and Luma do) instead of restarting
