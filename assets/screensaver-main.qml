@@ -248,12 +248,33 @@ WebOSWindow {
         loadJSONData(basePath + 'videos.json', 'playList')
         loadJSONData(basePath + 'locales/' + settings.localeLang + '.json', 'poi', playRandomVideo)
     }
+    function allowedIndices() {
+        // playlist = all videos except those disabled in settings (empty selection = all)
+        var disabled = settings.disabledVideos || []
+        var out = []
+        for (var i = 0; i < playList.assets.length; i++) {
+            if (disabled.indexOf(playList.assets[i].id) === -1) out.push(i)
+        }
+        if (out.length === 0) {
+            for (var j = 0; j < playList.assets.length; j++) out.push(j)
+        }
+        // everything in the playlist has been shown: start over
+        var allViewed = true
+        for (var k = 0; k < out.length; k++) {
+            if (!playList.assets[out[k]].viewed) { allViewed = false; break }
+        }
+        if (allViewed) {
+            for (var m = 0; m < out.length; m++) playList.assets[out[m]].viewed = false
+        }
+        return out
+    }
     function playRandomVideo() {
         // Wait for the decoder check; clock-only mode never starts a video
         if (!decoderDecided || decoderHeld || !playList || !poi)
             return
         stalledCounter = 0
-        randomIndex = Math.floor(Math.random() * playList.assets.length)
+        var allowed = allowedIndices()
+        randomIndex = allowed[Math.floor(Math.random() * allowed.length)]
         if (!playList.assets[randomIndex].viewed) {
             if (playList.assets[randomIndex][settings.sourceType]) {
                 sourceAlt = ""

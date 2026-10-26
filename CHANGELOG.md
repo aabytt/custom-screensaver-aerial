@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Playlist screen: thumbnail grid to select/deselect which videos are in the playlist
+  (stored as `disabledVideos` ids in settings.json, honoured by both screensavers).
 - webOS 25 (10.x) support: on TVs with the Flutter-based stock screensaver, `apply.sh` mounts a
   web version of the screensaver that uses the same settings, videos and locales.
 - webOS 25 (10.x): if another app has a paused video, the web screensaver no longer takes its
