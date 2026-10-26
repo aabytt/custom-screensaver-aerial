@@ -64,19 +64,40 @@ retry_call() {  # uri payload pattern
 }
 
 ok=1
+unmounted=0
 # The settings.json bind mount first, then the screensaver copy
 for m in "$VA_DIR/settings.json" "$VA_DIR"; do
     if grep -qs " $m " /proc/mounts; then
-        umount "$m" || ok=0
+        if umount "$m"; then unmounted=1; else ok=0; fi
     fi
 done
 retry_call "$SETTINGS/setSystemSettings" \
     "{\"category\":\"lgchannels\",\"settings\":{\"isVideoScreenSaverEnabled\":$FLAG}}" '"returnValue": *true' || ok=0
+force=
+grep -q '"forceBlockSystemApp"' "$BLOCK_SCHEMA" 2>/dev/null && force=',"forceBlockSystemApp":false'
 if [ "$BLOCKED" = 1 ]; then
-    force=
-    grep -q '"forceBlockSystemApp"' "$BLOCK_SCHEMA" 2>/dev/null && force=',"forceBlockSystemApp":false'
+    # Blocked again: SAM drops videoads, and rereads LG's manifest whenever it's released
     retry_call "$SAM/blockSystemApp" "{\"id\":\"$VA_ID\"$force}" \
         '"returnValue": *true|"errorText": *"[^"]*already +blocked' || ok=0
+elif [ $unmounted = 1 ]; then
+    # Not blocked originally: SAM would keep serving the unmounted copy's manifest
+    # (web-screensaver.html) until a reboot, so block + release to make it reread LG's own
+    if retry_call "$SAM/blockSystemApp" "{\"id\":\"$VA_ID\"$force}" \
+           '"returnValue": *true|"errorText": *"[^"]*already +blocked' &&
+       retry_call "$SAM/releaseBlockSystemApp" "{\"id\":\"$VA_ID\"}" \
+           '"returnValue": *true|"errorText": *"[^"]*not +blocked'; then
+        reread=0
+        for i in $(seq 1 10); do
+            reply="$($TIMEOUT luna-send -n 1 "$SAM/getAppInfo" "{\"id\":\"$VA_ID\"}" </dev/null 2>/dev/null || true)"
+            if echo "$reply" | grep -q '"main"' && ! echo "$reply" | grep -q 'web-screensaver\.html'; then
+                reread=1; break
+            fi
+            sleep 1
+        done
+        [ $reread = 1 ] || { echo "videoads-restore: SAM still reports the screensaver copy for $VA_ID" >&2; ok=0; }
+    else
+        ok=0
+    fi
 fi
 
 if [ $ok = 1 ]; then
