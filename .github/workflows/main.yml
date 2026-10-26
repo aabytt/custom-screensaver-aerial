@@ -5,7 +5,7 @@ name: Build & Test
 
 on:
   push:
-    branches: [ picker ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
