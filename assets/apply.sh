@@ -22,7 +22,8 @@ fi
 
 # Calls a SAM method and checks its reply against an extended regex (case-insensitive). The
 # reply is captured first so luna-send's own exit status doesn't matter under pipefail, and the
-# call gives up after 8 s so a busy SAM can't hang the app or the boot hooks.
+# call gives up after 8 s so a busy SAM can't hang the app or the boot hooks. luna-send gets
+# /dev/null as stdin: run from a script it was reported to return nothing otherwise (#55).
 # BusyBox before 1.30 only takes "timeout -t SECS"
 if timeout 1 true >/dev/null 2>&1; then
     TIMEOUT="timeout 8"
@@ -32,7 +33,7 @@ else
     TIMEOUT=
 fi
 sam_call() {  # method payload pattern
-    reply="$($TIMEOUT luna-send -n 1 "$SAM/$1" "$2" 2>/dev/null || true)"
+    reply="$($TIMEOUT luna-send -n 1 "$SAM/$1" "$2" </dev/null 2>/dev/null || true)"
     echo "$reply" | grep -qiE "$3"
 }
 
