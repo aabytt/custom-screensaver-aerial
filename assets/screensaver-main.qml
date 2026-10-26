@@ -31,11 +31,16 @@ WebOSWindow {
     property int randomIndex
     property int stalledCounter : 0
     property string sourceAlt
+    // Decoder guard: true once the check has finished / true if another app holds a video decoder
+    property bool decoderDecided : false
+    property bool decoderHeld : false
     property string basePath : "file:///media/developer/apps/usr/palm/applications/org.aabytt.webos.custom-screensaver-aerial/assets/"
     Component.onCompleted : {
         init()
         notificationsService.set('disable')
-        playRandomVideo()
+        // Do not start the video before we know no other app holds the decoder
+        decoderCheck.callService({})
+        decoderCheckTimeout.start()
     }
     I.ILib {
         id : ilib
@@ -213,6 +218,9 @@ WebOSWindow {
         loadJSONData(basePath + 'locales/' + settings.localeLang + '.json', 'poi', playRandomVideo)
     }
     function playRandomVideo() {
+        // Wait for the decoder check; clock-only mode never starts a video
+        if (!decoderDecided || decoderHeld || !playList || !poi)
+            return
         stalledCounter = 0
         randomIndex = Math.floor(Math.random() * playList.assets.length)
         if (!playList.assets[randomIndex].viewed) {
@@ -344,6 +352,46 @@ WebOSWindow {
             poiIndex = Math.floor(videoOutput.position / 1000)        
     }
 
+    // Decoder guard (app-independent, webOS 5-23).
+    // If another app (e.g. a paused Jellyfin/Netflix/YouTube session) holds a video
+    // decoder, starting our own video would break its playback after the screensaver
+    // exits. In that case only the clock is shown.
+    // Note: luna://com.webos.media/getActivePipelines answers with a bare JSON array,
+    // which QML Service reports as onCallFailure with an empty response, so
+    // com.webos.service.videooutput/getStatus (object response) is used instead.
+    function decide(held) {
+        if (decoderDecided)
+            return
+        decoderDecided = true
+        decoderCheckTimeout.stop()
+        decoderHeld = held
+        if (held) {
+            notificationsService.set('enable')
+            name.visible = false
+            poiOSD.visible = false
+            osd.visible = true
+            fadeInOsd.running = true
+        } else
+            playRandomVideo()
+    }
+    Service {
+        id : decoderCheck
+        appId : window.appId
+        service : "com.webos.service.videooutput"
+        method : "getStatus"
+        onCallResponse : {
+            var text = (typeof response === "string") ? response : JSON.stringify(response)
+            decide(/"connectedSource" *: *"VDEC/.test(text))
+        }
+        // Unknown means the decoder may be held: never risk the other app's playback
+        onCallFailure : decide(true)
+        onError : decide(true)
+    }
+    Timer {
+        id : decoderCheckTimeout
+        interval : 3000
+        onTriggered : decide(true)
+    }
     Service {
         id : notificationsService
         appId : globalVars.appId
