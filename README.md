@@ -79,3 +79,5 @@ Screenshots
    ![Main](https://github.com/aabytt/custom-screensaver-aerial/assets/84480313/77daf2da-b528-41ba-8377-fff70e6e1fd3)
    ![Screenshot](https://github.com/aabytt/custom-screensaver-aerial/assets/84480313/166f43e7-a3cf-4035-975a-931f282f5655)
    ![Settings](https://github.com/user-attachments/assets/b530640c-56ef-42a5-98eb-f2f8f4dc11aa)
+   ![Playlist editor](https://github.com/user-attachments/assets/e87586c6-4e00-47c6-8285-925c8e4fa646)
+
