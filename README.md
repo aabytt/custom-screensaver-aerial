@@ -9,11 +9,11 @@
 </div>
 
 
-* [330+ aerial videos](https://aabytt.github.io/aerial-preview/) from different sources.
+* [330+ videos](https://aabytt.github.io/aerial-preview/) from different sources (Apple Aerials, Amazon FireOS, Jetson Creative, Robin Fourcade)
 * 40+ locales for OSD
 * Source type selection (FullHD/4k SDR or Dolby Vision)
 * Requires root and Homebrew channel
-* Compatible with webOS 5 (2020), webOS 6 (2021), webOS 22 (2022), webOS 23 (2023), webOS 25 (10.x), webOS 26 (11.x)
+* Compatible with webOS 5 (2020), webOS 6 (2021), webOS 22 (7.x), webOS 23 (8.x), webOS 25 (10.x), webOS 26 (11.x)
 
 Disclaimer
 ---------------
@@ -62,6 +62,7 @@ Features
 * Autostart registration
 * Temporary apply
 * Launch screensaver immediately for testing
+* Playlist editor
 
 Installation
 ------------
@@ -77,4 +78,4 @@ Screenshots
 ------------
    ![Main](https://github.com/aabytt/custom-screensaver-aerial/assets/84480313/77daf2da-b528-41ba-8377-fff70e6e1fd3)
    ![Screenshot](https://github.com/aabytt/custom-screensaver-aerial/assets/84480313/166f43e7-a3cf-4035-975a-931f282f5655)
-   ![Settings](https://github.com/aabytt/custom-screensaver-aerial/assets/84480313/1b7f281b-efdc-4eed-b0f2-b06f4bd5929a)
+   ![Settings](https://github.com/user-attachments/assets/b530640c-56ef-42a5-98eb-f2f8f4dc11aa)

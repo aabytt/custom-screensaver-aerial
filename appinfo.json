@@ -9,6 +9,5 @@
     "iconColor": "#2d353d",
     "type": "web",
     "imageForRecents":"assets/imageForRecents.png",
-    "noSplashOnLaunch":true,
     "appDescription": "Aerial custom webOS Screensaver"
 }

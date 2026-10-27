@@ -10,7 +10,8 @@ var
   Popup = require('moonstone/Popup'),
   Control = require('enyo/Control'),
   Spotlight = require('spotlight'),
-  LunaService = require('enyo-webos/LunaService');
+  LunaService = require('enyo-webos/LunaService'),
+  SettingsStore = require('./SettingsStore.js');
 
 // Toast: bottom center. It is a plain DOM node in the floating layer, NOT an Enyo control inside the
 // panel: a control next to the fit:true scroller makes the Fittable layout resize the scroller every
@@ -1231,8 +1232,7 @@ var VideoSelectPanel = kind({
   save: function () {
     this.dirty = false;
     this.settings.disabledVideos = Object.keys(this.disabled);
-    var json = JSON.stringify(this.settings).replace(/'/g, "'\\''");   // apostrophes would break the shell command
-    this.$.save.send({command: "echo '" + json + "' > " + this.settingsPath});
+    this.$.save.send({command: SettingsStore.saveCommand(this.settings)});   // app copy + persistent copy
   }
 });
 

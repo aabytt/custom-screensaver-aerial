@@ -12,14 +12,32 @@ var
   Item = require('moonstone/Item'),
   ToggleItem = require('moonstone/ToggleItem'),
   VideoSelectPanel = require('./VideoSelectPanel.js'),
-  DisplayPanel = require('./DisplayPanel.js');
-var basePath = "/media/developer/apps/usr/palm/applications/org.aabytt.webos.custom-screensaver-aerial";
+  DisplayPanel = require('./DisplayPanel.js'),
+  SettingsStore = require('./SettingsStore.js');
+var basePath = SettingsStore.basePath;
 var applyPath = basePath + "/assets/apply.sh";
 var linkPath = "/var/lib/webosbrew/init.d/50-custom-screensaver-aerial";
-var settingsPath = basePath + "/assets/settings.json";
+var settingsPath = SettingsStore.appPath;
 // One object for the whole lifetime of the app: sub-panels keep a reference to it,
 // so applySettings() fills it in place instead of replacing it.
 var settings = {};
+var releasesApi = 'https://api.github.com/repos/aabytt/custom-screensaver-aerial/releases/latest';
+var hbChannelId = 'org.webosbrew.hbchannel';
+
+// "v1.2.3" / "1.2.3-beta" -> [1, 2, 3]; anything non-numeric after the leading number is ignored
+function parseVersion(v) {
+  var m = String(v || '').match(/\d+(\.\d+)*/);
+  return m ? m[0].split('.').map(function (n) { return parseInt(n, 10); }) : [];
+}
+// > 0 if a is newer than b, < 0 if older, 0 if equal
+function compareVersions(a, b) {
+  var x = parseVersion(a), y = parseVersion(b), i, d;
+  for (i = 0; i < Math.max(x.length, y.length); i++) {
+    d = (x[i] || 0) - (y[i] || 0);
+    if (d) { return d; }
+  }
+  return 0;
+}
 module.exports = kind({
   name: 'MainPanel',
   kind: Panel,
@@ -33,6 +51,7 @@ module.exports = kind({
       {kind: Scroller, fit: true, components: [
         {classes: 'moon-hspacing', style: 'margin-left: 10%', controlClasses: 'moon-12h', components: [
           {components: [
+            {kind: BodyText, name: 'versionInfo', style: 'margin: 10px 0 20px', content: ''},
             {kind: ToggleItem, name: 'autostart', content: 'Autostart', disabled: true, onchange: 'autostartToggle'},
             {kind: Item, components: [
               {kind: Marquee.Text, content: 'Apply until reboot'},
@@ -55,7 +74,10 @@ module.exports = kind({
               {kind: Marquee.Text, content: 'On-screen display'},
               {kind: BodyText, style: 'margin: 10px 0', name: 'displayInfo', content: 'Language, text opacity, debug info'}
             ], ontap: 'openDisplay'},
-            {kind: Button, style: 'margin: 20px 0', content: 'Test run', ontap: 'testRun'}
+            {style: 'margin: 20px 0', components: [
+              {kind: Button, style: 'margin: 0 20px 0 0', content: 'Test run', ontap: 'testRun'},
+              {kind: Button, name: 'updateButton', showing: false, style: 'margin: 0', content: 'Update', ontap: 'openHbChannel'}
+            ]}
           ]}
         ]}
       ]}
@@ -66,37 +88,131 @@ module.exports = kind({
     ]},
     {kind: LunaService, name: 'statusCheck', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onStatusCheck', onError: 'onStatusCheck'},
     {kind: LunaService, name: 'exec', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onExec', onError: 'onExec'},
-    {kind: LunaService, name: 'init', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onInit', onError: 'onInit'}
+    {kind: LunaService, name: 'init', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onInit', onError: 'onInit'},
+    {kind: LunaService, name: 'restore', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec'}
   ],
 
   bindings: [],
 
   create: function () {
     this.inherited(arguments);
+    // Two sources, merged when both have answered:
+    //  packaged  - assets/settings.json of the installed app (defaults, may bring new keys after an update)
+    //  persisted - copy in /var/lib/webosbrew/..., survives reinstall / update; wins over packaged
+    this.sources = {};
+    this.loaded = false;
+    this.persistBroken = false;
     this.$.statusCheck.send({
       command: 'readlink ' + linkPath
     });
-    this.loadSettingsLocal();   // direct read of the packaged file
+    this.loadSettingsLocal();
+    // A missing file is a normal answer (empty output, exit 0), so a real failure can be told apart from it
     this.$.init.send({
-      command: 'cat ' + settingsPath
+      command: 'if [ -f ' + SettingsStore.persistPath + ' ]; then cat ' + SettingsStore.persistPath + '; else echo; fi'
     });
+    this.startJob('settingsTimeout', 'settingsTimeout', 5000);
+    this.loadVersion();
   },
 
-  // Fallback: the app's own files are readable without the luna service
+  // The app's own files are readable without the luna service
   loadSettingsLocal: function () {
     var self = this, xhr = new XMLHttpRequest();
     xhr.open('GET', 'assets/settings.json');
     xhr.onload = function () {
-      if (settings.sourceType) { return; } // service read already won
+      var data = null;
       if (xhr.status === 200 || (xhr.status === 0 && xhr.responseText)) {
         try {
-          self.applySettings(JSON.parse(xhr.responseText));
+          data = JSON.parse(xhr.responseText);
         } catch (e) {
           console.error(e);
         }
       }
+      self.gotSettings('packaged', data);
+    };
+    xhr.onerror = function () { self.gotSettings('packaged', null); };
+    xhr.send();
+  },
+
+  gotSettings: function (name, data) {
+    if (this.loaded) { return; }
+    this.sources[name] = data || false;
+    this.finishLoading(false);
+  },
+
+  settingsTimeout: function () {
+    this.finishLoading(true);
+  },
+
+  finishLoading: function (force) {
+    var src = this.sources, merged = {};
+    if (this.loaded) { return; }
+    if (!force && (src.packaged === undefined || src.persisted === undefined)) { return; }
+    this.loaded = true;
+    this.stopJob('settingsTimeout');
+    if (!src.packaged && !src.persisted) {
+      this.$.result.set('content', 'Could not read settings (neither the saved copy nor the packaged settings.json)');
+      return;
+    }
+    [src.packaged, src.persisted].forEach(function (o) {
+      if (o) { Object.keys(o).forEach(function (k) { merged[k] = o[k]; }); }
+    });
+    this.applySettings(merged);
+    // Bring both copies in line: after a reinstall the app directory holds the default file, the persistent
+    // one is restored there; on the first run after this feature appeared the persistent copy gets created.
+    // Skipped if the persistent read did not finish or the file is broken: never overwrite what was not read.
+    if (src.persisted !== undefined && !this.persistBroken) {
+      this.$.restore.send({command: SettingsStore.saveCommand(settings)});
+    }
+  },
+
+  // Installed version comes from the app's own appinfo.json (readable without the luna service)
+  loadVersion: function () {
+    var self = this, xhr = new XMLHttpRequest();
+    xhr.open('GET', 'appinfo.json');
+    xhr.onload = function () {
+      try {
+        self.version = JSON.parse(xhr.responseText).version;
+      } catch (e) {
+        console.error(e);
+      }
+      if (self.version) {
+        self.$.versionInfo.set('content', 'Version ' + self.version);
+        self.checkUpdate();
+      }
     };
     xhr.send();
+  },
+
+  // Compares with the latest GitHub release; the Update button appears only if it is newer.
+  // Failures (no network, rate limit, timeout) are silent.
+  checkUpdate: function () {
+    var self = this, xhr = new XMLHttpRequest();
+    xhr.open('GET', releasesApi);
+    xhr.timeout = 10000;
+    xhr.onload = function () {
+      var latest;
+      if (xhr.status !== 200) { return; }
+      try {
+        latest = JSON.parse(xhr.responseText).tag_name;
+      } catch (e) {
+        console.error(e);
+        return;
+      }
+      if (latest && compareVersions(latest, self.version) > 0) {
+        latest = String(latest).replace(/^v/i, '');
+        // highlighted: marker, green, bold
+        self.$.versionInfo.set('content', '\u25b2 Version ' + self.version + ' \u00b7 update available: ' + latest);
+        self.$.versionInfo.applyStyle('color', '#4cd964');
+        self.$.versionInfo.applyStyle('font-weight', 'bold');
+        self.$.updateButton.set('showing', true);
+      }
+    };
+    xhr.onerror = xhr.ontimeout = function () { console.info('Update check failed'); };
+    xhr.send();
+  },
+
+  openHbChannel: function () {
+    this.exec("luna-send -n 1 'luna://com.webos.applicationManager/launch' '{\"id\":\"" + hbChannelId + "\"}'");
   },
 
   applySettings: function (s) {
@@ -118,18 +234,22 @@ module.exports = kind({
     this.$.displayInfo.set('content', parts.join(' \u00b7 '));
   },
 
+  // answer of reading the persistent settings.json: empty output = no file yet (normal on the first run)
   onInit: function (sender, evt) {
+    var data = null;
     console.info(sender, evt);
-    if (!evt || !evt.returnValue || !evt.stdoutString) {
-      this.$.result.set('content', 'Could not read settings via service: ' +
-        ((evt && (evt.errorText || evt.stderrString)) || 'no response'));
-      return;
+    if (!evt || !evt.returnValue) {
+      // the read itself failed: the file may exist, so it must not be overwritten at startup
+      this.persistBroken = true;
+    } else if (evt.stdoutString && evt.stdoutString.trim()) {
+      try {
+        data = JSON.parse(evt.stdoutString);
+      } catch (e) {
+        this.persistBroken = true;
+        this.$.result.set('content', 'Saved settings are not valid JSON: ' + e.message);
+      }
     }
-    try {
-      this.applySettings(JSON.parse(evt.stdoutString));
-    } catch (e) {
-      this.$.result.set('content', 'settings.json is not valid JSON: ' + e.message);
-    }
+    this.gotSettings('persisted', data);
   },
 
   testRun: function () {
@@ -223,7 +343,6 @@ module.exports = kind({
   },
 
   settingsSave: function () {
-    var json = JSON.stringify(settings).replace(/'/g, "'\\''");   // apostrophes would break the shell command
-    this.exec("echo '" + json + "' > " + settingsPath);
+    this.exec(SettingsStore.saveCommand(settings));   // app copy + persistent copy
   }
 });
