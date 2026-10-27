@@ -8,7 +8,8 @@ var
   ExpandablePicker = require('moonstone/ExpandablePicker'),
   SimpleIntegerPicker = require('moonstone/SimpleIntegerPicker'),
   ToggleItem = require('moonstone/ToggleItem'),
-  LunaService = require('enyo-webos/LunaService');
+  LunaService = require('enyo-webos/LunaService'),
+  SettingsStore = require('./SettingsStore.js');
 
 // Language list lives here so MainPanel can reuse it for the summary line
 var LANGUAGES = [
@@ -134,8 +135,7 @@ var DisplayPanel = kind({
 
   save: function () {
     this.dirty = false;
-    var json = JSON.stringify(this.settings).replace(/'/g, "'\\''");   // apostrophes would break the shell command
-    this.$.save.send({command: "echo '" + json + "' > " + this.settingsPath});
+    this.$.save.send({command: SettingsStore.saveCommand(this.settings)});   // app copy + persistent copy
   }
 });
 

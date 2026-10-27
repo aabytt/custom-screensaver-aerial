@@ -12,11 +12,12 @@ var
   Item = require('moonstone/Item'),
   ToggleItem = require('moonstone/ToggleItem'),
   VideoSelectPanel = require('./VideoSelectPanel.js'),
-  DisplayPanel = require('./DisplayPanel.js');
-var basePath = "/media/developer/apps/usr/palm/applications/org.aabytt.webos.custom-screensaver-aerial";
+  DisplayPanel = require('./DisplayPanel.js'),
+  SettingsStore = require('./SettingsStore.js');
+var basePath = SettingsStore.basePath;
 var applyPath = basePath + "/assets/apply.sh";
 var linkPath = "/var/lib/webosbrew/init.d/50-custom-screensaver-aerial";
-var settingsPath = basePath + "/assets/settings.json";
+var settingsPath = SettingsStore.appPath;
 // One object for the whole lifetime of the app: sub-panels keep a reference to it,
 // so applySettings() fills it in place instead of replacing it.
 var settings = {};
@@ -66,37 +67,79 @@ module.exports = kind({
     ]},
     {kind: LunaService, name: 'statusCheck', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onStatusCheck', onError: 'onStatusCheck'},
     {kind: LunaService, name: 'exec', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onExec', onError: 'onExec'},
-    {kind: LunaService, name: 'init', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onInit', onError: 'onInit'}
+    {kind: LunaService, name: 'init', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onInit', onError: 'onInit'},
+    {kind: LunaService, name: 'restore', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec'}
   ],
 
   bindings: [],
 
   create: function () {
     this.inherited(arguments);
+    // Two sources, merged when both have answered:
+    //  packaged  - assets/settings.json of the installed app (defaults, may bring new keys after an update)
+    //  persisted - copy in /var/lib/webosbrew/..., survives reinstall / update; wins over packaged
+    this.sources = {};
+    this.loaded = false;
+    this.persistBroken = false;
     this.$.statusCheck.send({
       command: 'readlink ' + linkPath
     });
-    this.loadSettingsLocal();   // direct read of the packaged file
+    this.loadSettingsLocal();
     this.$.init.send({
-      command: 'cat ' + settingsPath
+      command: 'cat ' + SettingsStore.persistPath
     });
+    this.startJob('settingsTimeout', 'settingsTimeout', 5000);
   },
 
-  // Fallback: the app's own files are readable without the luna service
+  // The app's own files are readable without the luna service
   loadSettingsLocal: function () {
     var self = this, xhr = new XMLHttpRequest();
     xhr.open('GET', 'assets/settings.json');
     xhr.onload = function () {
-      if (settings.sourceType) { return; } // service read already won
+      var data = null;
       if (xhr.status === 200 || (xhr.status === 0 && xhr.responseText)) {
         try {
-          self.applySettings(JSON.parse(xhr.responseText));
+          data = JSON.parse(xhr.responseText);
         } catch (e) {
           console.error(e);
         }
       }
+      self.gotSettings('packaged', data);
     };
+    xhr.onerror = function () { self.gotSettings('packaged', null); };
     xhr.send();
+  },
+
+  gotSettings: function (name, data) {
+    if (this.loaded) { return; }
+    this.sources[name] = data || false;
+    this.finishLoading(false);
+  },
+
+  settingsTimeout: function () {
+    this.finishLoading(true);
+  },
+
+  finishLoading: function (force) {
+    var src = this.sources, merged = {};
+    if (this.loaded) { return; }
+    if (!force && (src.packaged === undefined || src.persisted === undefined)) { return; }
+    this.loaded = true;
+    this.stopJob('settingsTimeout');
+    if (!src.packaged && !src.persisted) {
+      this.$.result.set('content', 'Could not read settings (neither the saved copy nor the packaged settings.json)');
+      return;
+    }
+    [src.packaged, src.persisted].forEach(function (o) {
+      if (o) { Object.keys(o).forEach(function (k) { merged[k] = o[k]; }); }
+    });
+    this.applySettings(merged);
+    // Bring both copies in line: after a reinstall the app directory holds the default file, the persistent
+    // one is restored there; on the first run after this feature appeared the persistent copy gets created.
+    // Skipped if the persistent read did not finish or the file is broken: never overwrite what was not read.
+    if (src.persisted !== undefined && !this.persistBroken) {
+      this.$.restore.send({command: SettingsStore.saveCommand(settings)});
+    }
   },
 
   applySettings: function (s) {
@@ -118,18 +161,19 @@ module.exports = kind({
     this.$.displayInfo.set('content', parts.join(' \u00b7 '));
   },
 
+  // answer of `cat <persistent settings.json>`; a missing file is normal on the first run
   onInit: function (sender, evt) {
+    var data = null;
     console.info(sender, evt);
-    if (!evt || !evt.returnValue || !evt.stdoutString) {
-      this.$.result.set('content', 'Could not read settings via service: ' +
-        ((evt && (evt.errorText || evt.stderrString)) || 'no response'));
-      return;
+    if (evt && evt.returnValue && evt.stdoutString && evt.stdoutString.trim()) {
+      try {
+        data = JSON.parse(evt.stdoutString);
+      } catch (e) {
+        this.persistBroken = true;
+        this.$.result.set('content', 'Saved settings are not valid JSON: ' + e.message);
+      }
     }
-    try {
-      this.applySettings(JSON.parse(evt.stdoutString));
-    } catch (e) {
-      this.$.result.set('content', 'settings.json is not valid JSON: ' + e.message);
-    }
+    this.gotSettings('persisted', data);
   },
 
   testRun: function () {
@@ -223,7 +267,6 @@ module.exports = kind({
   },
 
   settingsSave: function () {
-    var json = JSON.stringify(settings).replace(/'/g, "'\\''");   // apostrophes would break the shell command
-    this.exec("echo '" + json + "' > " + settingsPath);
+    this.exec(SettingsStore.saveCommand(settings));   // app copy + persistent copy
   }
 });
