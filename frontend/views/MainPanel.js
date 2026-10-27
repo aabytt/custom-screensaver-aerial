@@ -21,6 +21,23 @@ var settingsPath = SettingsStore.appPath;
 // One object for the whole lifetime of the app: sub-panels keep a reference to it,
 // so applySettings() fills it in place instead of replacing it.
 var settings = {};
+var releasesApi = 'https://api.github.com/repos/aabytt/custom-screensaver-aerial/releases/latest';
+var hbChannelId = 'org.webosbrew.hbchannel';
+
+// "v1.2.3" / "1.2.3-beta" -> [1, 2, 3]; anything non-numeric after the leading number is ignored
+function parseVersion(v) {
+  var m = String(v || '').match(/\d+(\.\d+)*/);
+  return m ? m[0].split('.').map(function (n) { return parseInt(n, 10); }) : [];
+}
+// > 0 if a is newer than b, < 0 if older, 0 if equal
+function compareVersions(a, b) {
+  var x = parseVersion(a), y = parseVersion(b), i, d;
+  for (i = 0; i < Math.max(x.length, y.length); i++) {
+    d = (x[i] || 0) - (y[i] || 0);
+    if (d) { return d; }
+  }
+  return 0;
+}
 module.exports = kind({
   name: 'MainPanel',
   kind: Panel,
@@ -34,6 +51,7 @@ module.exports = kind({
       {kind: Scroller, fit: true, components: [
         {classes: 'moon-hspacing', style: 'margin-left: 10%', controlClasses: 'moon-12h', components: [
           {components: [
+            {kind: BodyText, name: 'versionInfo', style: 'margin: 10px 0 20px', content: ''},
             {kind: ToggleItem, name: 'autostart', content: 'Autostart', disabled: true, onchange: 'autostartToggle'},
             {kind: Item, components: [
               {kind: Marquee.Text, content: 'Apply until reboot'},
@@ -56,7 +74,10 @@ module.exports = kind({
               {kind: Marquee.Text, content: 'On-screen display'},
               {kind: BodyText, style: 'margin: 10px 0', name: 'displayInfo', content: 'Language, text opacity, debug info'}
             ], ontap: 'openDisplay'},
-            {kind: Button, style: 'margin: 20px 0', content: 'Test run', ontap: 'testRun'}
+            {style: 'margin: 20px 0', components: [
+              {kind: Button, style: 'margin: 0 20px 0 0', content: 'Test run', ontap: 'testRun'},
+              {kind: Button, name: 'updateButton', showing: false, style: 'margin: 0', content: 'Update', ontap: 'openHbChannel'}
+            ]}
           ]}
         ]}
       ]}
@@ -89,6 +110,7 @@ module.exports = kind({
       command: 'cat ' + SettingsStore.persistPath
     });
     this.startJob('settingsTimeout', 'settingsTimeout', 5000);
+    this.loadVersion();
   },
 
   // The app's own files are readable without the luna service
@@ -140,6 +162,56 @@ module.exports = kind({
     if (src.persisted !== undefined && !this.persistBroken) {
       this.$.restore.send({command: SettingsStore.saveCommand(settings)});
     }
+  },
+
+  // Installed version comes from the app's own appinfo.json (readable without the luna service)
+  loadVersion: function () {
+    var self = this, xhr = new XMLHttpRequest();
+    xhr.open('GET', 'appinfo.json');
+    xhr.onload = function () {
+      try {
+        self.version = JSON.parse(xhr.responseText).version;
+      } catch (e) {
+        console.error(e);
+      }
+      if (self.version) {
+        self.$.versionInfo.set('content', 'Version ' + self.version);
+        self.checkUpdate();
+      }
+    };
+    xhr.send();
+  },
+
+  // Compares with the latest GitHub release; the Update button appears only if it is newer.
+  // Failures (no network, rate limit, timeout) are silent.
+  checkUpdate: function () {
+    var self = this, xhr = new XMLHttpRequest();
+    xhr.open('GET', releasesApi);
+    xhr.timeout = 10000;
+    xhr.onload = function () {
+      var latest;
+      if (xhr.status !== 200) { return; }
+      try {
+        latest = JSON.parse(xhr.responseText).tag_name;
+      } catch (e) {
+        console.error(e);
+        return;
+      }
+      if (latest && compareVersions(latest, self.version) > 0) {
+        latest = String(latest).replace(/^v/i, '');
+        // highlighted: marker, green, bold
+        self.$.versionInfo.set('content', '\u25b2 Version ' + self.version + ' \u00b7 update available: ' + latest);
+        self.$.versionInfo.applyStyle('color', '#4cd964');
+        self.$.versionInfo.applyStyle('font-weight', 'bold');
+        self.$.updateButton.set('showing', true);
+      }
+    };
+    xhr.onerror = xhr.ontimeout = function () { console.info('Update check failed'); };
+    xhr.send();
+  },
+
+  openHbChannel: function () {
+    this.exec("luna-send -n 1 'luna://com.webos.applicationManager/launch' '{\"id\":\"" + hbChannelId + "\"}'");
   },
 
   applySettings: function (s) {
