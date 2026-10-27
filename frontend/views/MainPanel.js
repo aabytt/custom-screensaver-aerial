@@ -106,8 +106,9 @@ module.exports = kind({
       command: 'readlink ' + linkPath
     });
     this.loadSettingsLocal();
+    // A missing file is a normal answer (empty output, exit 0), so a real failure can be told apart from it
     this.$.init.send({
-      command: 'cat ' + SettingsStore.persistPath
+      command: 'if [ -f ' + SettingsStore.persistPath + ' ]; then cat ' + SettingsStore.persistPath + '; else echo; fi'
     });
     this.startJob('settingsTimeout', 'settingsTimeout', 5000);
     this.loadVersion();
@@ -233,11 +234,14 @@ module.exports = kind({
     this.$.displayInfo.set('content', parts.join(' \u00b7 '));
   },
 
-  // answer of `cat <persistent settings.json>`; a missing file is normal on the first run
+  // answer of reading the persistent settings.json: empty output = no file yet (normal on the first run)
   onInit: function (sender, evt) {
     var data = null;
     console.info(sender, evt);
-    if (evt && evt.returnValue && evt.stdoutString && evt.stdoutString.trim()) {
+    if (!evt || !evt.returnValue) {
+      // the read itself failed: the file may exist, so it must not be overwritten at startup
+      this.persistBroken = true;
+    } else if (evt.stdoutString && evt.stdoutString.trim()) {
       try {
         data = JSON.parse(evt.stdoutString);
       } catch (e) {
