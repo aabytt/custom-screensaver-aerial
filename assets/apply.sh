@@ -7,6 +7,18 @@ APP_DIR="/usr/palm/applications/$APP_ID"
 MOUNT_TARGET="$APP_DIR/qml/main.qml"
 ASSETS_DIR="$(dirname "$(realpath "$0")")"
 QML_PATH="$ASSETS_DIR/screensaver-main.qml"
+
+# Settings are also kept outside of the app directory (see SettingsStore.js in the app), so they
+# survive a reinstall or an update. Restore them into assets/ first: everything below, and the
+# screensaver itself, reads $ASSETS_DIR/settings.json. cp overwrites the file in place (same inode)
+# on purpose: on webOS 26 that file is bind-mounted into videoads, and mv / cp --remove-destination
+# would leave the mount pointing at the old file.
+PERSIST_SETTINGS="/var/lib/webosbrew/custom-screensaver-aerial/settings.json"
+if [ -s "$PERSIST_SETTINGS" ] && grep -q '^{' "$PERSIST_SETTINGS" &&
+   ! cmp -s "$PERSIST_SETTINGS" "$ASSETS_DIR/settings.json"; then
+    cp "$PERSIST_SETTINGS" "$ASSETS_DIR/settings.json" ||
+        echo "[-] Could not restore settings from $PERSIST_SETTINGS" >&2
+fi
 SAM="luna://com.webos.applicationManager"
 SETTINGS="luna://com.webos.settingsservice"
 BLOCK_SCHEMA="/etc/palm/schemas/sam/applicationManager.blockSystemApp.schema"
