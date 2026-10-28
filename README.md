@@ -30,6 +30,13 @@ uses the same settings, videos and locales. Notes:
 - Set text opacity to 0 to hide the on-screen text, e.g. to avoid burn-in on OLED TVs.
 - If another app has a paused video, the screensaver shows a clock that moves every minute
   instead of video, so that app keeps its video decoder and playback can resume.
+- Any system notification ends the screensaver, and the TV shows one ("Dolby Vision") when an HDR
+  video starts. So, like the QML screensaver, it switches notifications off while each video
+  starts and back on after 2 seconds; one arriving meanwhile is dropped. A switch-off outlives
+  the screensaver (even a Quick Start power-off), so `assets/videoads-flag.sh` runs as the systemd
+  unit `aerial-notify` and switches notifications back on every 5 seconds while the screensaver
+  isn't running (which would also undo a switch-off by any other app). The screensaver only
+  switches them off while that watcher is running, so after updating Aerial press Apply once.
 
 webOS 26 (11.x)
 ---------------
@@ -54,7 +61,8 @@ switches it off unless LG's own conditions for its video screensaver hold (LG's 
 LG Channels is enabled, the TV is online, `screenSaverAd` is on, among others), which on most TVs
 they never all do. So while the screensaver is applied, `assets/videoads-flag.sh` runs as the
 systemd unit `aerial-videoads-flag`, checks the setting every 5 seconds and switches it back on;
-the restore hook stops it first. `systemctl status aerial-videoads-flag` shows it.
+the restore hook stops it first. `systemctl status aerial-videoads-flag` shows it. It also switches
+notifications back on whenever the screensaver isn't running (see webOS 25 above).
 
 Features
 --------
