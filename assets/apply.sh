@@ -122,31 +122,50 @@ sam_reread() {  # app pattern
     sam_reports "$1" "$2"
 }
 
-# Makes SAM pick up the mounted web app; on failure, says why and exits.
+# Asks SAM to reread app $1 another way, without a block: a dev install of a file that isn't an
+# ipk fails ("IPK Extraction Failure"), and SAM then rereads that one app and publishes it as
+# "updated". A block publishes it as "removed", which WAM takes as an uninstall, and leaves it
+# blocked if the release fails.
+request_reload() {  # app
+    echo "not an ipk" > /tmp/aerial-reread.ipk
+    luna_call "luna://com.webos.appInstallService/dev/install" \
+        "{\"id\":\"$1\",\"ipkUrl\":\"/tmp/aerial-reread.ipk\",\"subscribe\":false}" . || true
+}
+
+# Returns 0 once getAppInfo for $1 matches $2, asking twice
+sam_reload() {  # app pattern
+    for try in 1 2; do
+        request_reload "$1"
+        sam_reports "$1" "$2" && return 0
+    done
+    return 1
+}
+
+# Makes SAM pick up the mounted web app; on failure, says why and exits. SAM is never restarted:
+# that closes every running app, and on webOS 26 was reported to leave SAM's app registration
+# broken (#50).
 apply_web() {
     if ! systemctl is-active -q sam.service; then
         # SAM isn't up yet: it reads the mounted manifest on its first scan
-        echo "[+] Enabled succesfully (web screensaver)" >&2
-        exit 0
+        return 0
     fi
     rc=0
     sam_reread "$APP_ID" '"type": *"web"' || rc=$?
-    if [[ $rc -eq 0 ]]; then
-        echo "[+] Enabled succesfully (web screensaver)" >&2
-    elif [[ $rc -eq 2 ]]; then
+    if [[ $rc -eq 2 ]]; then
         # Put the stock screensaver back so the next apply starts over
         umount "$APP_DIR/watcher.json" 2>/dev/null || true
         umount "$APP_DIR" || true
         echo "[-] Could not release $APP_ID from LG's blocked system app list, so no screensaver can launch." >&2
         echo "    Apply again, or run: luna-send -n 1 $SAM/releaseBlockSystemApp '{\"id\":\"$APP_ID\"}'" >&2
         exit 1
-    else
-        # SAM has no block/release or didn't take it: fall back to restarting it in the
-        # background so this script can return before SAM closes the running apps
-        (sleep 2; systemctl restart sam.service) >/dev/null 2>&1 &
-        echo "[+] Enabled succesfully (web screensaver, restarting SAM)" >&2
     fi
-    exit 0
+    if [[ $rc -ne 0 ]] && ! sam_reload "$APP_ID" '"type": *"web"'; then
+        # Keep the stock screensaver, and have SAM reread it too in case it took the web app late
+        umount -l "$APP_DIR" || true
+        request_reload "$APP_ID"
+        echo "[-] The app manager didn't pick up the web screensaver, so the stock one is kept. Apply again after a reboot." >&2
+        exit 1
+    fi
 }
 
 # webOS major version, as Glasshouse reads it: /etc/issue, else /etc/starfish-release
@@ -371,18 +390,21 @@ if grep -q '"type" *: *"flutter"' "$APP_DIR/appinfo.json" 2>/dev/null || findmnt
         mount_heartbeat
         start_watcher "$NOTIFY_UNIT" "$NOTIFY_PIDFILE" screensaver
         apply_web
-    fi
-    mount_heartbeat
-    start_watcher "$NOTIFY_UNIT" "$NOTIFY_PIDFILE" screensaver
-    # Mounted already. Clear a block an earlier run may have left (SAM can report the web app
-    # while it's blocked), then make SAM reread if it still has the Flutter manifest
-    if systemctl is-active -q sam.service; then
-        release_block "$APP_ID" 1 || true
-        if ! sam_call getAppInfo "{\"id\":\"$APP_ID\"}" '"type": *"web"'; then
-            apply_web
+        msg="[+] Enabled succesfully (web screensaver)"
+    else
+        mount_heartbeat
+        start_watcher "$NOTIFY_UNIT" "$NOTIFY_PIDFILE" screensaver
+        # Mounted already. Clear a block an earlier run may have left (SAM can report the web app
+        # while it's blocked), then make SAM reread if it still has the Flutter manifest
+        if systemctl is-active -q sam.service; then
+            release_block "$APP_ID" 1 || true
+            if ! sam_call getAppInfo "{\"id\":\"$APP_ID\"}" '"type": *"web"'; then
+                apply_web
+            fi
         fi
+        msg="[~] Enabled already (web screensaver)"
     fi
-    echo "[~] Enabled already (web screensaver)" >&2
+    echo "$msg" >&2
     exit 0
 fi
 
