@@ -56,6 +56,7 @@ var disabledSet = null;
 var sourceAlt = "";
 var stalledSeconds = 0;
 var clockMode = false;
+var clockTimers = [];
 
 var video = document.getElementById("video");
 var osd = document.getElementById("osd");
@@ -186,7 +187,9 @@ function updateOSD() {
     }
 }
 
-// Resolves to true if another app holds a video decoder
+// Resolves to true if another app holds a video decoder. Live TV (type "tv") is skipped: LG
+// Channels and the home screen leave it running in the background with decoders reserved (#62),
+// and the screensaver's video plays next to it.
 var pipelineBridge = null; // global: a garbage-collected PalmServiceBridge drops its call
 function videoDecoderInUse() {
     return new Promise(function (resolve) {
@@ -196,7 +199,7 @@ function videoDecoderInUse() {
         pipelineBridge.onservicecallback = function (msg) {
             try {
                 resolve(JSON.parse(msg).some(function (pipeline) {
-                    return (pipeline.resource || []).some(function (r) {
+                    return pipeline.type !== "tv" && (pipeline.resource || []).some(function (r) {
                         return /VDEC|HEVC|H264|MSVC|VP9|AV1/.test(r.resource);
                     });
                 }));
@@ -211,17 +214,33 @@ function videoDecoderInUse() {
 function moveClock() {
     osd.style.opacity = 0;
     setTimeout(function () {
+        if (!clockMode) return;
         osd.style.left = Math.random() * (window.innerWidth - osd.offsetWidth) + "px";
         osd.style.top = Math.random() * (window.innerHeight - osd.offsetHeight) + "px";
         osd.style.opacity = settings.osdOpacity / 100;
     }, 3000);
 }
 
+// Shows the moving clock, and switches to video once the other app has released its decoder (#64)
 function startClock() {
     clockMode = true;
     document.body.classList.add("clock");
     moveClock();
-    setInterval(moveClock, 60000);
+    clockTimers.push(setInterval(moveClock, 60000));
+    clockTimers.push(setInterval(function () {
+        videoDecoderInUse().then(function (inUse) {
+            if (!inUse && clockMode) stopClock();
+        });
+    }, 10000));
+}
+
+function stopClock() {
+    clockMode = false;
+    clockTimers.forEach(clearInterval);
+    clockTimers = [];
+    document.body.classList.remove("clock");
+    osd.style.left = osd.style.top = "";
+    playRandomVideo();
 }
 
 function updateDebug() {
