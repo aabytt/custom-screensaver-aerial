@@ -121,17 +121,20 @@ while mounted; do
         esac
     fi
     reply="$($TIMEOUT luna-send -n 1 "$POWER" '{}' </dev/null 2>/dev/null || true)"
-    case "$reply" in
-        # Also "processing": "Request Screen Saver", while it starts
-        *'Screen Saver'*)
-            no_answer=0; quiet=0; listed=0 ;;
-        *'"state"'*)
-            no_answer=0
-            mounted && maybe_on "$(echo "$reply" | sed -n 's/.*"state": *"\([^"]*\)".*/\1/p')" ;;
-        *)
-            no_answer=$((no_answer + 1))
-            [ $no_answer -ge $NO_ANSWER ] && mounted && maybe_on "tvpowerd not answering" ;;
-    esac
+    state="$(echo "$reply" | sed -n 's/.*"state" *: *"\([^"]*\)".*/\1/p')"
+    processing="$(echo "$reply" | sed -n 's/.*"processing" *: *"\([^"]*\)".*/\1/p')"
+    # The exact values, not any "Screen Saver" in the reply: "processing": "Screen Saver Ready"
+    # (webOS 25, while the screensaver starts) can stay for minutes after a screensaver closed
+    # during its start. While it starts, the app manager check in maybe_on holds the enable back.
+    if [ "$state" = "Screen Saver" ] || [ "$processing" = "Request Screen Saver" ]; then
+        no_answer=0; quiet=0; listed=0
+    elif [ -n "$state" ]; then
+        no_answer=0
+        mounted && maybe_on "$state${processing:+, $processing}"
+    else
+        no_answer=$((no_answer + 1))
+        [ $no_answer -ge $NO_ANSWER ] && mounted && maybe_on "tvpowerd not answering"
+    fi
     sleep $POLL
 done
 # Unmounted (Aerial undone, or replaced): nothing else will switch them on
