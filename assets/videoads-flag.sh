@@ -24,7 +24,9 @@
 # running, unless that goes on for STUCK checks (an entry left behind must not block it for good).
 # At every check it also writes the time into watcher.json in the mounted app directory: the page
 # only switches notifications off while that is recent, so without this watcher (e.g. Aerial
-# updated on webOS 25 without pressing Apply) it leaves them alone.
+# updated on webOS 25 without pressing Apply) it leaves them alone. On webOS 26 that directory is
+# a copy in /tmp. On webOS 25 it is Aerial's own folder on flash, so apply.sh bind-mounts
+# /tmp/aerial-watcher.json over watcher.json there, and this writes that file in place.
 #
 # Polling rather than subscriptions: nothing to go stale if a service restarts, and no long-lived
 # child process. The screensaver only starts after minutes without input, and an app switch is
@@ -36,11 +38,14 @@
 if [ "$1" = screensaver ]; then
     APP_ID="com.webos.app.screensaver"
     FLAG=0
+    HEARTBEAT="/tmp/aerial-watcher.json"
 else
     APP_ID="com.webos.app.videoads"
     FLAG=1
+    HEARTBEAT=
 fi
 APP_DIR="/usr/palm/applications/$APP_ID"
+[ -n "$HEARTBEAT" ] || HEARTBEAT="$APP_DIR/watcher.json"
 SETTINGS="luna://com.webos.settingsservice"
 POWER="luna://com.webos.service.tvpower/power/getPowerState"
 NOTIFY="luna://com.webos.notification"
@@ -65,7 +70,7 @@ mounted() {
 # otherwise (#55)
 notify_on() {  # reason
     reply="$($TIMEOUT luna-send -n 1 "$NOTIFY/enable" '{}' </dev/null 2>/dev/null || true)"
-    echo "$reply" | grep -q '"returnValue": *true' || return 1
+    echo "$reply" | grep -q '"returnValue" *: *true' || return 1
     # Said once per change, not at every check
     [ "$quiet" = 1 ] || echo "aerial-videoads-flag: switched notifications on ($1)"
     quiet=1
@@ -75,7 +80,7 @@ notify_on() {  # reason
 # $STUCK checks in a row. If the app manager doesn't answer, switches them on.
 maybe_on() {  # reason
     reply="$($TIMEOUT luna-send -n 1 "$SAM/running" '{}' </dev/null 2>/dev/null || true)"
-    if echo "$reply" | grep -q "\"id\": *\"$APP_ID\""; then
+    if echo "$reply" | grep -q "\"id\" *: *\"$APP_ID\""; then
         listed=$((listed + 1))
         [ $listed -lt $STUCK ] && return 0
         set -- "$1, $APP_ID still listed as running"
@@ -85,9 +90,15 @@ maybe_on() {  # reason
     notify_on "$1"
 }
 
+# In place on webOS 25 (a bind mount would keep pointing at a replaced file); the page treats a
+# half-written file as no watcher for that second. Errors are dropped: this runs every check.
 heartbeat() {
-    echo "{\"time\":$(date +%s)}" > "$APP_DIR/watcher.json.tmp" 2>/dev/null &&
-        mv "$APP_DIR/watcher.json.tmp" "$APP_DIR/watcher.json" 2>/dev/null
+    t="{\"time\":$(date +%s)}"
+    if [ $FLAG = 0 ]; then
+        { echo "$t" > "$HEARTBEAT"; } 2>/dev/null
+    else
+        { echo "$t" > "$HEARTBEAT.tmp" && mv "$HEARTBEAT.tmp" "$HEARTBEAT"; } 2>/dev/null
+    fi
 }
 
 quiet=0     # 1 once notifications were switched on and the screensaver hasn't run since

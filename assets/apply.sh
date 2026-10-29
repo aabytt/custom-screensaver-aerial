@@ -35,6 +35,7 @@ VA_FLAG_PIDFILE="$VA_STATE_DIR/flag.pid"
 # webOS 25 (10.x): the same watcher, for notifications only (see videoads-flag.sh)
 NOTIFY_UNIT="aerial-notify"
 NOTIFY_PIDFILE="/tmp/aerial-notify.pid"
+NOTIFY_HEARTBEAT="/tmp/aerial-watcher.json"
 SAM_WAIT=60   # seconds to wait for SAM at boot
 
 if [[ -f "$MOUNT_TARGET" ]]; then
@@ -134,6 +135,7 @@ apply_web() {
         echo "[+] Enabled succesfully (web screensaver)" >&2
     elif [[ $rc -eq 2 ]]; then
         # Put the stock screensaver back so the next apply starts over
+        umount "$APP_DIR/watcher.json" 2>/dev/null || true
         umount "$APP_DIR" || true
         echo "[-] Could not release $APP_ID from LG's blocked system app list, so no screensaver can launch." >&2
         echo "    Apply again, or run: luna-send -n 1 $SAM/releaseBlockSystemApp '{\"id\":\"$APP_ID\"}'" >&2
@@ -240,6 +242,17 @@ start_watcher() {  # unit pidfile [videoads-flag.sh argument]
         nohup /bin/sh "$ASSETS_DIR/videoads-flag.sh" $3 </dev/null >/dev/null 2>&1 &
     fi
     echo $! > "$2"
+}
+
+# webOS 25: the watcher writes the time into watcher.json for the page at every check. The app
+# directory there is assets/ itself, on flash, so the file the page reads is a RAM file in /tmp
+# bind-mounted over the assets/watcher.json placeholder. If that fails the page sees the
+# placeholder's old time and leaves notifications alone.
+mount_heartbeat() {
+    [[ -f "$NOTIFY_HEARTBEAT" ]] || echo '{"time":0}' > "$NOTIFY_HEARTBEAT" || true
+    if [[ -f "$APP_DIR/watcher.json" ]] && ! findmnt "$APP_DIR/watcher.json" >/dev/null; then
+        mount --bind "$NOTIFY_HEARTBEAT" "$APP_DIR/watcher.json" || true
+    fi
 }
 
 apply_videoads() {
@@ -355,9 +368,11 @@ fi
 if grep -q '"type" *: *"flutter"' "$APP_DIR/appinfo.json" 2>/dev/null || findmnt "$APP_DIR" >/dev/null; then
     if ! findmnt "$APP_DIR" >/dev/null; then
         mount --bind "$ASSETS_DIR" "$APP_DIR"
+        mount_heartbeat
         start_watcher "$NOTIFY_UNIT" "$NOTIFY_PIDFILE" screensaver
         apply_web
     fi
+    mount_heartbeat
     start_watcher "$NOTIFY_UNIT" "$NOTIFY_PIDFILE" screensaver
     # Mounted already. Clear a block an earlier run may have left (SAM can report the web app
     # while it's blocked), then make SAM reread if it still has the Flutter manifest

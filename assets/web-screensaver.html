@@ -68,7 +68,11 @@ function loadJSONData(url) {
         xhr.onload = function () {
             // file:// requests report status 0 on success
             if (xhr.status === 200 || (xhr.status === 0 && xhr.responseText)) {
-                resolve(JSON.parse(xhr.responseText));
+                try {
+                    resolve(JSON.parse(xhr.responseText));
+                } catch (e) {
+                    reject(new Error(url + ": " + e.message));
+                }
             } else {
                 reject(new Error(url + ": " + xhr.status));
             }
@@ -97,6 +101,7 @@ var watcherAlive = false;
 var WATCHER_STALE = 60; // seconds: a check can take a while when services are slow
 var closing = false;    // a key was pressed: no more disables or videos
 function checkWatcher() {
+    if (!notifyCtl) return Promise.resolve();
     return loadJSONData(basePath + "watcher.json")
         .then(function (w) { watcherAlive = Math.abs(Date.now() / 1000 - w.time) < WATCHER_STALE; })
         .catch(function () { watcherAlive = false; });
@@ -108,20 +113,24 @@ function setNotifications(on, force, done) {
         if (done) done();
         return;
     }
+    var bridge, wasOff = notifyOff;
     try {
-        var bridge = new PalmServiceBridge();
+        bridge = new PalmServiceBridge();
         bridge.onservicecallback = function () {
             var i = notifyBridges.indexOf(bridge);
             if (i < 0) return; // answered already
             notifyBridges.splice(i, 1);
             if (done) done();
         };
-        bridge.call("luna://com.webos.notification/" + (on ? "enable" : "disable"), "{}");
-        notifyBridges.push(bridge);
+        notifyBridges.push(bridge); // before the call, in case it answers at once
         notifyOff = !on;
+        bridge.call("luna://com.webos.notification/" + (on ? "enable" : "disable"), "{}");
     } catch (e) {
         // Never let this stop the video or the exit
         console.error("notifications: " + e.message);
+        notifyOff = wasOff;
+        var i = notifyBridges.indexOf(bridge);
+        if (i >= 0) notifyBridges.splice(i, 1);
         if (done) done();
     }
 }
