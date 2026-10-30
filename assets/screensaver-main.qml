@@ -36,9 +36,42 @@ WebOSWindow {
     property bool decoderHeld : false
     // Anti burn-in: in clock-only mode the clock fades out, reappears in the next corner and fades in
     property int clockCorner : 0   // 0 = bottom-right, 1 = top-right, 2 = top-left, 3 = bottom-left
-    property bool clockLeft : false
-    property real clockShiftY : 0
+    property int appliedCorner : 0 // the corner shown now (changes while the clock is faded out)
     property real clockFade : 1
+    // On-screen display settings (settings.osd, written by the app's "On-screen display" panel).
+    // Defaults must stay equal to DEFAULTS in DisplayPanel.js. Set by applyOsdSettings().
+    property bool showTitle : true
+    property bool showPoi : true
+    property bool showClock : true
+    property bool showDate : true
+    property string placeAnchor : "bl"   // t/b = top/bottom, l/c/r = left/center/right
+    property string clockAnchor : "br"
+    property real placeScale : 100
+    property real clockScale : 100
+    property bool useSeconds : true
+    property bool use24h : true
+    property string fontFile : "SegoeUI-Light.ttf"
+    property real fontSpacing : -1
+    property real osdAlpha : 1
+    // fonts: id -> file in assets/ and letter spacing in px (same list as FONTS in DisplayPanel.js)
+    property var osdFonts : ({
+        "segoe": {file: "SegoeUI-Light.ttf", spacing: -1},
+        "roboto": {file: "fonts/Roboto-Light.ttf", spacing: 0},
+        "opensans": {file: "fonts/OpenSans-Light.ttf", spacing: 0},
+        "montserrat": {file: "fonts/Montserrat-Light.ttf", spacing: 0},
+        "oswald": {file: "fonts/Oswald-Light.ttf", spacing: 0},
+        "comfortaa": {file: "fonts/Comfortaa-Light.ttf", spacing: 0},
+        "lora": {file: "fonts/Lora-Regular.ttf", spacing: 0},
+        "satisfy": {file: "fonts/Satisfy-Regular.ttf", spacing: 0}
+    })
+    // derived layout: title/description block and clock/date block
+    // (in clock-only mode the clock block hops between the corners instead of using clockAnchor)
+    property bool clockOn : (decoderHeld && !showClock && !showDate) ? true : showClock
+    property string clockAnchorEff : decoderHeld ? ["br", "tr", "tl", "bl"][appliedCorner] : clockAnchor
+    property string placeCol : placeAnchor.charAt(1)
+    property string clockCol : clockAnchorEff.charAt(1)
+    property real placeY : blockY(placeAnchor, placeBlockH())
+    property real clockY : blockY(clockAnchorEff, clockBlockH())
     property string basePath : "file:///media/developer/apps/usr/palm/applications/org.aabytt.webos.custom-screensaver-aerial/assets/"
     Component.onCompleted : {
         init()
@@ -55,7 +88,7 @@ WebOSWindow {
     }
     FontLoader {
         id : segoeUILight
-        source : basePath + 'SegoeUI-Light.ttf'
+        source : basePath + fontFile
     }
     Timer {
         id : refreshOSD
@@ -88,6 +121,7 @@ WebOSWindow {
             fadeOutVideo.running = false
         }
         onPlaying : {
+            updateOsdAlpha()
             punchThroughArea.visible = true
             fadeInVideo.running = true
             fadeInOsd.running = true
@@ -151,40 +185,49 @@ WebOSWindow {
         }
         Text {
             id : name
-            opacity : settings.osdOpacity / 100
+            visible : showTitle && !decoderHeld
+            opacity : osdAlpha
             text : poi.strings[playList.assets[randomIndex].localizedNameKey]
             font.family : segoeUILight.name
-            font.letterSpacing : -1
+            font.letterSpacing : fontSpacing
             fontSizeMode : Text.Fit
-            font.pixelSize : 56
-            y : parent.height * 0.9
+            font.pixelSize : Math.round(56 * placeScale / 100)
+            y : placeY
+            anchors.left : placeCol === "l" ? parent.left : undefined
+            anchors.right : placeCol === "r" ? parent.right : undefined
+            anchors.horizontalCenter : placeCol === "c" ? parent.horizontalCenter : undefined
             color : "white"
             style : Text.Raised
             styleColor : "black"
         }
         Text {
             id : poiOSD
-            opacity : name.opacity
+            visible : showPoi && !decoderHeld
+            opacity : osdAlpha
             text : poi.strings[playList.assets[randomIndex].pointsOfInterest[poiIndex]]
             font.family : name.font.family
-            font.letterSpacing : name.font.letterSpacing
+            font.letterSpacing : fontSpacing
             fontSizeMode : name.fontSizeMode
-            font.pixelSize : name.font.pixelSize - 16
-            y : name.y + name.font.pixelSize + 10
+            font.pixelSize : Math.round(40 * placeScale / 100)
+            y : placeY + (showTitle ? Math.round(66 * placeScale / 100) : 0)
+            anchors.left : placeCol === "l" ? parent.left : undefined
+            anchors.right : placeCol === "r" ? parent.right : undefined
+            anchors.horizontalCenter : placeCol === "c" ? parent.horizontalCenter : undefined
             color : name.color
             style : name.style
             styleColor : name.styleColor
         }
         Text {
             id : timeOSD
-            horizontalAlignment : clockLeft ? Text.AlignLeft : Text.AlignRight
-            anchors.left : clockLeft ? parent.left : undefined
-            anchors.right : clockLeft ? undefined : parent.right
-            opacity : name.opacity * clockFade
+            visible : clockOn
+            opacity : osdAlpha * clockFade
             font.family : name.font.family
-            font.letterSpacing : name.font.letterSpacing
-            font.pixelSize : name.font.pixelSize + 23
-            y : dateOSD.y - name.font.pixelSize - 40
+            font.letterSpacing : fontSpacing
+            font.pixelSize : Math.round(79 * clockScale / 100)
+            y : clockY
+            anchors.left : clockCol === "l" ? parent.left : undefined
+            anchors.right : clockCol === "r" ? parent.right : undefined
+            anchors.horizontalCenter : clockCol === "c" ? parent.horizontalCenter : undefined
             color : name.color
             style : name.style
             styleColor : name.styleColor
@@ -192,14 +235,15 @@ WebOSWindow {
         }
         Text {
             id : dateOSD
-            horizontalAlignment : clockLeft ? Text.AlignLeft : Text.AlignRight
-            anchors.left : clockLeft ? parent.left : undefined
-            anchors.right : clockLeft ? undefined : parent.right
-            opacity : name.opacity * clockFade
+            visible : showDate
+            opacity : osdAlpha * clockFade
             font.family : name.font.family
-            font.letterSpacing : name.font.letterSpacing
-            font.pixelSize : name.font.pixelSize - 16
-            y : name.y + name.font.pixelSize + 5 + clockShiftY
+            font.letterSpacing : fontSpacing
+            font.pixelSize : Math.round(40 * clockScale / 100)
+            y : clockY + (clockOn ? Math.round(96 * clockScale / 100) : 0)
+            anchors.left : clockCol === "l" ? parent.left : undefined
+            anchors.right : clockCol === "r" ? parent.right : undefined
+            anchors.horizontalCenter : clockCol === "c" ? parent.horizontalCenter : undefined
             color : name.color
             style : name.style
             styleColor : name.styleColor
@@ -230,21 +274,80 @@ WebOSWindow {
         anchors.margins : 25
         opacity : 0.7
         font.family : name.font.family
-        font.pixelSize : name.font.pixelSize - 30
+        font.pixelSize : 26
         color : name.color
         style : name.style
         styleColor : name.styleColor
         fontSizeMode : name.fontSizeMode
     }
     function applyClockCorner() {
-        var top = clockCorner === 1 || clockCorner === 2
-        clockLeft = clockCorner === 2 || clockCorner === 3
-        clockShiftY = top ? -(osd.height * 0.9 - 35) : 0
+        appliedCorner = clockCorner
+    }
+    // y of a block of height h in the given anchor (same rule as blockY() in DisplayPanel.js)
+    function blockY(anchor, h) {
+        if (anchor.charAt(0) === "t")
+            return 0
+        return osd.height * 0.9 + 106 - h
+    }
+    function placeBlockH() {
+        return (showTitle && showPoi ? 106 : (showTitle ? 56 : (showPoi ? 40 : 0))) * placeScale / 100
+    }
+    function clockBlockH() {
+        return (clockOn && showDate ? 136 : (clockOn ? 79 : (showDate ? 40 : 0))) * clockScale / 100
+    }
+    function osdGet(key, def) {
+        var o = settings.osd
+        return (o && typeof o === "object" && o[key] !== undefined) ? o[key] : def
+    }
+    function osdScale(key) {
+        var v = Number(osdGet(key, 100))
+        return (isNaN(v) || v < 10) ? 100 : Math.min(v, 300)
+    }
+    function osdAnchor(key, def) {
+        var v = osdGet(key, def)
+        return /^[tb][lcr]$/.test(v) ? v : def
+    }
+    // read settings.osd (missing keys / unknown values fall back to the defaults)
+    function applyOsdSettings() {
+        var f = osdFonts[osdGet("font", "segoe")] || osdFonts["segoe"]
+        showTitle = !!osdGet("title", true)
+        showPoi = !!osdGet("poi", true)
+        showClock = !!osdGet("clock", true)
+        showDate = !!osdGet("date", true)
+        placeAnchor = osdAnchor("placeAnchor", "bl")
+        clockAnchor = osdAnchor("clockAnchor", "br")
+        placeScale = osdScale("placeScale")
+        clockScale = osdScale("clockScale")
+        useSeconds = !!osdGet("seconds", true)
+        use24h = !!osdGet("clock24", true)
+        fontFile = f.file
+        fontSpacing = f.spacing
+        updateOsdAlpha()
+    }
+    // true if the video now playing is an HDR / Dolby Vision source
+    function hdrPlaying() {
+        if (!playList || !playList.assets || !playList.assets[randomIndex])
+            return false
+        var asset = playList.assets[randomIndex]
+        var src = String(videoOutput.source)
+        for (var key in asset) {
+            if (key.indexOf("url-") === 0 && asset[key] === src)
+                return /HDR|DV/i.test(key)
+        }
+        return false
+    }
+    // text opacity: osdOpacity (SDR); with the "separate opacity" switch on, osdOpacityDv for HDR / Dolby Vision
+    function updateOsdAlpha() {
+        var v = settings.osdOpacity !== undefined ? settings.osdOpacity : 100
+        if (settings.osdOpacitySplit && settings.osdOpacityDv !== undefined && hdrPlaying())
+            v = settings.osdOpacityDv
+        osdAlpha = v / 100
     }
     function init() {
         loadJSONData(basePath + 'settings.json', 'settings', loadResources)
     }
     function loadResources() {
+        applyOsdSettings()
         loadJSONData(basePath + 'videos.json', 'playList')
         loadJSONData(basePath + 'locales/' + settings.localeLang + '.json', 'poi', playRandomVideo)
     }
@@ -367,7 +470,7 @@ WebOSWindow {
         "\n Source Type: " + settings.sourceType + sourceAlt +
         "\n Try Other Source: " + settings.playLowerQuality +
         "\n Locale: " + settings.localeLang +
-        "\n OSD opacity: " + settings.osdOpacity + "%" +
+        "\n OSD opacity: " + Math.round(osdAlpha * 100) + "%" +
         "\n Timecode: " + Math.floor(videoOutput.position / 1000) + " / " + Math.floor(videoOutput.duration / 1000) +
         "\n Media Status: " + status +
         "\n Stalled Timeout: " + (25 - stalledCounter) +
@@ -383,6 +486,8 @@ WebOSWindow {
             locale: settings.localeLang,
             timezone: "local",
             type: "time",
+            time: (use24h ? "" : "a") + "hm" + (useSeconds ? "s" : ""),
+            clock: use24h ? "24" : "12",
             length: "full"
         })
         var day = new DateFmt({
@@ -401,7 +506,8 @@ WebOSWindow {
             dateOSD.text = day.format(now)
         
         if (playList.assets[randomIndex].pointsOfInterest[Math.floor(videoOutput.position / 1000)]) 
-            poiIndex = Math.floor(videoOutput.position / 1000)        
+            poiIndex = Math.floor(videoOutput.position / 1000)
+        updateOsdAlpha()
     }
 
     // Decoder guard (app-independent, webOS 5-23).
@@ -419,8 +525,6 @@ WebOSWindow {
         decoderHeld = held
         if (held) {
             notificationsService.set('enable')
-            name.visible = false
-            poiOSD.visible = false
             osd.visible = true
             fadeInOsd.running = true
         } else

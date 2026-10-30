@@ -11,7 +11,8 @@ var
   Control = require('enyo/Control'),
   Spotlight = require('spotlight'),
   LunaService = require('enyo-webos/LunaService'),
-  SettingsStore = require('./SettingsStore.js');
+  SettingsStore = require('./SettingsStore.js'),
+  I18n = require('./I18n.js');
 
 // Toast: bottom center. It is a plain DOM node in the floating layer, NOT an Enyo control inside the
 // panel: a control next to the fit:true scroller makes the Fittable layout resize the scroller every
@@ -52,7 +53,7 @@ var OTHER = '__other';
 //   e.g. {localizedNameKey: 'AerialCategoryCities', previewImage: 'assets/tn/cities.webp'}
 //   (a plain map {key: 'path'} works too). No entry / image fails to load -> a random video
 //   of the category is used as the thumbnail.
-// Names are looked up in assets/locales/<lang>.json ({strings: {key: text}}); a missing
+// Names are looked up in assets/locales/<lang>.json ({strings: {key: text}}) for the interface language; a missing
 // translation falls back to the asset's `name` or a prettified key.
 var DEFAULT_LANG = 'en-GB';
 
@@ -382,7 +383,7 @@ var PreviewPopup = kind({
 var VideoSelectPanel = kind({
   name: 'aerial.VideoSelectPanel',
   kind: Panel,
-  title: 'Playlist',
+  title: '',   // first level: set in create() (translated); second level: the category name
   headerType: 'small',
   // passed in by MainPanel
   settings: null,
@@ -404,18 +405,14 @@ var VideoSelectPanel = kind({
   components: [
     {kind: Scroller, name: 'scroller', fit: true, components: [
       {style: 'margin: 0 20px', components: [
-        {kind: BodyText, name: 'count', content: 'Loading...'},
+        {kind: BodyText, name: 'count', i18n: 'loading'},
         {name: 'filters', showing: false, components: [
           {name: 'sourceBox'},
-          {kind: ExpandablePicker, name: 'state', content: 'Show', selectedIndex: 0, onChange: 'filterChanged', components: [
-            {content: 'All', value: ''},
-            {content: 'In playlist', value: 'on'},
-            {content: 'Not in playlist', value: 'off'}
-          ]}
+          {name: 'stateBox'}
         ]},
         {name: 'bulk', showing: false, style: 'margin: 10px 0', components: [
-          {kind: Button, content: 'Select all', ontap: 'selectAll'},
-          {kind: Button, content: 'Deselect all', ontap: 'deselectAll'}
+          {kind: Button, i18n: 'selectAll', ontap: 'selectAll'},
+          {kind: Button, i18n: 'deselectAll', ontap: 'deselectAll'}
         ]},
         {name: 'grid'}
       ]}
@@ -430,7 +427,7 @@ var VideoSelectPanel = kind({
           {name: 'pv', tag: 'video', attributes: {autoplay: 'autoplay', loop: 'loop', muted: 'muted'}, style: 'display:block; width:100%; height:706px; background:#000;'},
           {name: 'previewBadges', style: 'position:absolute; top:14px; left:0; right:0; text-align:center; z-index:2; pointer-events:none;'},
           {name: 'poi', showing: false, style: 'position:absolute; left:0; right:0; top:560px; text-align:center; z-index:2; pointer-events:none;'},
-          {name: 'previewHelp', showing: false, content: '\u25C0 \u25B6 choose variant \u00b7 OK play it \u00b7 Back close', style: 'position:absolute; left:0; right:0; top:654px; text-align:center; font-size:22px; color:#fff; opacity:0.8; text-shadow:0 0 6px #000; pointer-events:none;'},
+          {name: 'previewHelp', showing: false, i18n: 'previewHelp', style: 'position:absolute; left:0; right:0; top:654px; text-align:center; font-size:22px; color:#fff; opacity:0.8; text-shadow:0 0 6px #000; pointer-events:none;'},
           {kind: BodyText, name: 'previewTitle', style: 'margin:0; padding:0; height:46px; line-height:46px; font-size:30px; text-align:center; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;'},
           {kind: BodyText, name: 'previewInfo', style: 'margin:0; padding:0; height:46px; line-height:46px; font-size:26px; text-align:center; opacity:0.8; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;'}
         ]}
@@ -440,7 +437,9 @@ var VideoSelectPanel = kind({
   ],
 
   create: function () {
+    if (!this.isChild) { this.title = I18n.t('playlist'); }
     this.inherited(arguments);
+    I18n.apply(this);   // texts of the controls with an `i18n` key
     // Moonstone Popup resets inline `bottom` when animate is off; the preview positions itself with top/left
     this.$.preview.applyStyle('bottom', 'auto');
     this.dirty = false;
@@ -512,7 +511,7 @@ var VideoSelectPanel = kind({
     try {
       data = JSON.parse(evt.stdoutString);
     } catch (e) {
-      if (fb) { fb.call(this); } else { this.$.count.set('content', 'Failed to load video list'); }
+      if (fb) { fb.call(this); } else { this.$.count.set('content', I18n.t('loadFail')); }
       return;
     }
     cb.call(this, data);
@@ -537,7 +536,8 @@ var VideoSelectPanel = kind({
     this.assets = data.assets || [];
     this.categoryImages = this.parseCategoryImages(data.categories);
     this.categories = [];
-    this.loadLocale(this.settings.localeLang || DEFAULT_LANG);
+    // names follow the interface language
+    this.loadLocale(this.settings.uiLang || this.settings.localeLang || DEFAULT_LANG);
   },
 
   // missing locale -> default language -> no translations at all (names fall back to keys)
@@ -572,7 +572,8 @@ var VideoSelectPanel = kind({
     this.$.filters.set('showing', this.mode === 'videos');
     if (this.mode === 'videos') {
       this.buildSourcePicker();
-      this.showToast('<b>OK</b>: preview &nbsp;\u00b7&nbsp; <b>Hold OK</b>: add / remove');
+      this.buildStatePicker();
+      this.showToast(I18n.t('toastHelp'));
     }
     // Select all / Deselect all only make sense inside a category, not on the categories page
     this.$.bulk.set('showing', this.mode === 'videos');
@@ -607,7 +608,7 @@ var VideoSelectPanel = kind({
       a.categories.forEach(function (key) {
         var cat = map[key];
         if (!cat) {
-          cat = map[key] = {id: key, localizedNameKey: key, name: key === OTHER ? 'Other' : '', subcategories: [], subMap: {}};
+          cat = map[key] = {id: key, localizedNameKey: key, name: key === OTHER ? I18n.t('other') : '', subcategories: [], subMap: {}};
           list.push(cat);
         }
         subs.forEach(function (sk) {
@@ -660,16 +661,33 @@ var VideoSelectPanel = kind({
     });
     this.$.sourceBox.set('showing', sources.length > 1);
     if (sources.length < 2) { return; }
-    items = [{content: 'All sources', value: ''}].concat(sources.map(function (name) {
+    items = [{content: I18n.t('allSources'), value: ''}].concat(sources.map(function (name) {
       return {content: name, value: name};
     }));
     this.$.sourceBox.createComponent({
       name: 'filter',
       kind: ExpandablePicker,
-      content: 'Source',
+      content: I18n.t('source'),
       selectedIndex: 0,
       onChange: 'filterChanged',
       components: items
+    }, {owner: this}).render();
+  },
+
+  // "Show: All / In playlist / Not in playlist". Created here, not statically: its items must already
+  // hold the translated texts when the picker is built, or the header would not show the selected one.
+  buildStatePicker: function () {
+    this.$.stateBox.createComponent({
+      name: 'state',
+      kind: ExpandablePicker,
+      content: I18n.t('show'),
+      selectedIndex: 0,
+      onChange: 'filterChanged',
+      components: [
+        {content: I18n.t('all'), value: ''},
+        {content: I18n.t('inPlaylist'), value: 'on'},
+        {content: I18n.t('notInPlaylist'), value: 'off'}
+      ]
     }, {owner: this}).render();
   },
 
@@ -791,7 +809,7 @@ var VideoSelectPanel = kind({
       usesOther = true;
     });
     groups = good.map(function (x) { return {id: x.id, name: this.nameOf(x)}; }, this);
-    if (usesOther) { groups.push({id: OTHER, name: 'Other'}); }
+    if (usesOther) { groups.push({id: OTHER, name: I18n.t('other')}); }
     return {groups: groups, of: of};
   },
 
@@ -942,7 +960,7 @@ var VideoSelectPanel = kind({
     var asset = this.assets.filter(function (a) { return a.id === evt.id; })[0],
       list = asset ? previewCandidates(asset) : [];
     if (!list.length) {
-      this.showToast('No preview available for this video');
+      this.showToast(I18n.t('noPreview'));
       return true;
     }
     this.pvList = list;
@@ -1034,7 +1052,7 @@ var VideoSelectPanel = kind({
     if (!item) { return; }
     this.clearPreviewTimer();
     this.$.previewInfo.set('content', describeKey(item.key) +
-      (!this.pvManual && this.pvIndex ? '  (fallback ' + (this.pvIndex + 1) + '/' + list.length + ')' : ''));
+      (!this.pvManual && this.pvIndex ? '  ' + I18n.t('fallbackOf', {n: this.pvIndex + 1, total: list.length}) : ''));
     this.pvPlaying = false;
     this.refreshBadges();
     this.$.pv.setAttribute('src', item.url);
@@ -1059,13 +1077,13 @@ var VideoSelectPanel = kind({
     this.pvPlaying = false;
     if (this.pvManual) {
       // the user picked this variant by hand: report it, do not jump to another one
-      this.$.previewInfo.set('content', describeKey(this.pvList[this.pvIndex].key) + ': cannot be played on this TV');
+      this.$.previewInfo.set('content', I18n.t('cannotPlay', {variant: describeKey(this.pvList[this.pvIndex].key)}));
       this.refreshBadges();
     } else if (this.pvIndex + 1 < this.pvList.length) {
       this.pvIndex++;
       this.playCandidate();
     } else {
-      this.$.previewInfo.set('content', 'Preview unavailable: none of ' + this.pvList.length + ' sources could be played');
+      this.$.previewInfo.set('content', I18n.t('previewUnavailable', {n: this.pvList.length}));
       this.refreshBadges();
     }
   },
@@ -1152,7 +1170,7 @@ var VideoSelectPanel = kind({
 
   previewHidden: function () {
     this.stopPreview();
-    this.showToast('<b>Hold OK</b> on a video to add / remove it');
+    this.showToast(I18n.t('toastHold'));
   },
 
   showToast: function (html) {
@@ -1212,10 +1230,9 @@ var VideoSelectPanel = kind({
     var all = this.categoryStats(''), text;
     if (this.mode === 'videos' && this.categoryId) {
       var cat = this.categoryStats(this.categoryId);
-      text = cat.on + ' of ' + cat.total + ' videos of this category in playlist (' + all.on + ' of ' + all.total + ' in total)';
+      text = I18n.t('countCategory', {on: cat.on, total: cat.total, allOn: all.on, allTotal: all.total});
     } else {
-      text = all.on + ' of ' + all.total + ' videos in playlist' +
-        (all.on === 0 ? ' (nothing selected: all videos will be played)' : '');
+      text = I18n.t(all.on === 0 ? 'countNone' : 'countAll', {on: all.on, total: all.total});
     }
     this.$.count.set('content', text);
   },
