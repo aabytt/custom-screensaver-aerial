@@ -70,7 +70,7 @@ sam_call() {  # method payload pattern
 # Whether SAM's getAppInfo for app $1 matches $2, polling for up to 20 s: at boot SAM can still
 # be on its own first scan and takes the reread after it
 sam_reports() {  # app pattern
-    for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
+    for i in $(seq 1 20); do
         if sam_call getAppInfo "{\"id\":\"$1\"}" "$2"; then
             return 0
         fi
@@ -151,9 +151,9 @@ apply_web() {
     rc=0
     sam_reread "$APP_ID" '"type": *"web"' || rc=$?
     if [[ $rc -eq 2 ]]; then
-        # Put the stock screensaver back so the next apply starts over
-        umount "$APP_DIR/watcher.json" 2>/dev/null || true
-        umount "$APP_DIR" || true
+        # Put the stock screensaver back so the next apply starts over (-l also takes the
+        # watcher.json mount inside it along)
+        umount -l "$APP_DIR" || true
         echo "[-] Could not release $APP_ID from LG's blocked system app list, so no screensaver can launch." >&2
         echo "    Apply again, or run: luna-send -n 1 $SAM/releaseBlockSystemApp '{\"id\":\"$APP_ID\"}'" >&2
         exit 1
@@ -230,23 +230,32 @@ mount_heartbeat() {  # app directory
     fi
 }
 
+# This Aerial's appinfo.json with the id $VA_ID
+va_appinfo() {
+    sed "s/\"$APP_ID\"/\"$VA_ID\"/" "$ASSETS_DIR/appinfo.json"
+}
+
+# Whether every file of this assets/ is in the videoads copy unchanged, except tn/ (left out),
+# appinfo.json (another id) and the mounted settings.json and watcher.json
+va_files_current() {
+    (cd "$ASSETS_DIR" && find . -path ./tn -prune -o -path ./appinfo.json -prune \
+        -o -path ./settings.json -prune -o -path ./watcher.json -prune -o -type f -print) |
+        while IFS= read -r f; do
+            cmp -s "$ASSETS_DIR/$f" "$VA_DIR/$f" || exit 1
+        done
+}
+
 # Whether the copy of assets/ mounted as videoads matches this Aerial (an update without a reboot
-# leaves the old copy, and Quick Start+ keeps mounts across standby). An outdated copy is unmounted.
+# leaves the old copy, and Quick Start+ keeps mounts across standby). The settings.json and
+# watcher.json mounts must be this assets/ one's file and the watcher's, not files an update
+# replaced. An outdated copy is unmounted.
 va_mounted_current() {
     findmnt "$VA_DIR" >/dev/null || return 1
-    current=1
-    for f in appinfo.json web-screensaver.html videos.json settings.json; do
-        if [[ $f = appinfo.json ]]; then
-            grep -q "\"$VA_ID\"" "$VA_DIR/$f" 2>/dev/null || current=0
-        else
-            cmp -s "$ASSETS_DIR/$f" "$VA_DIR/$f" || current=0
-        fi
-    done
-    # The settings.json and watcher.json mounts must be this assets/ one's file and the watcher's,
-    # not files an update replaced
-    [[ "$ASSETS_DIR/settings.json" -ef "$VA_DIR/settings.json" ]] || current=0
-    [[ "$NOTIFY_HEARTBEAT" -ef "$VA_DIR/watcher.json" ]] || current=0
-    [[ $current -eq 1 ]] && return 0
+    if va_files_current && va_appinfo | cmp -s - "$VA_DIR/appinfo.json" &&
+       [[ "$ASSETS_DIR/settings.json" -ef "$VA_DIR/settings.json" ]] &&
+       [[ "$NOTIFY_HEARTBEAT" -ef "$VA_DIR/watcher.json" ]]; then
+        return 0
+    fi
     echo "[~] Replacing an outdated screensaver copy" >&2
     # -l also takes the settings.json and watcher.json mounts inside it along
     umount -l "$VA_DIR"
@@ -261,9 +270,10 @@ va_mounted_current() {
 va_mount_copy() {
     rm -rf "$VA_STAGE"
     mkdir -p "$VA_STAGE"
-    cp -a "$ASSETS_DIR"/. "$VA_STAGE"/
-    rm -rf "$VA_STAGE/tn"
-    sed -i "s/\"$APP_ID\"/\"$VA_ID\"/" "$VA_STAGE/appinfo.json"
+    for f in "$ASSETS_DIR"/*; do
+        [[ "${f##*/}" = tn ]] || cp -a "$f" "$VA_STAGE"/
+    done
+    va_appinfo > "$VA_STAGE/appinfo.json"
     if ! grep -q "\"$VA_ID\"" "$VA_STAGE/appinfo.json"; then
         echo "[-] Could not give the screensaver copy the id $VA_ID" >&2
         return 1

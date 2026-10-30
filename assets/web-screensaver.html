@@ -95,7 +95,6 @@ function fixUrl(url) {
 // watcher.json here at every check; without a recent one (no watcher, e.g. after an update without
 // Apply) this page leaves notifications alone, as nothing would switch them back on.
 var notifyCtl = typeof PalmServiceBridge !== "undefined";
-var notifyBridges = []; // kept until answered: a garbage-collected PalmServiceBridge drops its call
 var notifyOff = false;
 var watcherAlive = false;
 var WATCHER_STALE = 60; // seconds: a check can take a while when services are slow
@@ -106,33 +105,15 @@ function checkWatcher() {
         .then(function (w) { watcherAlive = Math.abs(Date.now() / 1000 - w.time) < WATCHER_STALE; })
         .catch(function () { watcherAlive = false; });
 }
-// done (optional) runs once the call is answered, or at once if nothing was sent. force sends a
-// disable even if one was sent already.
+// done (optional) runs once the call is answered (or after 3 s), or at once if nothing was sent.
+// force sends a disable even if one was sent already.
 function setNotifications(on, force, done) {
     if (!notifyCtl || (notifyOff === !on && !force) || (!on && (closing || !watcherAlive))) {
         if (done) done();
         return;
     }
-    var bridge, wasOff = notifyOff;
-    try {
-        bridge = new PalmServiceBridge();
-        bridge.onservicecallback = function () {
-            var i = notifyBridges.indexOf(bridge);
-            if (i < 0) return; // answered already
-            notifyBridges.splice(i, 1);
-            if (done) done();
-        };
-        notifyBridges.push(bridge); // before the call, in case it answers at once
-        notifyOff = !on;
-        bridge.call("luna://com.webos.notification/" + (on ? "enable" : "disable"), "{}");
-    } catch (e) {
-        // Never let this stop the video or the exit
-        console.error("notifications: " + e.message);
-        notifyOff = wasOff;
-        var i = notifyBridges.indexOf(bridge);
-        if (i >= 0) notifyBridges.splice(i, 1);
-        if (done) done();
-    }
+    notifyOff = !on;
+    luna("luna://com.webos.notification/" + (on ? "enable" : "disable")).then(done);
 }
 
 // Same fallbacks as screensaver-main.qml
@@ -250,17 +231,23 @@ function updateOSD() {
     }
 }
 
-// Calls a luna method. Resolves to the parsed reply, or to null if there is none within 3 s.
+// Calls a luna method. Resolves to the parsed reply, or to null if there is none within 3 s or the
+// call fails: it never rejects, so it can't stop the video or the exit.
 var bridges = {}; // one per method, kept: a garbage-collected PalmServiceBridge drops its call
 function luna(uri, params) {
     return new Promise(function (resolve) {
         if (typeof PalmServiceBridge === "undefined") return resolve(null);
         setTimeout(function () { resolve(null); }, 3000);
-        var bridge = bridges[uri] = new PalmServiceBridge();
-        bridge.onservicecallback = function (msg) {
-            try { resolve(JSON.parse(msg)); } catch (e) { resolve(null); }
-        };
-        bridge.call(uri, JSON.stringify(params || {}));
+        try {
+            var bridge = bridges[uri] = new PalmServiceBridge();
+            bridge.onservicecallback = function (msg) {
+                try { resolve(JSON.parse(msg)); } catch (e) { resolve(null); }
+            };
+            bridge.call(uri, JSON.stringify(params || {}));
+        } catch (e) {
+            console.error(uri + ": " + e.message);
+            resolve(null);
+        }
     });
 }
 
