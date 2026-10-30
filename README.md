@@ -19,17 +19,27 @@ Disclaimer
 ---------------
 - App replaces original webOS screensaver. Use at your own risk. 
 
-webOS 25 (10.x)
----------------
+webOS 25 and 26 (10.x/11.x)
+---------------------------
 The stock screensaver is a Flutter app on these TVs and QML apps can't be launched, so
 `apply.sh` uses a web version of the screensaver instead (`assets/web-screensaver.html`). It
 uses the same settings, videos and locales. Notes:
 
-- Applying makes the app manager reread the screensaver (`blockSystemApp` + `releaseBlockSystemApp`).
-  Only where it doesn't take that does it restart the app manager, which closes running apps.
+- Applying makes the app manager reread the screensaver (`blockSystemApp` + `releaseBlockSystemApp`,
+  or else a failed dev install of a file that isn't an ipk). The app manager is never restarted, so
+  running apps stay open. If neither works, the stock screensaver is kept and applying reports it.
+- The TV ends the screensaver when it sees full-screen video, within a second on webOS 26. Apps in
+  "manual" screensaver mode are exempt, so the screensaver puts itself in that mode
+  (`com.webos.service.screenmanager/setScreenSaverMode`) every time it starts. The mode is only
+  kept in memory, so nothing has to be undone.
+- Where the TV has LG's own video screensaver (`com.webos.app.videoads`), a copy of the web
+  screensaver is mounted over it too: LG's TVs launch that one instead of the regular screensaver
+  when LG's conditions for its video screensaver ads hold. LG's settings and blocked app list are
+  left alone, and a `videoads` that a debloat tool blocked is skipped.
 - Set text opacity to 0 to hide the on-screen text, e.g. to avoid burn-in on OLED TVs.
 - If another app has a paused video, the screensaver shows a clock that moves every minute
-  instead of video, so that app keeps its video decoder and playback can resume.
+  instead of video, so that app keeps its video decoder and playback can resume. It switches to
+  video once that app has released the decoder.
 - Any system notification ends the screensaver, and the TV shows one ("Dolby Vision") when an HDR
   video starts. So, like the QML screensaver, it switches notifications off while each video
   starts and back on after 2 seconds; one arriving meanwhile is dropped. A switch-off outlives
@@ -38,31 +48,11 @@ uses the same settings, videos and locales. Notes:
   isn't running (which would also undo a switch-off by any other app). The screensaver only
   switches them off while that watcher is running, so after updating Aerial press Apply once.
 
-webOS 26 (11.x)
----------------
-webOS 26 ends the regular screensaver (`com.webos.app.screensaver`) as soon as it starts a video,
-but it lets LG's own video screensaver, `com.webos.app.videoads`, play video. The TV uses that one
-when the LG Channels setting `isVideoScreenSaverEnabled` is on. So on webOS 26, `apply.sh`:
-
-- mounts a copy of the web screensaver, with the `videoads` app id, over `com.webos.app.videoads`
-  (the regular screensaver stays LG's),
-- takes `videoads` off LG's blocked system app list if a debloat tool put it there,
-- switches `isVideoScreenSaverEnabled` on.
-
-The setting and the block list survive a reboot but the mount doesn't, which would leave LG's own
-video screensaver running. So `apply.sh` first saves their earlier values to
-`/var/lib/webosbrew/aerial-videoads/state` and installs a boot hook,
-`/var/lib/webosbrew/init.d/49-aerial-videoads-restore`. At boot, unless Autostart is on, it puts
-both back and removes itself; it also does this after Aerial is uninstalled. To undo it without a
-reboot, run `sh /var/lib/webosbrew/init.d/49-aerial-videoads-restore now`.
-
-LG's `dmost` service recalculates `isVideoScreenSaverEnabled` at every foreground app change and
-switches it off unless LG's own conditions for its video screensaver hold (LG's server allows it,
-LG Channels is enabled, the TV is online, `screenSaverAd` is on, among others), which on most TVs
-they never all do. So while the screensaver is applied, `assets/videoads-flag.sh` runs as the
-systemd unit `aerial-videoads-flag`, checks the setting every 5 seconds and switches it back on;
-the restore hook stops it first. `systemctl status aerial-videoads-flag` shows it. It also switches
-notifications back on whenever the screensaver isn't running (see webOS 25 above).
+Aerial 3.0.2 ran the screensaver on webOS 26 as `videoads`, with the LG Channels setting
+`isVideoScreenSaverEnabled` switched on and a watcher (`aerial-videoads-flag`) keeping it on. The
+first apply of a newer version runs its restore hook
+(`/var/lib/webosbrew/init.d/49-aerial-videoads-restore`), which stops that watcher and puts the
+setting and the `videoads` block back.
 
 Features
 --------
