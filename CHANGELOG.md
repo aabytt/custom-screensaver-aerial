@@ -39,3 +39,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   when LG's conditions for its video screensaver hold (#53). LG's settings are left alone.
 - The paused-video clock skips Live TV running in the background (#62) and switches to video once
   the decoder is free (#64).
+- webOS 25/26 (10.x/11.x): applying again remounts the screensaver when the mounted folder is no
+  longer the installed `assets/` (an install that replaced the app folder), instead of leaving the
+  old page running until a reboot.

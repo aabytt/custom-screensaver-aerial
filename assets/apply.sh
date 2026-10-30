@@ -242,8 +242,10 @@ va_mounted_current() {
             cmp -s "$ASSETS_DIR/$f" "$VA_DIR/$f" || current=0
         fi
     done
-    findmnt "$VA_DIR/settings.json" >/dev/null || current=0
-    findmnt "$VA_DIR/watcher.json" >/dev/null || current=0
+    # The settings.json and watcher.json mounts must be this assets/ one's file and the watcher's,
+    # not files an update replaced
+    [[ "$ASSETS_DIR/settings.json" -ef "$VA_DIR/settings.json" ]] || current=0
+    [[ "$NOTIFY_HEARTBEAT" -ef "$VA_DIR/watcher.json" ]] || current=0
     [[ $current -eq 1 ]] && return 0
     echo "[~] Replacing an outdated screensaver copy" >&2
     # -l also takes the settings.json and watcher.json mounts inside it along
@@ -312,6 +314,12 @@ undo_videoads_setup
 # web-screensaver.html) next to the settings, videos and locales it reads. The watcher switches
 # notifications back on after the screensaver (#46), and ends by itself if this is unmounted.
 if grep -q '"type" *: *"flutter"' "$APP_DIR/appinfo.json" 2>/dev/null || findmnt "$APP_DIR" >/dev/null; then
+    if findmnt "$APP_DIR" >/dev/null && ! [[ "$ASSETS_DIR" -ef "$APP_DIR" ]]; then
+        # Mounted, but not this assets/: installing an update can replace the app folder, and the
+        # mount would keep serving the old one until a reboot. -l also takes mounts inside it along.
+        echo "[~] Replacing the screensaver mounted from an earlier install" >&2
+        umount -l "$APP_DIR"
+    fi
     if ! findmnt "$APP_DIR" >/dev/null; then
         mount --bind "$ASSETS_DIR" "$APP_DIR"
         mount_heartbeat "$APP_DIR"
