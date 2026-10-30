@@ -1,52 +1,35 @@
 #!/bin/sh
-# Runs while Aerial's web screensaver is mounted, and ends by itself once it no longer is.
-# Usage: videoads-flag.sh             webOS 26, mounted over com.webos.app.videoads
-#        videoads-flag.sh screensaver webOS 25, mounted over com.webos.app.screensaver
+# Runs while Aerial's web screensaver is mounted, and ends by itself once it no longer is. The
+# name is from when it also kept LG's isVideoScreenSaverEnabled setting on for webOS 26.
 #
-# webOS 26 only: keeps the lgchannels setting isVideoScreenSaverEnabled on. LG's dmost service
-# recalculates that setting whenever the foreground app changes, and turns it off unless LG's
-# server allows its video screensaver, LG Channels (Channel Plus) is enabled, the TV is online, the
-# foreground app is a Home screen, screenSaverAd is on and Art and Kids modes are off. On most TVs
-# that is never all true, so without this the screensaver goes back to LG's own after the first
-# app switch. This checks the setting every few seconds and switches it back on.
-#
-# Both: the safety net for notifications (#46). Any system toast (such as the TV's "Dolby Vision"
-# one) ends the screensaver, so web-screensaver.html switches notifications off while a video
-# starts. A disable outlives the page and survives a Quick Start power-off, so if the page is
-# closed before it switches them back on, they would stay off. So at every check where tvpowerd
-# isn't in (or entering) the Screen Saver state, this switches them on. Every check rather than
-# on a change: a screensaver shorter than the poll interval would otherwise go unseen, and on
-# webOS 25 an enable was reported not to take while the screensaver ran. If tvpowerd doesn't
-# answer for a while, notifications are switched on anyway: a toast ending the screensaver is
-# better than no notifications. This also lifts a block some other app set; none is known to.
+# The safety net for notifications (#46). Any system toast (such as the TV's "Dolby Vision" one)
+# ends the screensaver, so web-screensaver.html switches notifications off while a video starts.
+# A disable outlives the page and survives a Quick Start power-off, so if the page is closed
+# before it switches them back on, they would stay off. So at every check where tvpowerd isn't in
+# (or entering) the Screen Saver state, this switches them on. Every check rather than on a
+# change: a screensaver shorter than the poll interval would otherwise go unseen, and on webOS 25
+# an enable was reported not to take while the screensaver ran. If tvpowerd doesn't answer for a
+# while, notifications are switched on anyway: a toast ending the screensaver is better than no
+# notifications. This also lifts a block some other app set; none is known to.
 # While the screensaver starts, tvpowerd can still report another state after the page has
-# switched notifications off, so no enable while the app manager lists the screensaver app as
-# running, unless that goes on for STUCK checks (an entry left behind must not block it for good).
-# At every check it also writes the time into watcher.json in the mounted app directory: the page
-# only switches notifications off while that is recent, so without this watcher (e.g. Aerial
-# updated on webOS 25 without pressing Apply) it leaves them alone. On webOS 26 that directory is
-# a copy in /tmp. On webOS 25 it is Aerial's own folder on flash, so apply.sh bind-mounts
-# /tmp/aerial-watcher.json over watcher.json there, and this writes that file in place.
+# switched notifications off, so no enable while the app manager lists the screensaver as running
+# (as com.webos.app.screensaver or, where apply.sh mounted it there too, com.webos.app.videoads),
+# unless that goes on for STUCK checks (an entry left behind must not block it for good).
+# At every check it also writes the time into /tmp/aerial-watcher.json, which apply.sh
+# bind-mounts over watcher.json in the screensaver's app directories: the page only switches
+# notifications off while that is recent, so without this watcher (e.g. Aerial updated without
+# pressing Apply) it leaves them alone. The file is written in place, as a bind mount would keep
+# pointing at a replaced file.
 #
 # Polling rather than subscriptions: nothing to go stale if a service restarts, and no long-lived
 # child process. The screensaver only starts after minutes without input, and an app switch is
 # input, so a few seconds is plenty.
 #
-# apply.sh starts it (as the systemd unit aerial-videoads-flag or, on webOS 25, aerial-notify where
-# systemd-run exists). On webOS 26 the restore hook stops it.
+# apply.sh starts it, as the systemd unit aerial-notify where systemd-run exists.
 
-if [ "$1" = screensaver ]; then
-    APP_ID="com.webos.app.screensaver"
-    FLAG=0
-    HEARTBEAT="/tmp/aerial-watcher.json"
-else
-    APP_ID="com.webos.app.videoads"
-    FLAG=1
-    HEARTBEAT=
-fi
-APP_DIR="/usr/palm/applications/$APP_ID"
-[ -n "$HEARTBEAT" ] || HEARTBEAT="$APP_DIR/watcher.json"
-SETTINGS="luna://com.webos.settingsservice"
+APP_DIR="/usr/palm/applications/com.webos.app.screensaver"
+APP_IDS="com\.webos\.app\.(screensaver|videoads)"
+HEARTBEAT="/tmp/aerial-watcher.json"
 POWER="luna://com.webos.service.tvpower/power/getPowerState"
 NOTIFY="luna://com.webos.notification"
 SAM="luna://com.webos.applicationManager"
@@ -72,7 +55,7 @@ notify_on() {  # reason
     reply="$($TIMEOUT luna-send -n 1 "$NOTIFY/enable" '{}' </dev/null 2>/dev/null || true)"
     echo "$reply" | grep -q '"returnValue" *: *true' || return 1
     # Said once per change, not at every check
-    [ "$quiet" = 1 ] || echo "aerial-videoads-flag: switched notifications on ($1)"
+    [ "$quiet" = 1 ] || echo "aerial-notify: switched notifications on ($1)"
     quiet=1
 }
 
@@ -80,25 +63,20 @@ notify_on() {  # reason
 # $STUCK checks in a row. If the app manager doesn't answer, switches them on.
 maybe_on() {  # reason
     reply="$($TIMEOUT luna-send -n 1 "$SAM/running" '{}' </dev/null 2>/dev/null || true)"
-    if echo "$reply" | grep -q "\"id\" *: *\"$APP_ID\""; then
+    if echo "$reply" | grep -qE "\"id\" *: *\"$APP_IDS\""; then
         listed=$((listed + 1))
         [ $listed -lt $STUCK ] && return 0
-        set -- "$1, $APP_ID still listed as running"
+        set -- "$1, the screensaver still listed as running"
     else
         listed=0
     fi
     notify_on "$1"
 }
 
-# In place on webOS 25 (a bind mount would keep pointing at a replaced file); the page treats a
-# half-written file as no watcher for that second. Errors are dropped: this runs every check.
+# In place (a bind mount would keep pointing at a replaced file); the page treats a half-written
+# file as no watcher for that second. Errors are dropped: this runs every check.
 heartbeat() {
-    t="{\"time\":$(date +%s)}"
-    if [ $FLAG = 0 ]; then
-        { echo "$t" > "$HEARTBEAT"; } 2>/dev/null
-    else
-        { echo "$t" > "$HEARTBEAT.tmp" && mv "$HEARTBEAT.tmp" "$HEARTBEAT"; } 2>/dev/null
-    fi
+    { echo "{\"time\":$(date +%s)}" > "$HEARTBEAT"; } 2>/dev/null
 }
 
 quiet=0     # 1 once notifications were switched on and the screensaver hasn't run since
@@ -108,18 +86,6 @@ ran=0
 while mounted; do
     ran=1
     heartbeat
-    if [ $FLAG = 1 ]; then
-        reply="$($TIMEOUT luna-send -n 1 "$SETTINGS/getSystemSettings" \
-            '{"category":"lgchannels","keys":["isVideoScreenSaverEnabled"]}' </dev/null 2>/dev/null || true)"
-        case "$reply" in
-            *'"isVideoScreenSaverEnabled":false'*|*'"isVideoScreenSaverEnabled": false'*)
-                if mounted; then
-                    $TIMEOUT luna-send -n 1 "$SETTINGS/setSystemSettings" \
-                        '{"category":"lgchannels","settings":{"isVideoScreenSaverEnabled":true}}' </dev/null >/dev/null 2>&1
-                    echo "aerial-videoads-flag: switched isVideoScreenSaverEnabled back on"
-                fi ;;
-        esac
-    fi
     reply="$($TIMEOUT luna-send -n 1 "$POWER" '{}' </dev/null 2>/dev/null || true)"
     state="$(echo "$reply" | sed -n 's/.*"state" *: *"\([^"]*\)".*/\1/p')"
     processing="$(echo "$reply" | sed -n 's/.*"processing" *: *"\([^"]*\)".*/\1/p')"

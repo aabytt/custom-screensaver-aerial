@@ -250,28 +250,39 @@ function updateOSD() {
     }
 }
 
+// Calls a luna method. Resolves to the parsed reply, or to null if there is none within 3 s.
+var bridges = {}; // one per method, kept: a garbage-collected PalmServiceBridge drops its call
+function luna(uri, params) {
+    return new Promise(function (resolve) {
+        if (typeof PalmServiceBridge === "undefined") return resolve(null);
+        setTimeout(function () { resolve(null); }, 3000);
+        var bridge = bridges[uri] = new PalmServiceBridge();
+        bridge.onservicecallback = function (msg) {
+            try { resolve(JSON.parse(msg)); } catch (e) { resolve(null); }
+        };
+        bridge.call(uri, JSON.stringify(params || {}));
+    });
+}
+
 // Resolves to true if another app holds a video decoder. Live TV (type "tv") is skipped: LG
 // Channels and the home screen leave it running in the background with decoders reserved (#62),
 // and the screensaver's video plays next to it.
-var pipelineBridge = null; // global: a garbage-collected PalmServiceBridge drops its call
 function videoDecoderInUse() {
-    return new Promise(function (resolve) {
-        if (typeof PalmServiceBridge === "undefined") return resolve(false);
-        setTimeout(function () { resolve(false); }, 3000);
-        pipelineBridge = new PalmServiceBridge();
-        pipelineBridge.onservicecallback = function (msg) {
-            try {
-                resolve(JSON.parse(msg).some(function (pipeline) {
-                    return pipeline.type !== "tv" && (pipeline.resource || []).some(function (r) {
-                        return /VDEC|HEVC|H264|MSVC|VP9|AV1/.test(r.resource);
-                    });
-                }));
-            } catch (e) {
-                resolve(false);
-            }
-        };
-        pipelineBridge.call("luna://com.webos.media/getActivePipelines", "{}");
+    return luna("luna://com.webos.media/getActivePipelines").then(function (pipelines) {
+        return Array.isArray(pipelines) && pipelines.some(function (pipeline) {
+            return pipeline.type !== "tv" && (pipeline.resource || []).some(function (r) {
+                return /VDEC|HEVC|H264|MSVC|VP9|AV1/.test(r.resource);
+            });
+        });
     });
+}
+
+// screenmanager ends the screensaver when it sees fullscreen video, except for apps in manual
+// screensaver mode (and LG's videoads). webOS 26 does so within a second, despite the 1px trick.
+// The mode is kept in screenmanager's memory until it restarts, so it's set at every start.
+function setManualMode() {
+    return luna("luna://com.webos.service.screenmanager/setScreenSaverMode",
+        { appId: "com.webos.app.screensaver", mode: "manual" });
 }
 
 function moveClock() {
@@ -350,7 +361,8 @@ loadJSONData(basePath + "settings.json")
             loadJSONData(basePath + "videos.json"),
             loadJSONData(basePath + "locales/" + settings.localeLang + ".json").catch(function () { return { strings: {} }; }),
             videoDecoderInUse(),
-            checkWatcher()
+            checkWatcher(),
+            setManualMode()
         ]);
     })
     .then(function (r) {
