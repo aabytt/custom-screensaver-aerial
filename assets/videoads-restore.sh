@@ -9,7 +9,7 @@
 #   sh /var/lib/webosbrew/init.d/49-aerial-videoads-restore now
 # it stops apply.sh's flag watcher, puts both back, unmounts the screensaver copy if mounted, and
 # removes itself. If something can't be put back, it keeps itself and the saved state and tries
-# again at the next boot.
+# again at the next boot. Run as "now", it also switches notifications back on (#46).
 
 VA_ID="com.webos.app.videoads"
 VA_DIR="/usr/palm/applications/$VA_ID"
@@ -36,6 +36,13 @@ if [ "$1" != now ]; then
     done
     trap 'rmdir "$LOCK" 2>/dev/null || true' EXIT
 fi
+if timeout 1 true >/dev/null 2>&1; then
+    TIMEOUT="timeout 8"
+elif timeout -t 1 true >/dev/null 2>&1; then
+    TIMEOUT="timeout -t 8"
+else
+    TIMEOUT=
+fi
 # Stop apply.sh's watcher first, or it would switch the setting straight back on. Before the
 # state check, so it's stopped even if the state is gone.
 systemctl stop aerial-videoads-flag >/dev/null 2>&1
@@ -44,6 +51,12 @@ if [ -f "$STATE_DIR/flag.pid" ]; then
     pid="$(cat "$STATE_DIR/flag.pid")"
     kill -s TERM "-$pid" >/dev/null 2>&1 || kill "$pid" >/dev/null 2>&1
     rm -f "$STATE_DIR/flag.pid"
+fi
+# The screensaver switches notifications off while a video starts (#46), and the watcher that
+# would switch them back on is gone now. A reboot resets them, so only when run as "now".
+# Best effort: notifications are not something this hook saved.
+if [ "$1" = now ]; then
+    $TIMEOUT luna-send -n 1 luna://com.webos.notification/enable '{}' </dev/null >/dev/null 2>&1
 fi
 if [ ! -f "$STATE_DIR/state" ]; then
     rm -f "$HOOK"
@@ -55,13 +68,6 @@ BLOCKED=0
 case "$(sed -n 's/^FLAG=//p' "$STATE_DIR/state")" in true) FLAG=true ;; esac
 case "$(sed -n 's/^BLOCKED=//p' "$STATE_DIR/state")" in 1) BLOCKED=1 ;; esac
 
-if timeout 1 true >/dev/null 2>&1; then
-    TIMEOUT="timeout 8"
-elif timeout -t 1 true >/dev/null 2>&1; then
-    TIMEOUT="timeout -t 8"
-else
-    TIMEOUT=
-fi
 # Calls a luna method until its reply matches, for up to $TRIES tries
 retry_call() {  # uri payload pattern
     for i in $(seq 1 $TRIES); do

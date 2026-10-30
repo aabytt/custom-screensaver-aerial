@@ -1,22 +1,58 @@
 #!/bin/sh
-# webOS 26: keeps the lgchannels setting isVideoScreenSaverEnabled on while Aerial's screensaver
-# is mounted over com.webos.app.videoads.
+# Runs while Aerial's web screensaver is mounted, and ends by itself once it no longer is.
+# Usage: videoads-flag.sh             webOS 26, mounted over com.webos.app.videoads
+#        videoads-flag.sh screensaver webOS 25, mounted over com.webos.app.screensaver
 #
-# LG's dmost service recalculates that setting whenever the foreground app changes, and turns it
-# off unless LG's server allows its video screensaver, LG Channels (Channel Plus) is enabled, the
-# TV is online, the foreground app is a Home screen, screenSaverAd is on and Art and Kids modes are
-# off. On most TVs that is never all true, so without this the screensaver goes back to LG's own
-# after the first app switch. This checks the setting every few seconds and switches it back on.
-# Polling rather than a subscription: nothing to go stale if the settings service restarts, and
-# no long-lived child process. The screensaver only starts after minutes without input, and an
-# app switch is input, so a few seconds is plenty.
+# webOS 26 only: keeps the lgchannels setting isVideoScreenSaverEnabled on. LG's dmost service
+# recalculates that setting whenever the foreground app changes, and turns it off unless LG's
+# server allows its video screensaver, LG Channels (Channel Plus) is enabled, the TV is online, the
+# foreground app is a Home screen, screenSaverAd is on and Art and Kids modes are off. On most TVs
+# that is never all true, so without this the screensaver goes back to LG's own after the first
+# app switch. This checks the setting every few seconds and switches it back on.
 #
-# apply.sh starts it (as the systemd unit aerial-videoads-flag where systemd-run exists) and the
-# restore hook stops it. It also ends by itself once the screensaver copy is no longer mounted.
+# Both: the safety net for notifications (#46). Any system toast (such as the TV's "Dolby Vision"
+# one) ends the screensaver, so web-screensaver.html switches notifications off while a video
+# starts. A disable outlives the page and survives a Quick Start power-off, so if the page is
+# closed before it switches them back on, they would stay off. So at every check where tvpowerd
+# isn't in (or entering) the Screen Saver state, this switches them on. Every check rather than
+# on a change: a screensaver shorter than the poll interval would otherwise go unseen, and on
+# webOS 25 an enable was reported not to take while the screensaver ran. If tvpowerd doesn't
+# answer for a while, notifications are switched on anyway: a toast ending the screensaver is
+# better than no notifications. This also lifts a block some other app set; none is known to.
+# While the screensaver starts, tvpowerd can still report another state after the page has
+# switched notifications off, so no enable while the app manager lists the screensaver app as
+# running, unless that goes on for STUCK checks (an entry left behind must not block it for good).
+# At every check it also writes the time into watcher.json in the mounted app directory: the page
+# only switches notifications off while that is recent, so without this watcher (e.g. Aerial
+# updated on webOS 25 without pressing Apply) it leaves them alone. On webOS 26 that directory is
+# a copy in /tmp. On webOS 25 it is Aerial's own folder on flash, so apply.sh bind-mounts
+# /tmp/aerial-watcher.json over watcher.json there, and this writes that file in place.
+#
+# Polling rather than subscriptions: nothing to go stale if a service restarts, and no long-lived
+# child process. The screensaver only starts after minutes without input, and an app switch is
+# input, so a few seconds is plenty.
+#
+# apply.sh starts it (as the systemd unit aerial-videoads-flag or, on webOS 25, aerial-notify where
+# systemd-run exists). On webOS 26 the restore hook stops it.
 
-VA_DIR="/usr/palm/applications/com.webos.app.videoads"
+if [ "$1" = screensaver ]; then
+    APP_ID="com.webos.app.screensaver"
+    FLAG=0
+    HEARTBEAT="/tmp/aerial-watcher.json"
+else
+    APP_ID="com.webos.app.videoads"
+    FLAG=1
+    HEARTBEAT=
+fi
+APP_DIR="/usr/palm/applications/$APP_ID"
+[ -n "$HEARTBEAT" ] || HEARTBEAT="$APP_DIR/watcher.json"
 SETTINGS="luna://com.webos.settingsservice"
-POLL=5  # seconds between checks
+POWER="luna://com.webos.service.tvpower/power/getPowerState"
+NOTIFY="luna://com.webos.notification"
+SAM="luna://com.webos.applicationManager"
+POLL=5         # seconds between checks
+NO_ANSWER=6    # checks without an answer from tvpowerd before switching notifications on anyway
+STUCK=3        # checks with the screensaver app listed, outside Screen Saver, before enabling anyway
 
 if timeout 1 true >/dev/null 2>&1; then
     TIMEOUT="timeout 8"
@@ -27,22 +63,80 @@ else
 fi
 
 mounted() {
-    grep -qs " $VA_DIR " /proc/mounts
+    grep -qs " $APP_DIR " /proc/mounts
 }
 
+# luna-send gets /dev/null as stdin: run from a script it was reported to return nothing
+# otherwise (#55)
+notify_on() {  # reason
+    reply="$($TIMEOUT luna-send -n 1 "$NOTIFY/enable" '{}' </dev/null 2>/dev/null || true)"
+    echo "$reply" | grep -q '"returnValue" *: *true' || return 1
+    # Said once per change, not at every check
+    [ "$quiet" = 1 ] || echo "aerial-videoads-flag: switched notifications on ($1)"
+    quiet=1
+}
+
+# Switches notifications on unless the screensaver app is running (it may be starting), for up to
+# $STUCK checks in a row. If the app manager doesn't answer, switches them on.
+maybe_on() {  # reason
+    reply="$($TIMEOUT luna-send -n 1 "$SAM/running" '{}' </dev/null 2>/dev/null || true)"
+    if echo "$reply" | grep -q "\"id\" *: *\"$APP_ID\""; then
+        listed=$((listed + 1))
+        [ $listed -lt $STUCK ] && return 0
+        set -- "$1, $APP_ID still listed as running"
+    else
+        listed=0
+    fi
+    notify_on "$1"
+}
+
+# In place on webOS 25 (a bind mount would keep pointing at a replaced file); the page treats a
+# half-written file as no watcher for that second. Errors are dropped: this runs every check.
+heartbeat() {
+    t="{\"time\":$(date +%s)}"
+    if [ $FLAG = 0 ]; then
+        { echo "$t" > "$HEARTBEAT"; } 2>/dev/null
+    else
+        { echo "$t" > "$HEARTBEAT.tmp" && mv "$HEARTBEAT.tmp" "$HEARTBEAT"; } 2>/dev/null
+    fi
+}
+
+quiet=0     # 1 once notifications were switched on and the screensaver hasn't run since
+no_answer=0
+listed=0
+ran=0
 while mounted; do
-    # luna-send gets /dev/null as stdin: run from a script it was reported to return nothing
-    # otherwise (#55)
-    reply="$($TIMEOUT luna-send -n 1 "$SETTINGS/getSystemSettings" \
-        '{"category":"lgchannels","keys":["isVideoScreenSaverEnabled"]}' </dev/null 2>/dev/null || true)"
-    case "$reply" in
-        *'"isVideoScreenSaverEnabled":false'*|*'"isVideoScreenSaverEnabled": false'*)
-            if mounted; then
-                $TIMEOUT luna-send -n 1 "$SETTINGS/setSystemSettings" \
-                    '{"category":"lgchannels","settings":{"isVideoScreenSaverEnabled":true}}' </dev/null >/dev/null 2>&1
-                echo "aerial-videoads-flag: switched isVideoScreenSaverEnabled back on"
-            fi ;;
-    esac
+    ran=1
+    heartbeat
+    if [ $FLAG = 1 ]; then
+        reply="$($TIMEOUT luna-send -n 1 "$SETTINGS/getSystemSettings" \
+            '{"category":"lgchannels","keys":["isVideoScreenSaverEnabled"]}' </dev/null 2>/dev/null || true)"
+        case "$reply" in
+            *'"isVideoScreenSaverEnabled":false'*|*'"isVideoScreenSaverEnabled": false'*)
+                if mounted; then
+                    $TIMEOUT luna-send -n 1 "$SETTINGS/setSystemSettings" \
+                        '{"category":"lgchannels","settings":{"isVideoScreenSaverEnabled":true}}' </dev/null >/dev/null 2>&1
+                    echo "aerial-videoads-flag: switched isVideoScreenSaverEnabled back on"
+                fi ;;
+        esac
+    fi
+    reply="$($TIMEOUT luna-send -n 1 "$POWER" '{}' </dev/null 2>/dev/null || true)"
+    state="$(echo "$reply" | sed -n 's/.*"state" *: *"\([^"]*\)".*/\1/p')"
+    processing="$(echo "$reply" | sed -n 's/.*"processing" *: *"\([^"]*\)".*/\1/p')"
+    # The exact values, not any "Screen Saver" in the reply: "processing": "Screen Saver Ready"
+    # (webOS 25, while the screensaver starts) can stay for minutes after a screensaver closed
+    # during its start. While it starts, the app manager check in maybe_on holds the enable back.
+    if [ "$state" = "Screen Saver" ] || [ "$processing" = "Request Screen Saver" ]; then
+        no_answer=0; quiet=0; listed=0
+    elif [ -n "$state" ]; then
+        no_answer=0
+        mounted && maybe_on "$state${processing:+, $processing}"
+    else
+        no_answer=$((no_answer + 1))
+        [ $no_answer -ge $NO_ANSWER ] && mounted && maybe_on "tvpowerd not answering"
+    fi
     sleep $POLL
 done
+# Unmounted (Aerial undone, or replaced): nothing else will switch them on
+[ $ran = 1 ] && quiet=0 && notify_on "screensaver unmounted"
 exit 0

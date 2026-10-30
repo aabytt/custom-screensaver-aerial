@@ -32,6 +32,10 @@ VA_RESTORE_HOOK="/var/lib/webosbrew/init.d/49-aerial-videoads-restore"
 BLOCKED_LIST_DIR="/var/preferences/com.webos.applicationManager/blockedSystemAppList"
 VA_FLAG_UNIT="aerial-videoads-flag"
 VA_FLAG_PIDFILE="$VA_STATE_DIR/flag.pid"
+# webOS 25 (10.x): the same watcher, for notifications only (see videoads-flag.sh)
+NOTIFY_UNIT="aerial-notify"
+NOTIFY_PIDFILE="/tmp/aerial-notify.pid"
+NOTIFY_HEARTBEAT="/tmp/aerial-watcher.json"
 SAM_WAIT=60   # seconds to wait for SAM at boot
 
 if [[ -f "$MOUNT_TARGET" ]]; then
@@ -131,6 +135,7 @@ apply_web() {
         echo "[+] Enabled succesfully (web screensaver)" >&2
     elif [[ $rc -eq 2 ]]; then
         # Put the stock screensaver back so the next apply starts over
+        umount "$APP_DIR/watcher.json" 2>/dev/null || true
         umount "$APP_DIR" || true
         echo "[-] Could not release $APP_ID from LG's blocked system app list, so no screensaver can launch." >&2
         echo "    Apply again, or run: luna-send -n 1 $SAM/releaseBlockSystemApp '{\"id\":\"$APP_ID\"}'" >&2
@@ -209,33 +214,45 @@ va_restore_unless_kept() {
     fi
 }
 
-# LG's dmost service switches isVideoScreenSaverEnabled off again at every foreground app change
-# unless its own conditions hold (see videoads-flag.sh), so a watcher switches it back on while
-# the screensaver is applied. Run as a transient systemd unit where systemd-run exists, so the
-# restore hook can stop it with everything it started; otherwise in the background with a pidfile.
-# The fallback runs it in its own process group (setsid), so stopping it also stops a check or
-# sleep it's in the middle of.
-stop_flag_watcher() {
-    systemctl stop "$VA_FLAG_UNIT" >/dev/null 2>&1 || true
-    systemctl reset-failed "$VA_FLAG_UNIT" >/dev/null 2>&1 || true
-    if [[ -f "$VA_FLAG_PIDFILE" ]]; then
-        pid="$(cat "$VA_FLAG_PIDFILE")"
+# videoads-flag.sh runs while the web screensaver is applied. On webOS 26, LG's dmost service
+# switches isVideoScreenSaverEnabled off again at every foreground app change unless its own
+# conditions hold, so it switches that back on. On webOS 25 and 26, it switches notifications back
+# on once the screensaver isn't running (#46). Run as a transient systemd unit where systemd-run
+# exists, so the restore hook can stop it with everything it started, and restarted if it fails;
+# otherwise in the background with a pidfile. The fallback runs it in its own process group
+# (setsid), so stopping it also stops a check or sleep it's in the middle of.
+stop_watcher() {  # unit pidfile
+    systemctl stop "$1" >/dev/null 2>&1 || true
+    systemctl reset-failed "$1" >/dev/null 2>&1 || true
+    if [[ -f "$2" ]]; then
+        pid="$(cat "$2")"
         kill -s TERM "-$pid" >/dev/null 2>&1 || kill "$pid" >/dev/null 2>&1 || true
-        rm -f "$VA_FLAG_PIDFILE"
+        rm -f "$2"
     fi
 }
-start_flag_watcher() {
-    stop_flag_watcher
+start_watcher() {  # unit pidfile [videoads-flag.sh argument]
+    stop_watcher "$1" "$2"
     if command -v systemd-run >/dev/null 2>&1 &&
-       systemd-run --no-block --unit="$VA_FLAG_UNIT" /bin/sh "$ASSETS_DIR/videoads-flag.sh" >/dev/null 2>&1; then
+       systemd-run --no-block --unit="$1" -p Restart=on-failure /bin/sh "$ASSETS_DIR/videoads-flag.sh" $3 >/dev/null 2>&1; then
         return 0
     fi
     if command -v setsid >/dev/null 2>&1; then
-        setsid /bin/sh "$ASSETS_DIR/videoads-flag.sh" </dev/null >/dev/null 2>&1 &
+        setsid /bin/sh "$ASSETS_DIR/videoads-flag.sh" $3 </dev/null >/dev/null 2>&1 &
     else
-        nohup /bin/sh "$ASSETS_DIR/videoads-flag.sh" </dev/null >/dev/null 2>&1 &
+        nohup /bin/sh "$ASSETS_DIR/videoads-flag.sh" $3 </dev/null >/dev/null 2>&1 &
     fi
-    echo $! > "$VA_FLAG_PIDFILE"
+    echo $! > "$2"
+}
+
+# webOS 25: the watcher writes the time into watcher.json for the page at every check. The app
+# directory there is assets/ itself, on flash, so the file the page reads is a RAM file in /tmp
+# bind-mounted over the assets/watcher.json placeholder. If that fails the page sees the
+# placeholder's old time and leaves notifications alone.
+mount_heartbeat() {
+    [[ -f "$NOTIFY_HEARTBEAT" ]] || echo '{"time":0}' > "$NOTIFY_HEARTBEAT" || true
+    if [[ -f "$APP_DIR/watcher.json" ]] && ! findmnt "$APP_DIR/watcher.json" >/dev/null; then
+        mount --bind "$NOTIFY_HEARTBEAT" "$APP_DIR/watcher.json" || true
+    fi
 }
 
 apply_videoads() {
@@ -322,7 +339,7 @@ apply_videoads() {
         exit 1
     fi
     VA_KEEP=1
-    start_flag_watcher
+    start_watcher "$VA_FLAG_UNIT" "$VA_FLAG_PIDFILE"
     if [[ $mounted -eq 1 ]]; then
         echo "[~] Enabled already (web screensaver as $VA_ID)" >&2
     else
@@ -346,12 +363,17 @@ fi
 
 # webOS 25 (10.x): the stock screensaver is a Flutter app and QML apps can't be launched, so
 # replace the whole app directory with assets/, which holds a web app (appinfo.json +
-# web-screensaver.html) next to the settings, videos and locales it reads
+# web-screensaver.html) next to the settings, videos and locales it reads. The watcher switches
+# notifications back on after the screensaver (#46), and ends by itself if this is unmounted.
 if grep -q '"type" *: *"flutter"' "$APP_DIR/appinfo.json" 2>/dev/null || findmnt "$APP_DIR" >/dev/null; then
     if ! findmnt "$APP_DIR" >/dev/null; then
         mount --bind "$ASSETS_DIR" "$APP_DIR"
+        mount_heartbeat
+        start_watcher "$NOTIFY_UNIT" "$NOTIFY_PIDFILE" screensaver
         apply_web
     fi
+    mount_heartbeat
+    start_watcher "$NOTIFY_UNIT" "$NOTIFY_PIDFILE" screensaver
     # Mounted already. Clear a block an earlier run may have left (SAM can report the web app
     # while it's blocked), then make SAM reread if it still has the Flutter manifest
     if systemctl is-active -q sam.service; then

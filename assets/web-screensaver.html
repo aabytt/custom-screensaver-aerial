@@ -68,7 +68,11 @@ function loadJSONData(url) {
         xhr.onload = function () {
             // file:// requests report status 0 on success
             if (xhr.status === 200 || (xhr.status === 0 && xhr.responseText)) {
-                resolve(JSON.parse(xhr.responseText));
+                try {
+                    resolve(JSON.parse(xhr.responseText));
+                } catch (e) {
+                    reject(new Error(url + ": " + e.message));
+                }
             } else {
                 reject(new Error(url + ": " + xhr.status));
             }
@@ -81,6 +85,54 @@ function loadJSONData(url) {
 // sylvan.apple.com is signed by Apple's private root CA, which webOS doesn't trust
 function fixUrl(url) {
     return url.replace(/^https:\/\/sylvan\.apple\.com\//, "http://sylvan.apple.com/");
+}
+
+// Any system toast ends the screensaver, and the TV shows one ("Dolby Vision") when an HDR video
+// starts (#46). Like screensaver-main.qml: notifications are off while a video starts, and back on
+// after 2 s of video, on an error and on exit. A toast sent meanwhile is dropped, not shown later.
+// A disable outlives this page and survives a Quick Start power-off, so videoads-flag.sh (started
+// by apply.sh) switches them on whenever the screensaver isn't running. It writes the time into
+// watcher.json here at every check; without a recent one (no watcher, e.g. after an update without
+// Apply) this page leaves notifications alone, as nothing would switch them back on.
+var notifyCtl = typeof PalmServiceBridge !== "undefined";
+var notifyBridges = []; // kept until answered: a garbage-collected PalmServiceBridge drops its call
+var notifyOff = false;
+var watcherAlive = false;
+var WATCHER_STALE = 60; // seconds: a check can take a while when services are slow
+var closing = false;    // a key was pressed: no more disables or videos
+function checkWatcher() {
+    if (!notifyCtl) return Promise.resolve();
+    return loadJSONData(basePath + "watcher.json")
+        .then(function (w) { watcherAlive = Math.abs(Date.now() / 1000 - w.time) < WATCHER_STALE; })
+        .catch(function () { watcherAlive = false; });
+}
+// done (optional) runs once the call is answered, or at once if nothing was sent. force sends a
+// disable even if one was sent already.
+function setNotifications(on, force, done) {
+    if (!notifyCtl || (notifyOff === !on && !force) || (!on && (closing || !watcherAlive))) {
+        if (done) done();
+        return;
+    }
+    var bridge, wasOff = notifyOff;
+    try {
+        bridge = new PalmServiceBridge();
+        bridge.onservicecallback = function () {
+            var i = notifyBridges.indexOf(bridge);
+            if (i < 0) return; // answered already
+            notifyBridges.splice(i, 1);
+            if (done) done();
+        };
+        notifyBridges.push(bridge); // before the call, in case it answers at once
+        notifyOff = !on;
+        bridge.call("luna://com.webos.notification/" + (on ? "enable" : "disable"), "{}");
+    } catch (e) {
+        // Never let this stop the video or the exit
+        console.error("notifications: " + e.message);
+        notifyOff = wasOff;
+        var i = notifyBridges.indexOf(bridge);
+        if (i >= 0) notifyBridges.splice(i, 1);
+        if (done) done();
+    }
 }
 
 // Same fallbacks as screensaver-main.qml
@@ -125,6 +177,7 @@ function buildDisabledSet() {
 }
 
 function playRandomVideo() {
+    if (closing) return;
     var assets = playList.assets;
     var candidates = [];
     for (var i = 0; i < assets.length; i++) {
@@ -145,21 +198,31 @@ function playRandomVideo() {
     osd.style.opacity = 0;
     document.getElementById("name").textContent = poi.strings[assets[randomIndex].localizedNameKey] || "";
     document.getElementById("poi").textContent = "";
+    setNotifications(false);
     video.src = fixUrl(pickSource(assets[randomIndex]));
     video.play().catch(function () {});
 }
 
 video.addEventListener("playing", function () {
+    // Again as the video starts: the watcher may have switched them on while the screensaver
+    // was starting, before tvpowerd reported it
+    if (video.currentTime <= 2) setNotifications(false, true);
     video.classList.add("on");
     osd.style.opacity = settings.osdOpacity / 100;
 });
 video.addEventListener("ended", playRandomVideo);
-video.addEventListener("error", function () { setTimeout(playRandomVideo, 1000); });
+video.addEventListener("error", function () {
+    setNotifications(true);
+    setTimeout(playRandomVideo, 1000);
+});
 
 function checkStatus() {
     if (randomIndex < 0) return;
     var asset = playList.assets[randomIndex];
-    if (video.currentTime > 2) asset.viewed = true;
+    if (video.currentTime > 2) {
+        asset.viewed = true;
+        setNotifications(true);
+    }
     if (video.duration && Math.floor(video.currentTime) == Math.floor(video.duration) - 5) {
         video.classList.add("fading");
         osd.classList.add("fading");
@@ -257,11 +320,27 @@ function updateDebug() {
         "\n Ready State: " + video.readyState +
         "\n Stalled Timeout: " + (25 - stalledSeconds) +
         "\n Error: " + (video.error ? video.error.code + " " + video.error.message : 0) +
+        "\n Notifications: " + (notifyOff ? "off" : "on") + ", watcher " + (watcherAlive ? "running" : "not seen") +
         "\n Paused: " + video.paused;
 }
 
 // Any key ends the screensaver
-document.addEventListener("keydown", function () { window.close(); });
+// Closing at once can lose the enable, so close once it's answered (or after 0.5 s)
+var closeSent = false; // not "closed": that's window.closed, read-only
+function closeOnce() {
+    if (closeSent) return;
+    closeSent = true;
+    window.close();
+}
+document.addEventListener("keydown", function () {
+    if (closing) return;
+    closing = true;
+    setTimeout(closeOnce, 500);
+    setNotifications(true, false, closeOnce);
+});
+// Closed by the system (tvpowerd ending the screensaver): a call from here may not get out, which
+// is why videoads-flag.sh also switches notifications on
+window.addEventListener("pagehide", function () { setNotifications(true); });
 
 loadJSONData(basePath + "settings.json")
     .then(function (s) { for (var key in s) settings[key] = s[key]; })
@@ -270,7 +349,8 @@ loadJSONData(basePath + "settings.json")
         return Promise.all([
             loadJSONData(basePath + "videos.json"),
             loadJSONData(basePath + "locales/" + settings.localeLang + ".json").catch(function () { return { strings: {} }; }),
-            videoDecoderInUse()
+            videoDecoderInUse(),
+            checkWatcher()
         ]);
     })
     .then(function (r) {
@@ -279,7 +359,7 @@ loadJSONData(basePath + "settings.json")
         poi = r[1];
         if (settings.osdOpacity == 0) osd.style.display = "none";
         updateOSD();
-        setInterval(function () { checkStatus(); updateOSD(); updateDebug(); }, 1000);
+        setInterval(function () { checkStatus(); updateOSD(); updateDebug(); checkWatcher(); }, 1000);
         if (r[2]) startClock(); else playRandomVideo();
     })
     .catch(function (e) {
