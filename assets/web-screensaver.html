@@ -22,19 +22,17 @@
           opacity: 0; transition: opacity 3s ease; }
   video.on { opacity: 1; }
   video.fading { opacity: 0; transition-duration: 5s; }
-  #osd { position: absolute; left: 65px; right: 65px; bottom: 65px; display: flex;
-         justify-content: space-between; align-items: flex-end; color: #fff;
+  /* The OSD box (65 px margins). Its four lines are placed by layoutOSD() from settings.osd,
+     with the same numbers as the preview in the app's Display panel */
+  #osd { position: absolute; left: 65px; right: 65px; top: 65px; bottom: 65px; color: #fff;
          font-family: SegoeUILight, sans-serif; letter-spacing: -1px;
          opacity: 0; transition: opacity 3s ease; }
   #osd.fading { transition-duration: 5s; }
-  #name { font-size: 56px; }
-  #poi { font-size: 40px; margin-top: 10px; }
-  #right { text-align: right; }
-  #time { font-size: 79px; }
-  #date { font-size: 40px; margin-top: 5px; }
+  #osd .ln { position: absolute; white-space: nowrap; line-height: 1.33; text-shadow: 0 1px 0 #000; }
   /* Clock mode: only the time and date, moved every minute against OLED burn-in */
-  body.clock #osd { right: auto; bottom: auto; }
-  body.clock #name, body.clock #poi { display: none; }
+  body.clock #osd { right: auto; bottom: auto; text-align: right; }
+  body.clock #osd .ln { position: static; }
+  body.clock #name, body.clock #poi { display: none !important; }
   #debug { position: absolute; top: 25px; right: 25px; color: #fff; font: 26px monospace;
            white-space: pre; text-align: right; display: none; }
 </style>
@@ -42,8 +40,10 @@
 <body>
 <video id="video" muted autoplay></video>
 <div id="osd">
-  <div><div id="name"></div><div id="poi"></div></div>
-  <div id="right"><div id="time"></div><div id="date"></div></div>
+  <div id="name" class="ln"></div>
+  <div id="poi" class="ln"></div>
+  <div id="time" class="ln"></div>
+  <div id="date" class="ln"></div>
 </div>
 <div id="debug"></div>
 <script>
@@ -54,12 +54,98 @@ var poi = { strings: {} };
 var randomIndex = -1;
 var disabledSet = null;
 var sourceAlt = "";
+var sourceKey = "";   // the source type actually chosen for the current video (url-4K-HDR, ...)
 var stalledSeconds = 0;
 var clockMode = false;
 var clockTimers = [];
 
 var video = document.getElementById("video");
 var osd = document.getElementById("osd");
+
+// ---- settings.osd (written by the app's Display panel) ----
+// Defaults must stay equal to DEFAULTS in DisplayPanel.js / screensaver-main.qml
+var OSD_DEFAULTS = {
+    title: true, poi: true, clock: true, date: true,
+    placeAnchor: "bl", placeScale: 100, clockAnchor: "br", clockScale: 100,
+    seconds: true, clock24: true, font: "segoe"
+};
+var OSD_FONTS = {   // file relative to this page, letter spacing in px
+    segoe: { file: "SegoeUI-Light.ttf", spacing: -1 },
+    roboto: { file: "fonts/Roboto-Light.ttf", spacing: 0 },
+    opensans: { file: "fonts/OpenSans-Light.ttf", spacing: 0 },
+    montserrat: { file: "fonts/Montserrat-Light.ttf", spacing: 0 },
+    oswald: { file: "fonts/Oswald-Light.ttf", spacing: 0 },
+    comfortaa: { file: "fonts/Comfortaa-Light.ttf", spacing: 0 },
+    lora: { file: "fonts/Lora-Regular.ttf", spacing: 0 },
+    satisfy: { file: "fonts/Satisfy-Regular.ttf", spacing: 0 }
+};
+var OSD_ANCHORS = { tl: 1, tc: 1, tr: 1, bl: 1, bc: 1, br: 1 };
+
+function osdGet(key) {
+    var o = settings.osd, v = (o && typeof o === "object" && o[key] !== undefined) ? o[key] : OSD_DEFAULTS[key];
+    if ((key === "placeAnchor" || key === "clockAnchor") && !OSD_ANCHORS[v]) v = OSD_DEFAULTS[key];
+    if ((key === "placeScale" || key === "clockScale") && !(v > 0)) v = OSD_DEFAULTS[key];
+    if (key === "font" && !OSD_FONTS[v]) v = OSD_DEFAULTS.font;
+    return v;
+}
+
+// Opacity in % for a kind of source ("dv" | "sdr"). Without the split switch one value (osdOpacity)
+// is used for everything; with it, Dolby Vision / HDR sources use osdOpacityDv (SDR if it is missing).
+function osdOpacityOf(kind) {
+    var sdr = settings.osdOpacity !== undefined ? settings.osdOpacity : 100;
+    return (settings.osdOpacitySplit && kind === "dv" && settings.osdOpacityDv !== undefined) ? settings.osdOpacityDv : sdr;
+}
+function osdOpacityNow() {
+    // clock mode shows no video: the SDR value
+    var dv = !clockMode && /HDR/i.test(sourceKey);
+    return osdOpacityOf(dv ? "dv" : "sdr") / 100;
+}
+// nothing to show at all (every opacity that can apply is 0)
+function osdInvisible() {
+    return osdOpacityOf("sdr") == 0 && (!settings.osdOpacitySplit || osdOpacityOf("dv") == 0);
+}
+
+// Loads only the chosen font (the page is in the app directory, so the file is relative)
+function applyOsdFont() {
+    var id = osdGet("font"), f = OSD_FONTS[id], st;
+    if (id !== "segoe") {   // Segoe UI Light is declared above already
+        st = document.createElement("style");
+        st.textContent = "@font-face { font-family: 'OsdFont-" + id + "'; src: url('" + basePath + f.file + "'); }";
+        document.head.appendChild(st);
+        osd.style.fontFamily = "'OsdFont-" + id + "', SegoeUILight, 'Segoe UI', sans-serif";
+    }
+    osd.style.letterSpacing = f.spacing + "px";
+}
+
+// One line of the OSD in its place (same numbers as the preview / QML)
+function putLine(el, on, anchor, y, px) {
+    var col = anchor.charAt(1), t = (col === "c" && !clockMode) ? "translateX(-50%)" : "";
+    el.style.display = on ? "" : "none";
+    el.style.fontSize = px + "px";
+    if (clockMode) {   // flows in the shrink-wrapped box
+        el.style.top = el.style.left = el.style.right = "";
+    } else {
+        el.style.top = y + "px";
+        el.style.left = col === "l" ? "0" : (col === "c" ? "50%" : "");
+        el.style.right = col === "r" ? "0" : "";
+    }
+    el.style.webkitTransform = el.style.transform = t;
+}
+
+function layoutOSD() {
+    var titleOn = !!osdGet("title"), poiOn = !!osdGet("poi"), clockOn = !!osdGet("clock"), dateOn = !!osdGet("date"),
+        ps = osdGet("placeScale") / 100, cs = osdGet("clockScale") / 100,
+        pa = osdGet("placeAnchor"), ca = osdGet("clockAnchor"),
+        boxH = window.innerHeight - 130,
+        pH = (titleOn && poiOn ? 106 : (titleOn ? 56 : (poiOn ? 40 : 0))) * ps,
+        cH = (clockOn && dateOn ? 136 : (clockOn ? 79 : (dateOn ? 40 : 0))) * cs;
+    function blockY(anchor, h) { return anchor.charAt(0) === "t" ? 0 : boxH * 0.9 + 106 - h; }
+    var py = blockY(pa, pH), cy = blockY(ca, cH);
+    putLine(document.getElementById("name"), titleOn, pa, py, 56 * ps);
+    putLine(document.getElementById("poi"), poiOn, pa, py + (titleOn ? 66 * ps : 0), 40 * ps);
+    putLine(document.getElementById("time"), clockOn, ca, cy, 79 * cs);
+    putLine(document.getElementById("date"), dateOn, ca, cy + (clockOn ? 96 * cs : 0), 40 * cs);
+}
 
 function loadJSONData(url) {
     return new Promise(function (resolve, reject) {
@@ -137,23 +223,29 @@ function setNotifications(on, force, done) {
 
 // Same fallbacks as screensaver-main.qml
 function pickSource(asset) {
+    var key = pickSourceKey(asset);
+    if (key) sourceKey = key;
+    return key ? asset[key] : null;
+}
+
+function pickSourceKey(asset) {
     if (asset[settings.sourceType]) {
         sourceAlt = "";
-        return asset[settings.sourceType];
+        return settings.sourceType;
     }
     if (!settings.playLowerQuality) return null;
     if (settings.sourceType == "url-4K-HDR" && asset["url-4K-SDR"]) {
         sourceAlt = " - n/a, trying url-4K-SDR";
-        return asset["url-4K-SDR"];
+        return "url-4K-SDR";
     }
     if (settings.sourceType == "url-1080-HDR") {
         if (asset["url-1080-SDR"]) {
             sourceAlt = " - n/a, trying url-1080-SDR";
-            return asset["url-1080-SDR"];
+            return "url-1080-SDR";
         }
         if (asset["url-1080-H264"]) {
             sourceAlt = " - n/a, trying url-1080-H264";
-            return asset["url-1080-H264"];
+            return "url-1080-H264";
         }
     }
     return null;
@@ -208,7 +300,7 @@ video.addEventListener("playing", function () {
     // was starting, before tvpowerd reported it
     if (video.currentTime <= 2) setNotifications(false, true);
     video.classList.add("on");
-    osd.style.opacity = settings.osdOpacity / 100;
+    osd.style.opacity = osdOpacityNow();
 });
 video.addEventListener("ended", playRandomVideo);
 video.addEventListener("error", function () {
@@ -238,16 +330,24 @@ function checkStatus() {
 }
 
 function updateOSD() {
-    var now = new Date();
-    document.getElementById("time").textContent =
-        now.toLocaleTimeString(settings.localeLang, { hour: "2-digit", minute: "2-digit" });
-    if (poi.date) {
-        document.getElementById("date").textContent =
-            poi.date.daysOfWeek[now.getDay()] + ", " + now.getDate() + " " + poi.date.months[now.getMonth()];
-    } else {
-        document.getElementById("date").textContent =
-            now.toLocaleDateString(settings.localeLang, { weekday: "long", day: "numeric", month: "long" });
+    var now = new Date(), lang = settings.localeLang, d = poi.date,
+        seconds = !!osdGet("seconds"), h24 = !!osdGet("clock24"), time, date, h;
+    function two(n) { return (n < 10 ? "0" : "") + n; }
+    try {
+        time = now.toLocaleTimeString(lang, { hour: h24 ? "2-digit" : "numeric", minute: "2-digit",
+            second: seconds ? "2-digit" : undefined, hour12: !h24 });
+    } catch (e) {
+        h = now.getHours();
+        time = h24 ? two(h) : String(h % 12 || 12);
+        time += ":" + two(now.getMinutes()) + (seconds ? ":" + two(now.getSeconds()) : "") + (h24 ? "" : (h < 12 ? " AM" : " PM"));
     }
+    document.getElementById("time").textContent = time;
+    if (d) {
+        date = d.daysOfWeek[now.getDay()] + ", " + now.getDate() + " " + d.months[now.getMonth()];
+    } else {
+        date = now.toLocaleDateString(lang, { weekday: "long", day: "numeric", month: "long" });
+    }
+    document.getElementById("date").textContent = date;
 }
 
 // Calls a luna method. Resolves to the parsed reply, or to null if there is none within 3 s.
@@ -291,7 +391,7 @@ function moveClock() {
         if (!clockMode) return;
         osd.style.left = Math.random() * (window.innerWidth - osd.offsetWidth) + "px";
         osd.style.top = Math.random() * (window.innerHeight - osd.offsetHeight) + "px";
-        osd.style.opacity = settings.osdOpacity / 100;
+        osd.style.opacity = osdOpacityNow();
     }, 3000);
 }
 
@@ -299,6 +399,7 @@ function moveClock() {
 function startClock() {
     clockMode = true;
     document.body.classList.add("clock");
+    layoutOSD();
     moveClock();
     clockTimers.push(setInterval(moveClock, 60000));
     clockTimers.push(setInterval(function () {
@@ -314,6 +415,7 @@ function stopClock() {
     clockTimers = [];
     document.body.classList.remove("clock");
     osd.style.left = osd.style.top = "";
+    layoutOSD();
     playRandomVideo();
 }
 
@@ -326,7 +428,7 @@ function updateDebug() {
         "\n Source Type: " + settings.sourceType + sourceAlt +
         "\n Try Other Source: " + settings.playLowerQuality +
         "\n Locale: " + settings.localeLang +
-        "\n OSD opacity: " + settings.osdOpacity + "%" +
+        "\n OSD opacity: " + Math.round(osdOpacityNow() * 100) + "%" + (settings.osdOpacitySplit ? " (DV " + osdOpacityOf("dv") + " / SDR " + osdOpacityOf("sdr") + ")" : "") +
         "\n Timecode: " + Math.floor(video.currentTime) + " / " + Math.floor(video.duration || 0) +
         "\n Ready State: " + video.readyState +
         "\n Stalled Timeout: " + (25 - stalledSeconds) +
@@ -369,7 +471,9 @@ loadJSONData(basePath + "settings.json")
         playList = r[0];
         buildDisabledSet();
         poi = r[1];
-        if (settings.osdOpacity == 0) osd.style.display = "none";
+        if (osdInvisible()) osd.style.display = "none";
+        applyOsdFont();
+        layoutOSD();
         updateOSD();
         setInterval(function () { checkStatus(); updateOSD(); updateDebug(); checkWatcher(); }, 1000);
         if (r[2]) startClock(); else playRandomVideo();
