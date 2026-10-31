@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Night mode: a separate night playlist for set hours (e.g. 22 to 7, TV time), picked per video
+  in the Playlist screen. It starts with the videos Apple and Amazon tag "night" and those with
+  Night in their name. If none of them can play with the chosen video format, the normal
+  playlist plays. Both screensavers.
+- `videos.json`: the `timeOfDay` tag (sunrise / day / sunset / night) of the Apple and Amazon
+  videos, imported with `tools/import-timeofday.js`.
 - Playlist screen: thumbnail grid to select/deselect which videos are in the playlist
   (stored as `disabledVideos` ids in settings.json, honoured by both screensavers).
 - webOS 25 (10.x) support: on TVs with the Flutter-based stock screensaver, `apply.sh` mounts a
