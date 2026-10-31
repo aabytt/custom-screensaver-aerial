@@ -353,16 +353,20 @@ WebOSWindow {
     }
     function allowedIndices() {
         // playlist = all videos except those disabled in settings (empty selection = all);
-        // during the night hours the night playlist, if any of its videos can play
+        // during the night hours the night playlist, if any of its videos can play. Only videos
+        // with a source playRandomVideo() plays: one without would never be marked viewed, so
+        // playRandomVideo() would call itself without end once the others have been shown
         var out = nightIndices()
         if (out.length === 0) {
             var disabled = settings.disabledVideos || []
             for (var i = 0; i < playList.assets.length; i++) {
-                if (disabled.indexOf(playList.assets[i].id) === -1) out.push(i)
+                if (disabled.indexOf(playList.assets[i].id) === -1 && playable(playList.assets[i])) out.push(i)
             }
         }
         if (out.length === 0) {
-            for (var j = 0; j < playList.assets.length; j++) out.push(j)
+            for (var j = 0; j < playList.assets.length; j++) {
+                if (playable(playList.assets[j])) out.push(j)
+            }
         }
         // everything in the playlist has been shown: start over
         var allViewed = true
@@ -407,6 +411,9 @@ WebOSWindow {
             return
         stalledCounter = 0
         var allowed = allowedIndices()
+        // no video at all has the chosen source
+        if (allowed.length === 0)
+            return
         randomIndex = allowed[Math.floor(Math.random() * allowed.length)]
         if (!playList.assets[randomIndex].viewed) {
             if (playList.assets[randomIndex][settings.sourceType]) {

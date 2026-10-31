@@ -1325,8 +1325,14 @@ var VideoSelectPanel = kind({
     this.$.nightOptions.set('showing', !!s.nightMode);
     this.$.night.set('showing', true);
     this.initializing = false;
+    // switched on without hours or a list (settings.json edited by hand): save what the pickers
+    // show, and start with the default list
+    if (s.nightMode && (hourOr(s.nightStart, -1) < 0 || hourOr(s.nightEnd, -1) < 0)) {
+      s.nightStart = hourOr(s.nightStart, NIGHT_START);
+      s.nightEnd = hourOr(s.nightEnd, NIGHT_END);
+      this.markSettingsDirty();
+    }
     if (s.nightMode && !Array.isArray(s.nightVideos)) {
-      // switched on without a list (settings.json edited by hand): start with the default one
       this.ensureNightList(function () {
         this.updateNightInfo();
         this.markSettingsDirty();
@@ -1355,6 +1361,7 @@ var VideoSelectPanel = kind({
     var v = sender.get('value');
     if (this.initializing || this.settings[sender.name] === v) { return; }
     this.settings[sender.name] = v;
+    this.updateNightInfo();
     this.markSettingsDirty();
   },
 
@@ -1364,6 +1371,7 @@ var VideoSelectPanel = kind({
     var self = this;
     function fill(data) {
       var en = (data && data.strings) || {};
+      if (self.destroyed) { return; }   // left the screen before the names were read
       self.settings.nightVideos = self.assets.filter(function (a) {
         return a.timeOfDay === 'night' || NIGHT_NAME.test(en[a.localizedNameKey] || a.name || '');
       }).map(function (a) { return a.id; });
@@ -1383,12 +1391,16 @@ var VideoSelectPanel = kind({
         if (playableWith(a, s)) { playable++; }
       }
     });
-    if (!on) {
+    if (hourOr(s.nightStart, NIGHT_START) === hourOr(s.nightEnd, NIGHT_END)) {
+      text = I18n.t('nightInfoSameHours');
+    } else if (!on) {
       text = I18n.t('nightInfoEmpty');
     } else if (!playable) {
-      text = I18n.t('nightInfoNone', {on: on});
+      text = I18n.t('nightInfoNone');
+    } else if (playable < on) {
+      text = I18n.t('nightInfoSome', {on: on, playable: playable});
     } else {
-      text = I18n.t(playable < on ? 'nightInfoSome' : 'nightInfo', {on: on, playable: playable});
+      text = I18n.t(on === 1 ? 'nightInfoOne' : 'nightInfo', {on: on});
     }
     this.$.nightInfo.set('content', text);
   },

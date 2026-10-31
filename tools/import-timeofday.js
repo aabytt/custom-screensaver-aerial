@@ -26,7 +26,9 @@ if (!Object.keys(tags).length) {
     process.exit(1);
 }
 
-var text = fs.readFileSync(file, 'utf8');
+var raw = fs.readFileSync(file, 'utf8');
+var crlf = raw.indexOf('\r\n') >= 0;   // e.g. a Windows checkout with core.autocrlf
+var text = crlf ? raw.replace(/\r\n/g, '\n') : raw;
 var count = {};
 // drop the tags of an earlier import, then add one after each "id" line of an asset
 text = text.replace(/\n *"timeOfDay": "[a-z]*",(?=\n)/g, '');
@@ -36,6 +38,10 @@ text = text.replace(/\n( *)"id": "([^"]*)",(?=\n)/g, function (line, indent, id)
     count[tod] = (count[tod] || 0) + 1;
     return line + '\n' + indent + '"timeOfDay": "' + tod + '",';
 });
+if (!Object.keys(count).length) {
+    console.error('no video of ' + file + ' matched an id of the manifests: nothing changed');
+    process.exit(1);
+}
 JSON.parse(text);   // still valid
-fs.writeFileSync(file, text);
+fs.writeFileSync(file, crlf ? text.replace(/\n/g, '\r\n') : text);
 console.log('tagged', count);

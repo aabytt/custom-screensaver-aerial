@@ -272,20 +272,16 @@ function inPool(asset, night) {
     return night ? !!nightSet[asset.id] : isAllowed(asset);
 }
 
-// Whether the night playlist is the one to play from now
+// Whether it's night for the night playlist (playRandomVideo falls back to the normal playlist
+// when none of its videos can play)
 function nightNow() {
-    if (!nightSet || !nightHours(new Date())) return false;
-    var assets = playList.assets;
-    for (var i = 0; i < assets.length; i++) {
-        if (nightSet[assets[i].id] && pickSourceKey(assets[i])) return true;
-    }
-    return false;
+    return !!nightSet && nightHours(new Date());
 }
 
-function playRandomVideo() {
-    if (closing) return;
+// Videos of the night or the normal playlist to pick the next one from. again: the video now
+// playing may be picked again, if it's the only one (not after it failed to play)
+function candidatesFor(night, again) {
     var assets = playList.assets;
-    var night = nightPlaying = nightNow();
     var candidates = [];
     for (var i = 0; i < assets.length; i++) {
         if (!assets[i].viewed && i !== randomIndex && inPool(assets[i], night) && pickSource(assets[i])) candidates.push(i);
@@ -299,11 +295,28 @@ function playRandomVideo() {
             if (k !== randomIndex && inPool(assets[k], night) && pickSource(assets[k])) candidates.push(k);
         }
         // A playlist of one video: play it again
-        if (!candidates.length && randomIndex >= 0 && inPool(assets[randomIndex], night) && pickSource(assets[randomIndex])) {
+        if (!candidates.length && again && randomIndex >= 0 && inPool(assets[randomIndex], night) && pickSource(assets[randomIndex])) {
             candidates.push(randomIndex);
         }
-        if (!candidates.length) return;
     }
+    return candidates;
+}
+
+// afterError: true when the video before failed to play
+function playRandomVideo(afterError) {
+    if (closing) return;
+    var assets = playList.assets;
+    var again = afterError !== true;
+    var night = nightNow();
+    var candidates = candidatesFor(night, again);
+    if (!candidates.length && night) {
+        // no night video can play with the chosen source, or the only one failed: the normal
+        // playlist instead
+        night = false;
+        candidates = candidatesFor(false, again);
+    }
+    nightPlaying = night;
+    if (!candidates.length) return;
     randomIndex = candidates[Math.floor(Math.random() * candidates.length)];
     stalledSeconds = 0;
     video.classList.remove("on", "fading");
@@ -326,7 +339,7 @@ video.addEventListener("playing", function () {
 video.addEventListener("ended", playRandomVideo);
 video.addEventListener("error", function () {
     setNotifications(true);
-    setTimeout(playRandomVideo, 1000);
+    setTimeout(function () { playRandomVideo(true); }, 1000);
 });
 
 function checkStatus() {
