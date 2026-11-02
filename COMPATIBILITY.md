@@ -7,4 +7,5 @@ Tested your TV? [Submit a report](https://github.com/aabytt/custom-screensaver-a
 <!-- COMPAT:START -->
 | TV model | webOS | Firmware | Aerial | Status | Details | Issue |
 |---|---|---|---|---|---|---|
+| OLED65CXRLA | webOS 5 · 5.3.0 | 04.30.58 | 3.0.4 | ✅ Works | All is good | [#76](../../issues/76) |
 <!-- COMPAT:END -->
