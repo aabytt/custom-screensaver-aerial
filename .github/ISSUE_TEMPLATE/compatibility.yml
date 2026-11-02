@@ -34,7 +34,7 @@ body:
     id: webos_full
     attributes:
       label: webOS full version
-      description: Filled in automatically by the app
+      description: Filled in automatically if reported from the app
       placeholder: "e.g. 10.3.0" 
     validations:
       required: true
