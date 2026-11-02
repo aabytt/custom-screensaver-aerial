@@ -23,7 +23,10 @@ var settingsPath = SettingsStore.appPath;
 // One object for the whole lifetime of the app: sub-panels keep a reference to it,
 // so applySettings() fills it in place instead of replacing it.
 var settings = {};
-var releasesApi = 'https://api.github.com/repos/aabytt/custom-screensaver-aerial/releases/latest';
+// Homebrew Channel repository index: the version listed here is what HBC offers, and it is published
+// later than the GitHub release, so the update check must use it instead of the GitHub releases.
+var repoApi = 'https://repo.webosbrew.org/api/apps.json';
+var appId = 'org.aabytt.webos.custom-screensaver-aerial';
 var hbChannelId = 'org.webosbrew.hbchannel';
 // Line icons (24x24 grid) as inline SVG that takes the text color (currentColor), so an icon matches
 // the text both normally and when its item is focused.
@@ -385,7 +388,9 @@ module.exports = kind({
     xhr.open('GET', 'appinfo.json');
     xhr.onload = function () {
       try {
-        self.version = JSON.parse(xhr.responseText).version;
+        var info = JSON.parse(xhr.responseText);
+        self.version = info.version;
+        if (info.id) { self.appId = info.id; }
       } catch (e) {
         console.error(e);
       }
@@ -411,17 +416,23 @@ module.exports = kind({
     this.refit();
   },
 
-  // Compares with the latest GitHub release; the Update button appears only if it is newer.
-  // Failures (no network, rate limit, timeout) are silent.
+  // Compares with the version listed in the webosbrew (Homebrew Channel) repository; the Update button
+  // appears only if it is newer. Failures (no network, timeout, unexpected format) are silent.
   checkUpdate: function () {
     var self = this, xhr = new XMLHttpRequest();
-    xhr.open('GET', releasesApi);
+    xhr.open('GET', repoApi);
     xhr.timeout = 10000;
     xhr.onload = function () {
-      var latest;
+      var latest, id = self.appId || appId, pkgs, i;
       if (xhr.status !== 200) { return; }
       try {
-        latest = JSON.parse(xhr.responseText).tag_name;
+        pkgs = JSON.parse(xhr.responseText).packages || [];
+        for (i = 0; i < pkgs.length; i++) {
+          if (pkgs[i].id === id) {
+            latest = pkgs[i].manifest && pkgs[i].manifest.version;
+            break;
+          }
+        }
       } catch (e) {
         console.error(e);
         return;
