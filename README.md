@@ -18,6 +18,7 @@
 ## Compatibility
 
 See the [compatibility table](COMPATIBILITY.md) for tested TVs, or [submit your own report](https://github.com/aabytt/custom-screensaver-aerial/issues/new?template=compatibility.yml).
+Tap `Version` field in the app to read your TV details.
 
 Disclaimer
 ---------------
