@@ -721,6 +721,8 @@ var VideoSelectPanel = kind({
       this.stopJob('saveSettings');
       this.saveSettings();
     }
+    this.stopJob('nightApply');
+    this.stopJob('nightApplied');
     this.stopJob('batch');
     this.stopJob('toastHide');
     this.stopJob('focusScroll');
@@ -1706,13 +1708,11 @@ var VideoSelectPanel = kind({
 
   initNight: function () {
     var s = this.settings;
-    this.initializing = true;
-    this.$.nightMode.set('checked', !!s.nightMode);
-    this.$.nightStart.set('value', hourOr(s.nightStart, NIGHT_START));
-    this.$.nightEnd.set('value', hourOr(s.nightEnd, NIGHT_END));
-    this.$.nightOptions.set('showing', !!s.nightMode);
+    this.applyNightValues();
     this.$.night.set('showing', true);
-    this.initializing = false;
+    // the pickers are not laid out / rendered yet and may ignore the value (they show 0): set it again
+    // once the block is visible. Changes reported by the pickers meanwhile are not the user's.
+    this.startJob('nightApply', 'applyNightValues', 200);
     // switched on without hours or a list (settings.json edited by hand): save what the pickers
     // show, and start with the default list
     if (s.nightMode && (hourOr(s.nightStart, -1) < 0 || hourOr(s.nightEnd, -1) < 0)) {
@@ -1728,6 +1728,17 @@ var VideoSelectPanel = kind({
     } else {
       this.updateNightInfo();
     }
+  },
+
+  // put the saved values into the controls; their change events are ignored until it settles
+  applyNightValues: function () {
+    var s = this.settings;
+    this.initializing = true;
+    this.$.nightMode.set('checked', !!s.nightMode);
+    this.$.nightStart.set('value', hourOr(s.nightStart, NIGHT_START));
+    this.$.nightEnd.set('value', hourOr(s.nightEnd, NIGHT_END));
+    this.$.nightOptions.set('showing', !!s.nightMode);
+    this.startJob('nightApplied', function () { this.initializing = false; }, 300);
   },
 
   nightToggle: function (sender) {
