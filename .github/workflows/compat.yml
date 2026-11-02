@@ -1,0 +1,42 @@
+name: Update compatibility table
+
+on:
+  issues:
+    types: [opened, edited, deleted, labeled, unlabeled]
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: compat-table
+
+jobs:
+  update:
+    if: >-
+      contains(github.event.issue.body, '### TV Model') &&
+      (github.event.label.name == 'invalid' ||
+      (github.event.action != 'labeled' && github.event.action != 'unlabeled'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update table
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REMOVE: ${{ (github.event.action == 'deleted' || (github.event.action != 'unlabeled' && contains(github.event.issue.labels.*.name, 'invalid'))) && '1' || '0' }}
+        run: python .github/scripts/update_compat.py
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add COMPATIBILITY.md compat.csv
+          git diff --cached --quiet || (git commit -m "Update compatibility table (#${{ github.event.issue.number }})" && git pull --rebase && git push)
+
+      - name: Close issue
+        if: github.event.action == 'opened'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue close ${{ github.event.issue.number }} --repo ${{ github.repository }} --comment "Thanks! Your report was added to the compatibility table."

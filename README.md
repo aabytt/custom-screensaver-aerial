@@ -15,6 +15,10 @@
 * Requires root and Homebrew channel
 * Compatible with webOS 5 (2020), webOS 6 (2021), webOS 22 (7.x), webOS 23 (8.x), webOS 25 (10.x), webOS 26 (11.x)
 
+## Compatibility
+
+See the [compatibility table](COMPATIBILITY.md) for tested TVs, or [submit your own report](https://github.com/ВАШ_ЛОГИН/ВАШ_РЕПО/issues/new?template=compatibility.yml).
+
 Disclaimer
 ---------------
 - App replaces original webOS screensaver. Use at your own risk. 

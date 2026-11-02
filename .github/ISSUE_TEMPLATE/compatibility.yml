@@ -1,0 +1,61 @@
+name: Compatibility report
+description: Report whether Aerial screensaver works on your TV
+labels: ["compatibility"]
+body:
+  - type: input
+    id: tv_model
+    attributes:
+      label: TV Model
+      placeholder: e.g. OLED55C2PUA
+    validations:
+      required: true
+  - type: dropdown
+    id: webos
+    attributes:
+      label: webOS version
+      options:
+        - webOS 1
+        - webOS 2
+        - webOS 3
+        - webOS 3.5
+        - webOS 4
+        - webOS 4.5
+        - webOS 5
+        - webOS 6
+        - webOS 22 (7)
+        - webOS 23 (8)
+        - webOS 24 (9)
+        - webOS 25 (10) 
+        - webOS 26 (11)
+    validations:
+      required: true
+  - type: input
+    id: firmware
+    attributes:
+      label: Firmware version
+      description: "Settings → General → About This TV"
+      placeholder: "xx.xx.xx"
+    validations:
+      required: true
+  - type: input
+    id: aerial
+    attributes:
+      label: Aerial screensaver version
+      placeholder: "x.x.x"
+    validations:
+      required: true
+  - type: dropdown
+    id: status
+    attributes:
+      label: Status
+      options:
+        - Works
+        - Partially works
+        - Not working
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: What exactly works or fails, error messages, steps to reproduce
