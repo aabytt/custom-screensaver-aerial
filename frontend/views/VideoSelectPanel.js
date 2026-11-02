@@ -36,8 +36,8 @@ var HEADER_PAD = 16;            // free space above the header / minimal space a
 var GROUP_BOTTOM_PAD = 8;       // bottom margin of a tile
 var HEADER_SCROLL_DELAY_MS = 300;   // let Moonstone finish its own scroll first
 
-var TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:300px; margin:8px; padding:6px; ' + 'transition:-webkit-transform 0.12s, transform 0.12s;';
-var CAT_TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:470px; margin:10px; padding:6px; ' + 'transition:-webkit-transform 0.12s, transform 0.12s;';
+var TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:300px; margin:8px; padding:6px; ';
+var CAT_TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:470px; margin:10px; padding:6px; ';
 // 75 -> "1:15", 3725 -> "1:02:05"
 function formatTime(sec) {
   var t = Math.max(0, Math.floor(sec || 0)), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), r = t % 60;
@@ -45,8 +45,8 @@ function formatTime(sec) {
   return h ? h + ':' + two(m) + ':' + two(r) : m + ':' + two(r);
 }
 
-// focus effect of tiles and badges: a slight zoom (gaps between tiles are wider than the growth, so
-// the 5-way neighbour search is not disturbed, see Spotlight getBoundingClientRect)
+// focus zoom of the preview badges only. Tiles have just the plain Moonstone highlight: a zoom on every
+// focus move made scrolling the lists slow on a TV.
 var FOCUS_SCALE = 1.05;
 var CAT_IMG_RATIO = 0.324;     // category picture height / width
 var CAT_SCROLL_RESERVE = 80;   // px of the list width kept free next to the category tiles
@@ -216,8 +216,7 @@ var VideoTile = kind({
     onrelease: 'released',
     // 5-way remote: OK held down
     onkeydown: 'keyDown',
-    onkeyup: 'keyUp',
-    onSpotlightBlur: 'tileBlurred'
+    onkeyup: 'keyUp'
   },
   components: [
     {name: 'img', tag: 'img', style: IMG_STYLE},
@@ -245,17 +244,7 @@ var VideoTile = kind({
   // so it is extended here, not replaced through `handlers`
   spotlightFocused: function (sender, evt) {
     this.inherited(arguments);
-    if (evt.originator === this) {
-      this.applyStyle('transform', 'scale(' + FOCUS_SCALE + ')');
-      this.applyStyle('z-index', '1');
-      this.doTileFocused({tile: this});
-    }
-  },
-  tileBlurred: function (sender, evt) {
-    if (evt.originator === this) {
-      this.applyStyle('transform', 'scale(1)');
-      this.applyStyle('z-index', '0');
-    }
+    if (evt.originator === this) { this.doTileFocused({tile: this}); }
   },
   // short press / click: preview the video
   tapped: function () {
@@ -305,8 +294,7 @@ var CategoryTile = kind({
     onOpenCategory: ''
   },
   handlers: {
-    ontap: 'open',
-    onSpotlightBlur: 'tileBlurred'
+    ontap: 'open'
   },
   components: [
     {name: 'img', tag: 'img', style: CAT_IMG_STYLE},
@@ -328,19 +316,6 @@ var CategoryTile = kind({
   },
   setInfo: function (text) {
     this.$.info.set('content', text);
-  },
-  spotlightFocused: function (sender, evt) {
-    this.inherited(arguments);
-    if (evt.originator === this) {
-      this.applyStyle('transform', 'scale(' + FOCUS_SCALE + ')');
-      this.applyStyle('z-index', '1');
-    }
-  },
-  tileBlurred: function (sender, evt) {
-    if (evt.originator === this) {
-      this.applyStyle('transform', 'scale(1)');
-      this.applyStyle('z-index', '0');
-    }
   },
   // tile width and picture height in px (see VideoSelectPanel.fitCategoryTiles)
   fitTo: function (w, h) {
