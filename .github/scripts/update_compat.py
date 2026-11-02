@@ -5,7 +5,7 @@ num = os.environ["ISSUE_NUMBER"]
 remove = os.environ.get("REMOVE") == "1"
 readme = "COMPATIBILITY.md"
 data = "compat.csv"
-cols = ["issue", "tv_model", "webos", "firmware", "aerial", "status", "details"]
+cols = ["issue", "tv_model", "webos", "webos_full", "firmware", "aerial", "status", "details"]
 
 fields = {
     m.group(1).strip(): m.group(2).strip()
@@ -28,6 +28,7 @@ if not remove and val("TV Model"):
         "issue": num,
         "tv_model": val("TV Model"),
         "webos": val("webOS version"),
+        "webos_full": val("webOS full version"),
         "firmware": val("Firmware version"),
         "aerial": val("Aerial screensaver version"),
         "status": val("Status"),
@@ -56,7 +57,7 @@ lines = [
 ]
 for r in ordered:
     lines.append("| " + " | ".join([
-        cell(r["tv_model"]), cell(r["webos"]), cell(r["firmware"]),
+        cell(r["tv_model"]), cell(r["webos"] + (" · " + r.get("webos_full", "") if r.get("webos_full") else "")), cell(r["firmware"]),
         cell(r["aerial"]), icons.get(r["status"], cell(r["status"])),
         cell(r["details"][:80] + ("…" if len(r["details"]) > 80 else "")), f"[#{r['issue']}](../../issues/{r['issue']})",
     ]) + " |")
