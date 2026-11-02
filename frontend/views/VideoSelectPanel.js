@@ -619,8 +619,17 @@ var VideoSelectPanel = kind({
     {kind: Scroller, name: 'scroller', fit: true, components: [
       {style: 'margin: 0 20px', components: [
         {kind: BodyText, name: 'count', i18n: 'loading'},
-        // night mode: only on the first level of the normal playlist
-        {name: 'night', showing: false, style: 'margin: 0 0 16px', components: [
+        {name: 'filters', showing: false, components: [
+          {name: 'sourceBox'},
+          {name: 'stateBox'}
+        ]},
+        {name: 'bulk', showing: false, style: 'margin: 10px 0', components: [
+          {kind: Button, i18n: 'selectAll', ontap: 'selectAll'},
+          {kind: Button, i18n: 'deselectAll', ontap: 'deselectAll'}
+        ]},
+        {name: 'grid'},
+        // night mode: below the main playlist, only on the first level of the normal playlist
+        {name: 'night', showing: false, style: 'margin: 16px 0 0', components: [
           {kind: ToggleItem, name: 'nightMode', i18n: 'nightMode', onchange: 'nightToggle'},
           {name: 'nightOptions', showing: false, components: [
             {kind: Item, components: [
@@ -636,16 +645,7 @@ var VideoSelectPanel = kind({
               {kind: BodyText, name: 'nightInfo', style: 'margin: 0; font-size: 24px; opacity: 0.8;'}
             ]}
           ]}
-        ]},
-        {name: 'filters', showing: false, components: [
-          {name: 'sourceBox'},
-          {name: 'stateBox'}
-        ]},
-        {name: 'bulk', showing: false, style: 'margin: 10px 0', components: [
-          {kind: Button, i18n: 'selectAll', ontap: 'selectAll'},
-          {kind: Button, i18n: 'deselectAll', ontap: 'deselectAll'}
-        ]},
-        {name: 'grid'}
+        ]}
       ]}
     ]},
     // centered preview window; Back closes it (instead of leaving the panel)
