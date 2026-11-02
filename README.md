@@ -17,7 +17,7 @@
 
 ## Compatibility
 
-See the [compatibility table](COMPATIBILITY.md) for tested TVs, or [submit your own report](https://github.com/ВАШ_ЛОГИН/ВАШ_РЕПО/issues/new?template=compatibility.yml).
+See the [compatibility table](COMPATIBILITY.md) for tested TVs, or [submit your own report](https://github.com/aabytt/custom-screensaver-aerial/issues/new?template=compatibility.yml).
 
 Disclaimer
 ---------------
