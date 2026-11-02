@@ -36,8 +36,20 @@ var HEADER_PAD = 16;            // free space above the header / minimal space a
 var GROUP_BOTTOM_PAD = 8;       // bottom margin of a tile
 var HEADER_SCROLL_DELAY_MS = 300;   // let Moonstone finish its own scroll first
 
-var TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:300px; margin:8px; padding:6px;';
-var CAT_TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:470px; margin:10px; padding:6px;';
+var TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:300px; margin:8px; padding:6px; ' + 'transition:-webkit-transform 0.12s, transform 0.12s;';
+var CAT_TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:470px; margin:10px; padding:6px; ' + 'transition:-webkit-transform 0.12s, transform 0.12s;';
+// 75 -> "1:15", 3725 -> "1:02:05"
+function formatTime(sec) {
+  var t = Math.max(0, Math.floor(sec || 0)), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), r = t % 60;
+  function two(x) { return (x < 10 ? '0' : '') + x; }
+  return h ? h + ':' + two(m) + ':' + two(r) : m + ':' + two(r);
+}
+
+// focus effect of tiles and badges: a slight zoom (gaps between tiles are wider than the growth, so
+// the 5-way neighbour search is not disturbed, see Spotlight getBoundingClientRect)
+var FOCUS_SCALE = 1.05;
+var CAT_IMG_RATIO = 0.324;     // category picture height / width
+var CAT_SCROLL_RESERVE = 80;   // px of the list width kept free next to the category tiles
 var CAT_IMG_STYLE = 'display:block; width:100%; height:250px; object-fit:cover; background:#2d353d;';
 var IMG_STYLE = 'display:block; width:100%; height:170px; object-fit:cover; background:#2d353d;';
 
@@ -92,6 +104,8 @@ var LONG_PRESS_MS = 600;
 
 // give up on a preview source after this long without playback and try the next one
 var PREVIEW_TIMEOUT_MS = 15000;
+// how long the hint under the badges (choose variant / OK / Back) stays on screen
+var PREVIEW_HELP_MS = 5000;
 
 // Size and position of the preview window for a screen of vw x vh CSS pixels.
 // 16:9 video, never larger than 1280 wide, always inside the screen (30px margin) whatever the
@@ -157,6 +171,29 @@ function has(list, id) {
 }
 
 /**
+ * Marquee text that is not fooled by the zoom of a focused tile. Moonstone measures the overflow with
+ * getBoundingClientRect(), which includes the scale() of the tile, so a text that fits is 5% "too wide"
+ * and starts scrolling. offsetWidth is the layout width, without transforms.
+ */
+var TileLabel = kind({
+  name: 'aerial.TileLabel',
+  kind: Marquee.Text,
+  _marquee_calcDistance: function () {
+    var node;
+    if (this.$.marqueeText) {
+      node = this.$.marqueeText.hasNode();
+      if (node && this._marquee_distance == null && this.getAbsoluteShowing()) {
+        this._marquee_distance = Math.floor(Math.abs(node.scrollWidth - node.offsetWidth));
+        // distance 0: the text fits, no animation needed (same as Moonstone)
+        this.applyStyle('text-overflow', this._marquee_distance === 0 ? 'clip' : 'ellipsis');
+        this.$.marqueeText.applyStyle('text-overflow', this._marquee_distance === 0 ? 'clip' : 'ellipsis');
+      }
+    }
+    return this._marquee_distance;
+  }
+});
+
+/**
  * One video tile. Tap / OK opens the preview; a long press (hold OK / click and hold) toggles it.
  * Selected = video is in the playlist.
  */
@@ -179,12 +216,17 @@ var VideoTile = kind({
     onrelease: 'released',
     // 5-way remote: OK held down
     onkeydown: 'keyDown',
-    onkeyup: 'keyUp'
+    onkeyup: 'keyUp',
+    onSpotlightBlur: 'tileBlurred'
   },
   components: [
     {name: 'img', tag: 'img', style: IMG_STYLE},
     {name: 'badge', content: '\u2713', style: 'position:absolute; top:12px; right:12px; width:36px; height:36px; line-height:36px; text-align:center; border-radius:18px; font-size:24px; background:#cf0652; color:#fff;'},
-    {kind: Marquee.Text, name: 'label', style: 'margin-top:6px; font-size:22px;'}
+    // the name sits on the bottom of the picture (dark gradient keeps it readable)
+    {name: 'caption', style: 'position:absolute; left:6px; right:6px; bottom:6px; padding:28px 12px 2px; color:#fff; ' +
+      'background:linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.85)); pointer-events:none;', components: [
+      {kind: TileLabel, name: 'label', style: 'margin:0; font-size:22px; line-height:24px; height:24px; color:#fff; text-shadow:0 1px 4px #000;'}
+    ]}
   ],
   create: function () {
     this.inherited(arguments);
@@ -197,12 +239,23 @@ var VideoTile = kind({
   selectedChanged: function () {
     this.$.badge.set('showing', !!this.selected);
     this.$.img.applyStyle('opacity', this.selected ? 1 : 0.3);
+    this.$.label.applyStyle('color', this.selected ? '#fff' : '#80808a');
   },
   // Item's own handler (onRequestScrollIntoView: the list follows the focus) must keep working,
   // so it is extended here, not replaced through `handlers`
   spotlightFocused: function (sender, evt) {
     this.inherited(arguments);
-    if (evt.originator === this) { this.doTileFocused({tile: this}); }
+    if (evt.originator === this) {
+      this.applyStyle('transform', 'scale(' + FOCUS_SCALE + ')');
+      this.applyStyle('z-index', '1');
+      this.doTileFocused({tile: this});
+    }
+  },
+  tileBlurred: function (sender, evt) {
+    if (evt.originator === this) {
+      this.applyStyle('transform', 'scale(1)');
+      this.applyStyle('z-index', '0');
+    }
   },
   // short press / click: preview the video
   tapped: function () {
@@ -252,12 +305,18 @@ var CategoryTile = kind({
     onOpenCategory: ''
   },
   handlers: {
-    ontap: 'open'
+    ontap: 'open',
+    onSpotlightBlur: 'tileBlurred'
   },
   components: [
     {name: 'img', tag: 'img', style: CAT_IMG_STYLE},
-    {kind: Marquee.Text, name: 'label', style: 'margin-top:8px; font-size:28px;'},
-    {name: 'info', style: 'font-size:22px; opacity:0.7;'}
+    // title and counter sit on the bottom of the picture (dark gradient keeps them readable)
+    {name: 'caption', style: 'position:absolute; left:6px; right:6px; bottom:6px; padding:36px 16px 10px; ' +
+      'display:flex; align-items:baseline; color:#fff; ' +
+      'background:linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.85)); pointer-events:none;', components: [
+      {kind: TileLabel, name: 'label', style: 'flex:1 1 auto; min-width:0; margin:0; font-size:28px; color:#fff; text-shadow:0 1px 4px #000;'},
+      {name: 'info', style: 'flex:0 0 auto; margin-left:16px; white-space:nowrap; font-size:22px; color:#fff; opacity:0.8; text-shadow:0 1px 4px #000;'}
+    ]}
   ],
   create: function () {
     this.inherited(arguments);
@@ -269,6 +328,24 @@ var CategoryTile = kind({
   },
   setInfo: function (text) {
     this.$.info.set('content', text);
+  },
+  spotlightFocused: function (sender, evt) {
+    this.inherited(arguments);
+    if (evt.originator === this) {
+      this.applyStyle('transform', 'scale(' + FOCUS_SCALE + ')');
+      this.applyStyle('z-index', '1');
+    }
+  },
+  tileBlurred: function (sender, evt) {
+    if (evt.originator === this) {
+      this.applyStyle('transform', 'scale(1)');
+      this.applyStyle('z-index', '0');
+    }
+  },
+  // tile width and picture height in px (see VideoSelectPanel.fitCategoryTiles)
+  fitTo: function (w, h) {
+    this.applyStyle('width', w + 'px');
+    this.$.img.applyStyle('height', h + 'px');
   },
   // the configured image is missing / broken: show the fallback one instead
   rendered: function () {
@@ -296,14 +373,23 @@ var SectionHeader = kind({
   style: 'display:block; margin:18px 8px 4px; padding:8px 12px;',
   events: {
     onToggleGroup: '',
+    onToggleCollapse: '',
     onHeaderFocused: ''
   },
   handlers: {
     ontap: 'toggleAll',
     onSpotlightDown: 'spotDown',
-    onSpotlightUp: 'spotUp'
+    onSpotlightUp: 'spotUp',
+    // Right: collapse / expand the group
+    onSpotlightRight: 'collapseKey'
   },
   components: [
+    // arrow at the right edge: down = collapsed (can be expanded), up = expanded (can be collapsed)
+    // (a click / tap on it collapses the group and is not passed on to the header, which toggles the videos)
+    {name: 'chev', ontap: 'chevTapped', style: 'float:right; width:48px; height:36px; margin:0 0 0 12px; position:relative; cursor:pointer;', components: [
+      {name: 'chevShape', style: 'position:absolute; left:18px; top:6px; width:12px; height:12px; ' +
+        'border-right:4px solid currentColor; border-bottom:4px solid currentColor;'}
+    ]},
     {name: 'label', tag: 'span', style: 'font-size:28px;'},
     {name: 'info', tag: 'span', style: 'font-size:22px; opacity:0.7; margin-left:24px;'}
   ],
@@ -311,9 +397,24 @@ var SectionHeader = kind({
     this.inherited(arguments);
     this.$.label.set('content', this.label || '');
     this.$.info.set('content', this.info || '');
+    this.setCollapsed(!!this.isCollapsed);
   },
   setInfo: function (text) {
     this.$.info.set('content', text);
+  },
+  setCollapsed: function (on) {
+    this.isCollapsed = !!on;
+    // the shape is a rotated corner: 45deg points down, 225deg points up
+    this.$.chevShape.applyStyle('transform', this.isCollapsed ? 'rotate(45deg)' : 'rotate(225deg)');
+    this.$.chevShape.applyStyle('top', this.isCollapsed ? '6px' : '13px');
+  },
+  chevTapped: function () {
+    this.doToggleCollapse({header: this});
+    return true;
+  },
+  collapseKey: function () {
+    this.doToggleCollapse({header: this});
+    return true;
   },
   // extends Item's own handler (the list follows the focus), see VideoTile
   spotlightFocused: function (sender, evt) {
@@ -324,7 +425,12 @@ var SectionHeader = kind({
   // Down goes to the first (left) tile of the group, up to the left tile of the last row above.
   spotDown: function () {
     var list = this.container.getClientControls(),
-      next = list[list.indexOf(this) + 1];
+      j = list.indexOf(this) + 1, next = list[j];
+    if (next && next.assetId !== undefined && !next.showing) {
+      // collapsed group: down goes to the next header
+      while (j < list.length && !list[j].groupIds) { j++; }
+      return j >= list.length ? true : !!Spotlight.spot(list[j]);
+    }
     return !!(next && next.assetId !== undefined && Spotlight.spot(next));
   },
   spotUp: function () {
@@ -332,6 +438,11 @@ var SectionHeader = kind({
       i = list.indexOf(this) - 1,
       lastNode = list[i] && list[i].assetId !== undefined && list[i].hasNode(),
       left = i;
+    if (list[i] && list[i].assetId !== undefined && !list[i].showing) {
+      // the group above is collapsed: up goes to its header
+      while (i >= 0 && list[i].assetId !== undefined) { i--; }
+      return i >= 0 && !!Spotlight.spot(list[i]);
+    }
     if (!lastNode) { return false; }
     while (left > 0 && list[left - 1].assetId !== undefined && list[left - 1].hasNode() &&
       Math.abs(list[left - 1].hasNode().offsetTop - lastNode.offsetTop) < 3) {
@@ -341,6 +452,107 @@ var SectionHeader = kind({
   },
   toggleAll: function () {
     this.doToggleGroup({ids: this.groupIds});
+    return true;
+  }
+});
+
+/**
+ * Full screen button in the preview: an icon drawn with CSS, no text. Focusable: OK / click presses it.
+ * Four corner marks: pointing outwards = "go full screen", pointing inwards = "back to the window".
+ */
+var CORNER = 'position:absolute; box-sizing:border-box; width:8px; height:8px; ';
+var CORNER_LINE = '3px solid #fff';
+var PreviewButton = kind({
+  name: 'aerial.PreviewButton',
+  spotlight: true,
+  style: 'position:absolute; right:16px; z-index:3; width:44px; height:38px; border-radius:10px; box-sizing:border-box; ' +
+    'background:rgba(0,0,0,0.55); border:3px solid transparent; cursor:pointer;',
+  events: {onPressed: ''},
+  handlers: {
+    ontap: 'tapped',
+    onSpotlightFocused: 'focused',
+    onSpotlightBlur: 'blurred'
+  },
+  components: [
+    {name: 'c1'}, {name: 'c2'}, {name: 'c3'}, {name: 'c4'}
+  ],
+  create: function () {
+    this.inherited(arguments);
+    this.setIcon(false);
+  },
+  // full: the window is full screen now -> show the "exit" icon
+  setIcon: function (full) {
+    var x = (full ? 9 : 7) + 'px', y = (full ? 7 : 5) + 'px', L = CORNER_LINE;
+    // inner area of the button is 38x32; outwards = marks near the edges, inwards = marks closer to the centre
+    this.$.c1.set('style', CORNER + 'left:' + x + '; top:' + y + '; ' + (full ? 'border-right:' + L + '; border-bottom:' + L : 'border-left:' + L + '; border-top:' + L) + ';');
+    this.$.c2.set('style', CORNER + 'right:' + x + '; top:' + y + '; ' + (full ? 'border-left:' + L + '; border-bottom:' + L : 'border-right:' + L + '; border-top:' + L) + ';');
+    this.$.c3.set('style', CORNER + 'left:' + x + '; bottom:' + y + '; ' + (full ? 'border-right:' + L + '; border-top:' + L : 'border-left:' + L + '; border-bottom:' + L) + ';');
+    this.$.c4.set('style', CORNER + 'right:' + x + '; bottom:' + y + '; ' + (full ? 'border-left:' + L + '; border-top:' + L : 'border-right:' + L + '; border-bottom:' + L) + ';');
+  },
+  tapped: function () {
+    this.doPressed();
+    return true;
+  },
+  focused: function () {
+    this.applyStyle('border-color', '#fff');
+    this.applyStyle('background', '#cf0652');
+  },
+  blurred: function () {
+    this.applyStyle('border-color', 'transparent');
+    this.applyStyle('background', 'rgba(0,0,0,0.55)');
+  }
+});
+
+/**
+ * Progress line of the preview. Focusable: Left / Right seek, OK pauses / resumes, a click on the line
+ * (magic remote) jumps to that point. The line grows and gets a knob while it has the focus.
+ */
+var PreviewSeek = kind({
+  name: 'aerial.PreviewSeek',
+  spotlight: true,
+  style: 'position:absolute; left:0; right:0; z-index:3; height:36px; cursor:pointer;',
+  events: {onSeekBy: '', onSeekAt: '', onSeekOk: ''},
+  handlers: {
+    ontap: 'tapped',
+    onSpotlightLeft: 'leftKey',
+    onSpotlightRight: 'rightKey',
+    onSpotlightFocused: 'focused',
+    onSpotlightBlur: 'blurred'
+  },
+  components: [
+    {name: 'track', style: 'position:absolute; left:12px; right:12px; top:15px; height:6px; border-radius:3px; background:rgba(255,255,255,0.3);', components: [
+      {name: 'fill', style: 'width:0; height:100%; border-radius:3px; background:#cf0652;'},
+      {name: 'knob', showing: false, style: 'position:absolute; left:0; top:-6px; width:18px; height:18px; margin-left:-9px; border-radius:50%; background:#fff;'}
+    ]}
+  ],
+  setProgress: function (frac) {
+    var pct = Math.max(0, Math.min(1, frac || 0)) * 100 + '%';
+    this.$.fill.applyStyle('width', pct);
+    this.$.knob.applyStyle('left', pct);
+  },
+  focused: function () {
+    this.$.track.applyStyle('top', '12px');
+    this.$.track.applyStyle('height', '12px');
+    this.$.track.applyStyle('border-radius', '6px');
+    this.$.knob.applyStyle('top', '-3px');
+    this.$.knob.set('showing', true);
+  },
+  blurred: function () {
+    this.$.track.applyStyle('top', '15px');
+    this.$.track.applyStyle('height', '6px');
+    this.$.track.applyStyle('border-radius', '3px');
+    this.$.knob.set('showing', false);
+  },
+  leftKey: function () { this.doSeekBy({delta: -1}); return true; },
+  rightKey: function () { this.doSeekBy({delta: 1}); return true; },
+  tapped: function (sender, evt) {
+    var node = this.$.track.hasNode(), r, pointer = Spotlight.getPointerMode && Spotlight.getPointerMode();
+    if (pointer && node && typeof evt.clientX === 'number') {
+      r = node.getBoundingClientRect();
+      this.doSeekAt({fraction: (evt.clientX - r.left) / Math.max(1, r.width)});
+    } else {
+      this.doSeekOk();
+    }
     return true;
   }
 });
@@ -370,7 +582,7 @@ var PreviewBadge = kind({
   },
   focused: function () {
     this.applyStyle('border-color', '#fff');
-    this.applyStyle('transform', 'scale(1.12)');
+    this.applyStyle('transform', 'scale(' + FOCUS_SCALE + ')');
   },
   blurred: function () {
     this.applyStyle('border-color', 'transparent');
@@ -423,6 +635,7 @@ var VideoSelectPanel = kind({
     onToggled: 'tileToggled',
     onOpenCategory: 'openCategory',
     onToggleGroup: 'toggleGroup',
+    onToggleCollapse: 'toggleCollapse',
     onHeaderFocused: 'itemFocused',
     onTileFocused: 'itemFocused',
     onPreview: 'previewVideo'
@@ -463,16 +676,29 @@ var VideoSelectPanel = kind({
     // centered preview window; Back closes it (instead of leaving the panel)
     {kind: PreviewPopup, name: 'preview', modal: true, spotlightModal: true, autoDismiss: true, animate: false,
       onHide: 'previewHidden', onkeydown: 'previewKey', onkeyup: 'previewKey', onPlayVariant: 'playVariant',
+      onSpotlightUp: 'previewUp', onSpotlightDown: 'previewDown',
       style: 'left:0; top:0; right:auto; bottom:auto; width:1280px; height:822px; margin:0; padding:12px; box-sizing:border-box; '
+        + 'background:#17171c; color:#fff; outline:2px solid #3a3a44; border-radius:6px; box-shadow:0 0 40px rgba(0,0,0,0.8); '
         + 'transform:none !important; -webkit-transform:none !important; transition:none !important; -webkit-transition:none !important;',
       components: [
         {kind: Control, name: 'pvBox', spotlight: 'container', style: 'outline:none; position:relative;', components: [
           {name: 'pv', tag: 'video', attributes: {autoplay: 'autoplay', loop: 'loop', muted: 'muted'}, style: 'display:block; width:100%; height:706px; background:#000;'},
+          // shown over the video when it cannot be played
+          {name: 'pvError', showing: false, style: 'position:absolute; left:0; right:0; top:0; height:706px; z-index:1; pointer-events:none;', components: [
+            {style: 'display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;', components: [
+              {content: '!', style: 'width:84px; height:84px; line-height:76px; text-align:center; border:4px solid #cf0652; border-radius:50%; font-size:56px; font-weight:bold; color:#cf0652;'},
+              {name: 'pvErrorText', style: 'margin-top:20px; max-width:70%; text-align:center; font-size:30px; color:#fff;'}
+            ]}
+          ]},
           {name: 'previewBadges', style: 'position:absolute; top:14px; left:0; right:0; text-align:center; z-index:2; pointer-events:none;'},
           {name: 'poi', showing: false, style: 'position:absolute; left:0; right:0; top:560px; text-align:center; z-index:2; pointer-events:none;'},
-          {name: 'previewHelp', showing: false, i18n: 'previewHelp', style: 'position:absolute; left:0; right:0; top:654px; text-align:center; font-size:22px; color:#fff; opacity:0.8; text-shadow:0 0 6px #000; pointer-events:none;'},
-          {kind: BodyText, name: 'previewTitle', style: 'margin:0; padding:0; height:46px; line-height:46px; font-size:30px; text-align:center; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;'},
-          {kind: BodyText, name: 'previewInfo', style: 'margin:0; padding:0; height:46px; line-height:46px; font-size:26px; text-align:center; opacity:0.8; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;'}
+          // position / duration, progress line and the full screen button along the bottom of the video
+          {kind: PreviewSeek, name: 'pvSeek', showing: false, style: 'top:670px;', onSeekBy: 'seekBy', onSeekAt: 'seekAt', onSeekOk: 'seekOk'},
+          {name: 'pvTime', showing: false, style: 'position:absolute; left:16px; top:654px; z-index:2; font-size:22px; color:#fff; text-shadow:0 0 6px #000; pointer-events:none;'},
+          {kind: PreviewButton, name: 'pvFs', style: 'top:640px;', onPressed: 'toggleFullscreen'},
+          {name: 'previewHelp', showing: false, i18n: 'previewHelp', style: 'position:absolute; left:0; right:0; top:64px; text-align:center; font-size:22px; color:#fff; opacity:0.8; text-shadow:0 0 6px #000; pointer-events:none;'},
+          {kind: BodyText, name: 'previewTitle', style: 'color:#fff; margin:0; padding:0; height:46px; line-height:46px; font-size:30px; text-align:center; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;'},
+          {kind: BodyText, name: 'previewInfo', style: 'color:#c9c9d1; margin:0; padding:0; height:46px; line-height:46px; font-size:26px; text-align:center; opacity:0.8; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;'}
         ]}
       ]},
     {kind: LunaService, name: 'cat', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onCat', onError: 'onCat'},
@@ -794,6 +1020,34 @@ var VideoSelectPanel = kind({
         info: this.infoText(c.id)
       }).render();
     }, this);
+    this.fitTries = 0;
+    this.startJob('fitCats', 'fitCategoryTiles', 50);
+  },
+
+  // Category tiles use all the room the screen gives them: 3 columns across the whole list width and
+  // 2 rows of the available height, so 6 categories fit without scrolling (more rows still scroll).
+  // The picture gets what is left after the margins / padding of the tile; the title is on the picture.
+  fitCategoryTiles: function () {
+    var tiles = this.$.grid.getClientControls().filter(function (t) { return !!t.fitTo; }),
+      sc = this.$.scroller && this.$.scroller.hasNode(), gn = this.$.grid.hasNode(),
+      cols = 3, chrome = 32, v, g, top, rows, w, h;
+    if (!tiles.length || this.mode !== 'categories') { return; }
+    if (!sc || !gn || !sc.getBoundingClientRect().height || !gn.getBoundingClientRect().width) {
+      // not laid out yet: try again a few times
+      if (this.fitTries++ < 10) { this.startJob('fitCats', 'fitCategoryTiles', 150); }
+      return;
+    }
+    v = sc.getBoundingClientRect();
+    g = gn.getBoundingClientRect();
+    top = g.top + sc.scrollTop;   // grid top as if the list was not scrolled
+    rows = Math.min(2, Math.ceil(tiles.length / cols));
+    // reserve room for a scrollbar that may appear later (night mode, more categories): without it
+    // the row would no longer fit 3 tiles and one would wrap
+    w = Math.floor((g.width - CAT_SCROLL_RESERVE) / cols) - chrome;
+    // standard picture shape: wide and low (about 3.1 : 1); only a very small screen makes it lower still
+    h = Math.floor((v.bottom - top - 8) / rows) - chrome;
+    h = Math.max(100, Math.min(h, Math.round(w * CAT_IMG_RATIO)));
+    tiles.forEach(function (t) { t.fitTo(w, h); });
   },
 
   openCategory: function (sender, evt) {
@@ -881,6 +1135,8 @@ var VideoSelectPanel = kind({
     var list = this.visibleAssets(),
       grouping = this.categoryId ? this.groupsFor(this.categoryId) : null,
       queue = [];
+    this.curGroup = null;
+    this.collapsedGroups = this.collapsedGroups || {};
     if (grouping) {
       grouping.groups.forEach(function (g) {
         var items = list.filter(function (a) { return grouping.of[a.id] === g.id; });
@@ -900,8 +1156,11 @@ var VideoSelectPanel = kind({
     for (i = 0; i < batch.length; i++) {
       it = batch[i];
       if (it.header) {
+        this.curGroup = this.categoryId + '|' + it.header.id;
         this.$.grid.createComponent({
           kind: SectionHeader,
+          groupKey: this.curGroup,
+          isCollapsed: !!this.collapsedGroups[this.curGroup],
           groupIds: it.ids,
           label: it.header.name,
           info: this.groupInfo(it.ids)
@@ -913,7 +1172,8 @@ var VideoSelectPanel = kind({
           assetId: a.id,
           src: a.previewImage,
           label: this.nameOf(a),
-          selected: !this.disabled[a.id]
+          selected: !this.disabled[a.id],
+          showing: !(this.curGroup && this.collapsedGroups[this.curGroup])
         }).render();
       }
     }
@@ -930,6 +1190,19 @@ var VideoSelectPanel = kind({
     }, this);
     this.markDirty();
     this.syncTiles();
+    return true;
+  },
+
+  // Right on a group header: hide / show the tiles of the group
+  toggleCollapse: function (sender, evt) {
+    var h = evt.header, list = this.$.grid.getClientControls(), i = list.indexOf(h), on;
+    if (i < 0) { return true; }
+    this.collapsedGroups = this.collapsedGroups || {};
+    on = this.collapsedGroups[h.groupKey] = !this.collapsedGroups[h.groupKey];
+    h.setCollapsed(on);
+    for (i++; i < list.length && !list[i].groupIds; i++) { list[i].set('showing', !on); }
+    this.focusedItem = h;
+    this.startJob('focusScroll', 'adjustScroll', HEADER_SCROLL_DELAY_MS);
     return true;
   },
 
@@ -965,7 +1238,7 @@ var VideoSelectPanel = kind({
     if (h < 0 || !list[h].hasNode()) { return null; }   // flat list: no headers
     end = h + 1;
     while (end < list.length && !list[end].groupIds) { end++; }
-    tiles = list.slice(h + 1, end).filter(function (t) { return t.hasNode(); });
+    tiles = list.slice(h + 1, end).filter(function (t) { return t.hasNode() && t.showing; });
     tiles.forEach(function (t) { tops[t.hasNode().offsetTop] = true; });
     return tiles.length ? {header: list[h], tiles: tiles, rows: Object.keys(tops).length} : null;
   },
@@ -1024,6 +1297,8 @@ var VideoSelectPanel = kind({
     this.pvPoiText = null;
     this.showPoi('');
     this.$.previewTitle.set('content', this.nameOf(asset));
+    this.hideTime(true);
+    this.setPreviewFullscreen(false, true);
     this.buildBadges();     // before show(): the popup must already be spottable when it opens
     this.layoutPreview();
     this.$.preview.show();
@@ -1047,19 +1322,27 @@ var VideoSelectPanel = kind({
 
   // caption for the current playback time (the video loops, so this follows it naturally)
   updatePoi: function (time) {
-    var list = this.pvPoi || [], text = '', i;
-    for (i = 0; i < list.length && list[i].t <= time; i++) { text = list[i].text; }
-    if (text !== this.pvPoiText) {
-      this.pvPoiText = text;
-      this.showPoi(text);
+    var list = this.pvPoi || [], text = '', i, n = 0;
+    // no caption while nothing is actually playing (failed / still loading source)
+    if (this.pvPlaying) {
+      for (i = 0; i < list.length && list[i].t <= time; i++) { text = list[i].text; n = i + 1; }
+    }
+    // the caption is keyed by its number: two points can have the same text
+    if ((text ? n : '') !== this.pvPoiText) {
+      this.pvPoiText = text ? n : '';
+      this.showPoi(text, n, list.length);
     }
   },
 
-  showPoi: function (text) {
+  // text of the caption with its number: "2/5  <text>"
+  showPoi: function (text, n, total) {
     var poi = this.$.poi;
     poi.destroyClientControls();
     if (text) {
-      poi.createComponent({tag: 'span', content: text, style: 'display:inline-block; max-width:80%; padding:8px 24px; border-radius:8px; font-size:30px; color:#fff; background:rgba(0,0,0,0.65); text-shadow:0 0 6px #000;'}).render();
+      poi.createComponent({tag: 'span', style: 'display:inline-block; max-width:80%; padding:8px 24px; border-radius:8px; font-size:30px; color:#fff; opacity:0.75; background:rgba(0,0,0,0.65); text-shadow:0 0 6px #000;', components: [
+        {tag: 'span', content: n + '/' + total, style: 'margin-right:16px; color:#fff; opacity:1;'},
+        {tag: 'span', content: text, style: 'color:#fff; opacity:1;'}
+      ]}).render();
     }
     poi.set('showing', !!text);
   },
@@ -1069,14 +1352,20 @@ var VideoSelectPanel = kind({
     var layer = Control.floatingLayer && Control.floatingLayer.hasNode(),
       vw = (layer && layer.clientWidth) || window.innerWidth || document.documentElement.clientWidth || 1920,
       vh = (layer && layer.clientHeight) || window.innerHeight || document.documentElement.clientHeight || 1080,
-      g = previewGeometry(vw, vh), popup = this.$.preview;
+      g = this.pvFull ? {videoW: vw, videoH: vh, width: vw, height: vh, left: 0, top: 0} : previewGeometry(vw, vh),
+      popup = this.$.preview;
     popup.applyStyle('left', g.left + 'px');
     popup.applyStyle('top', g.top + 'px');
     popup.applyStyle('width', g.width + 'px');
     popup.applyStyle('height', g.height + 'px');
     this.$.pv.applyStyle('height', g.videoH + 'px');
-    this.$.previewHelp.applyStyle('top', Math.max(0, g.videoH - 50) + 'px');
-    this.$.poi.applyStyle('top', Math.max(0, g.videoH - 130) + 'px');
+    this.$.pvError.applyStyle('height', g.videoH + 'px');
+    // from the bottom: progress line (36), then one row with time / full screen button, POI above
+    this.$.pvSeek.applyStyle('top', Math.max(0, g.videoH - 36) + 'px');
+    this.$.pvTime.applyStyle('top', Math.max(0, g.videoH - 84) + 'px');
+    this.$.pvFs.applyStyle('top', Math.max(0, g.videoH - 88) + 'px');
+    this.$.previewHelp.applyStyle('top', '64px');   // right under the badges
+    this.$.poi.applyStyle('top', Math.max(0, g.videoH - 146) + 'px');   // just above the bottom row
   },
 
   // native <video> events (Enyo does not forward them): error -> next source, playing -> stop the timer
@@ -1085,15 +1374,128 @@ var VideoSelectPanel = kind({
     if (!node || this.pvBoundNode === node) { return; }
     this.pvBoundNode = node;
     node.addEventListener('error', function () { self.previewFailed(); });
-    node.addEventListener('timeupdate', function () { self.updatePoi(node.currentTime); });
+    node.addEventListener('timeupdate', function () {
+      self.updatePoi(node.currentTime);
+      self.updateTime(node.currentTime, node.duration);
+    });
+    node.addEventListener('durationchange', function () { self.updateTime(node.currentTime, node.duration); });
     node.addEventListener('playing', function () {
       self.clearPreviewTimer();
       if (self.pvList && !self.pvPlaying) {
         self.pvPlaying = true;
         self.pvOk[self.pvIndex] = true;
         self.refreshBadges();
+        self.updateTime(node.currentTime, node.duration);
+        self.showHelpOnce();
       }
     });
+  },
+
+  // "0:12 / 0:45" and a progress line, only while the video really plays
+  updateTime: function (cur, dur) {
+    var known = isFinite(dur) && dur > 0, text;
+    if (!this.pvPlaying) { this.hideTime(); return; }
+    text = formatTime(cur) + ' / ' + (known ? formatTime(dur) : '--:--');
+    if (text !== this.pvTimeText) {
+      this.pvTimeText = text;
+      this.$.pvTime.set('content', text);
+    }
+    this.$.pvTime.set('showing', true);
+    this.$.pvSeek.set('showing', true);
+    this.$.pvSeek.setProgress(known ? cur / dur : 0);
+  },
+  hideTime: function (closing) {
+    this.pvTimeText = null;
+    this.$.pvTime.set('showing', false);
+    // a hidden control cannot keep the focus: give it back to the badges first (not when the window closes)
+    if (!closing && this.$.pvSeek.showing && Spotlight.getCurrent() === this.$.pvSeek) { this.spotCurrentBadge(); }
+    this.$.pvSeek.set('showing', false);
+  },
+
+  // Left / Right on the progress line: jump 5 s (10 s for videos over a minute)
+  seekBy: function (sender, evt) {
+    var node = this.$.pv.hasNode(), dur = node && node.duration, step;
+    if (!node || !isFinite(dur) || dur <= 0) { return true; }
+    step = dur < 60 ? 5 : 10;
+    node.currentTime = Math.max(0, Math.min(dur - 0.1, node.currentTime + evt.delta * step));
+    this.updateTime(node.currentTime, dur);
+    return true;
+  },
+  seekAt: function (sender, evt) {
+    var node = this.$.pv.hasNode(), dur = node && node.duration;
+    if (!node || !isFinite(dur) || dur <= 0) { return true; }
+    node.currentTime = Math.max(0, Math.min(dur - 0.1, evt.fraction * dur));
+    this.updateTime(node.currentTime, dur);
+    return true;
+  },
+  // OK on the progress line: pause / resume
+  seekOk: function () {
+    var node = this.$.pv.hasNode();
+    if (node) {
+      try { if (node.paused) { node.play(); } else { node.pause(); } } catch (e) { /* ignore */ }
+    }
+    return true;
+  },
+
+  // window <-> whole screen. `quiet`: only reset the state (the window is about to be laid out anyway)
+  setPreviewFullscreen: function (on, quiet) {
+    var popup = this.$.preview;
+    this.pvFull = !!on;
+    popup.applyStyle('padding', on ? '0' : PREVIEW_PAD + 'px');
+    popup.applyStyle('border-radius', on ? '0' : '6px');
+    popup.applyStyle('outline', on ? 'none' : '2px solid #3a3a44');
+    popup.applyStyle('box-shadow', on ? 'none' : '0 0 40px rgba(0,0,0,0.8)');
+    this.$.previewTitle.set('showing', !on);
+    this.$.previewInfo.set('showing', !on);
+    this.$.pvFs.setIcon(on);
+    if (!quiet) { this.layoutPreview(); }
+  },
+  toggleFullscreen: function () {
+    this.setPreviewFullscreen(!this.pvFull);
+    return true;
+  },
+
+  // Up / Down inside the preview always go through the full screen button:
+  // badges <-> full screen button <-> progress line
+  previewDown: function () {
+    var cur = Spotlight.getCurrent(), fs = this.$.pvFs, seek = this.$.pvSeek;
+    if (cur === seek) { return true; }
+    if (cur === fs) {
+      if (seek.showing) { Spotlight.spot(seek); }
+      return true;
+    }
+    Spotlight.spot(fs);
+    return true;
+  },
+  previewUp: function () {
+    var cur = Spotlight.getCurrent();
+    if (cur === this.$.pvSeek) { Spotlight.spot(this.$.pvFs); }
+    else if (cur === this.$.pvFs) { this.spotCurrentBadge(); }
+    return true;   // from the badges there is nothing above
+  },
+
+  // first time the video plays in this preview: show the hint for a few seconds (window or full screen)
+  showHelpOnce: function () {
+    if (this.pvHelpShown || !this.pvList || this.pvList.length < 2) { return; }
+    this.pvHelpShown = true;
+    this.$.previewHelp.set('showing', true);
+    this.startJob('hideHelp', 'hidePreviewHelp', PREVIEW_HELP_MS);
+  },
+  hidePreviewHelp: function () {
+    this.$.previewHelp.set('showing', false);
+  },
+
+  showPvError: function (text) {
+    this.hideTime();
+    this.stopJob('hideHelp');
+    this.$.previewHelp.set('showing', false);
+    this.pvPoiText = null;
+    this.showPoi('');   // no point-of-interest caption over a video that does not play
+    this.$.pvErrorText.set('content', text);
+    this.$.pvError.set('showing', true);
+  },
+  hidePvError: function () {
+    this.$.pvError.set('showing', false);
   },
 
   // play the current candidate and show which variant it is (4K HDR, 1080p H.264, ...)
@@ -1102,6 +1504,8 @@ var VideoSelectPanel = kind({
       node = this.$.pv.hasNode(), p;
     if (!item) { return; }
     this.clearPreviewTimer();
+    this.hidePvError();
+    this.hideTime();
     this.$.previewInfo.set('content', describeKey(item.key) +
       (!this.pvManual && this.pvIndex ? '  ' + I18n.t('fallbackOf', {n: this.pvIndex + 1, total: list.length}) : ''));
     this.pvPlaying = false;
@@ -1129,12 +1533,14 @@ var VideoSelectPanel = kind({
     if (this.pvManual) {
       // the user picked this variant by hand: report it, do not jump to another one
       this.$.previewInfo.set('content', I18n.t('cannotPlay', {variant: describeKey(this.pvList[this.pvIndex].key)}));
+      this.showPvError(this.$.previewInfo.content);
       this.refreshBadges();
     } else if (this.pvIndex + 1 < this.pvList.length) {
       this.pvIndex++;
       this.playCandidate();
     } else {
       this.$.previewInfo.set('content', I18n.t('previewUnavailable', {n: this.pvList.length}));
+      this.showPvError(this.$.previewInfo.content);
       this.refreshBadges();
     }
   },
@@ -1147,7 +1553,10 @@ var VideoSelectPanel = kind({
       var badge = box.createComponent({kind: PreviewBadge, index: i});
       if (box.generated) { badge.render(); }
     });
-    this.$.previewHelp.set('showing', !!this.pvList && this.pvList.length > 1);
+    // the hint appears only when playback has really started (see showHelpOnce) and goes away after 5 s
+    this.stopJob('hideHelp');
+    this.pvHelpShown = false;
+    this.$.previewHelp.set('showing', false);
     this.refreshBadges();
   },
 
@@ -1198,6 +1607,9 @@ var VideoSelectPanel = kind({
     var node = this.$.pv && this.$.pv.hasNode();
     this.pvList = null;
     this.pvPoi = null;
+    this.hidePvError();
+    this.hideTime(true);
+    this.stopJob('hideHelp');
     this.clearPreviewTimer();
     if (node) {
       try {
@@ -1212,7 +1624,8 @@ var VideoSelectPanel = kind({
   previewKey: function (sender, evt) {
     if (evt.keyCode === 461 || evt.keyCode === 27 || evt.keyCode === 8) {
       if (evt.type === 'keyup') {
-        this.$.preview.hide();
+        if (this.pvFull) { this.setPreviewFullscreen(false); }   // first Back: back to the window
+        else { this.$.preview.hide(); }
       }
       if (evt.preventDefault) { evt.preventDefault(); }
       return true;
