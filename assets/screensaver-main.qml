@@ -280,6 +280,27 @@ WebOSWindow {
         styleColor : name.styleColor
         fontSizeMode : name.fontSizeMode
     }
+    // Clock-only mode notice: bottom center, shown for 5 s (0.5 s fade in + 4 s hold + 0.5 s fade out)
+    Text {
+        id : clockOnlyMsg
+        visible : opacity > 0
+        opacity : 0
+        anchors.horizontalCenter : parent.horizontalCenter
+        anchors.bottom : parent.bottom
+        anchors.bottomMargin : 40
+        text : "Clock-only mode: media is paused in another app"
+        font.family : name.font.family
+        font.pixelSize : 32
+        color : "white"
+        style : Text.Raised
+        styleColor : "black"
+    }
+    SequentialAnimation {
+        id : clockOnlyMsgAnim
+        NumberAnimation { target : clockOnlyMsg; property : "opacity"; to : 0.7; duration : 500 }
+        PauseAnimation { duration : 4000 }
+        NumberAnimation { target : clockOnlyMsg; property : "opacity"; to : 0; duration : 500 }
+    }
     function applyClockCorner() {
         appliedCorner = clockCorner
     }
@@ -564,6 +585,7 @@ WebOSWindow {
             notificationsService.set('enable')
             osd.visible = true
             fadeInOsd.running = true
+            clockOnlyMsgAnim.start()
         } else
             playRandomVideo()
     }
