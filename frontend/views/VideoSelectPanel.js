@@ -723,6 +723,7 @@ var VideoSelectPanel = kind({
     }
     this.stopJob('nightApply');
     this.stopJob('nightApplied');
+    this.stopJob('nightRedraw');
     this.stopJob('batch');
     this.stopJob('toastHide');
     this.stopJob('focusScroll');
@@ -1025,6 +1026,7 @@ var VideoSelectPanel = kind({
     h = Math.floor((v.bottom - top - 8) / rows) - chrome;
     h = Math.max(100, Math.min(h, Math.round(w * CAT_IMG_RATIO)));
     tiles.forEach(function (t) { t.fitTo(w, h); });
+    if (this.list === 'day' && !this.isChild) { this.startJob('nightRedraw', 'redrawNightPickers', 100); }
   },
 
   openCategory: function (sender, evt) {
@@ -1712,7 +1714,7 @@ var VideoSelectPanel = kind({
     this.$.night.set('showing', true);
     // the pickers are not laid out / rendered yet and may ignore the value (they show 0): set it again
     // once the block is visible. Changes reported by the pickers meanwhile are not the user's.
-    this.startJob('nightApply', 'applyNightValues', 200);
+    this.startJob('nightApply', 'redrawNightPickers', 200);
     // switched on without hours or a list (settings.json edited by hand): save what the pickers
     // show, and start with the default list
     if (s.nightMode && (hourOr(s.nightStart, -1) < 0 || hourOr(s.nightEnd, -1) < 0)) {
@@ -1731,14 +1733,30 @@ var VideoSelectPanel = kind({
   },
 
   // put the saved values into the controls; their change events are ignored until it settles
-  applyNightValues: function () {
-    var s = this.settings;
+  applyNightValues: function (redraw) {
+    var s = this.settings, self = this;
     this.initializing = true;
     this.$.nightMode.set('checked', !!s.nightMode);
-    this.$.nightStart.set('value', hourOr(s.nightStart, NIGHT_START));
-    this.$.nightEnd.set('value', hourOr(s.nightEnd, NIGHT_END));
     this.$.nightOptions.set('showing', !!s.nightMode);
+    [['nightStart', NIGHT_START], ['nightEnd', NIGHT_END]].forEach(function (p) {
+      var picker = self.$[p[0]], v = hourOr(s[p[0]], p[1]);
+      // the picker measured itself before the layout settled (tiles are resized after it): measure and
+      // draw it again, otherwise it shows the first value (0) although `value` is right
+      if (redraw === true && picker.hasNode()) {
+        try {
+          if (picker.resized) { picker.resized(); }
+          picker.render();
+        } catch (e) { /* ignore */ }
+      }
+      picker.set('value', v);
+    });
     this.startJob('nightApplied', function () { this.initializing = false; }, 300);
+  },
+
+  // after the layout has settled (category tiles resized, block shown)
+  redrawNightPickers: function () {
+    if (!this.$.night || !this.$.night.showing) { return; }
+    this.applyNightValues(true);
   },
 
   nightToggle: function (sender) {
@@ -1750,6 +1768,7 @@ var VideoSelectPanel = kind({
       s.nightEnd = hourOr(s.nightEnd, NIGHT_END);
     }
     this.$.nightOptions.set('showing', on);
+    if (on) { this.startJob('nightRedraw', 'redrawNightPickers', 100); }
     this.ensureNightList(function () {
       this.updateNightInfo();
       this.markSettingsDirty();
