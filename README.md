@@ -61,6 +61,7 @@ Features
 * Temporary apply
 * Launch screensaver immediately for testing
 * Playlist editor
+* Night mode: a separate playlist for the night hours
 
 Installation
 ------------

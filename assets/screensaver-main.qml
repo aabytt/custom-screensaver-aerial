@@ -352,14 +352,21 @@ WebOSWindow {
         loadJSONData(basePath + 'locales/' + settings.localeLang + '.json', 'poi', playRandomVideo)
     }
     function allowedIndices() {
-        // playlist = all videos except those disabled in settings (empty selection = all)
-        var disabled = settings.disabledVideos || []
-        var out = []
-        for (var i = 0; i < playList.assets.length; i++) {
-            if (disabled.indexOf(playList.assets[i].id) === -1) out.push(i)
+        // playlist = all videos except those disabled in settings (empty selection = all);
+        // during the night hours the night playlist, if any of its videos can play. Only videos
+        // with a source playRandomVideo() plays: one without would never be marked viewed, so
+        // playRandomVideo() would call itself without end once the others have been shown
+        var out = nightIndices()
+        if (out.length === 0) {
+            var disabled = settings.disabledVideos || []
+            for (var i = 0; i < playList.assets.length; i++) {
+                if (disabled.indexOf(playList.assets[i].id) === -1 && playable(playList.assets[i])) out.push(i)
+            }
         }
         if (out.length === 0) {
-            for (var j = 0; j < playList.assets.length; j++) out.push(j)
+            for (var j = 0; j < playList.assets.length; j++) {
+                if (playable(playList.assets[j])) out.push(j)
+            }
         }
         // everything in the playlist has been shown: start over
         var allViewed = true
@@ -371,12 +378,42 @@ WebOSWindow {
         }
         return out
     }
+    // Night mode (same as web-screensaver.html): from nightStart up to nightEnd (TV time, may be
+    // past midnight) the videos come from the night playlist, nightVideos
+    function nightHours(date) {
+        var start = parseInt(settings.nightStart, 10), end = parseInt(settings.nightEnd, 10), h = date.getHours()
+        if (isNaN(start) || isNaN(end) || start === end) return false
+        return start < end ? h >= start && h < end : h >= start || h < end
+    }
+    // Whether a video has a source playRandomVideo() would play
+    function playable(asset) {
+        if (asset[settings.sourceType]) return true
+        if (!settings.playLowerQuality) return false
+        if (settings.sourceType == "url-4K-HDR") return !!asset["url-4K-SDR"]
+        if (settings.sourceType == "url-1080-HDR") return !!(asset["url-1080-SDR"] || asset["url-1080-H264"])
+        return false
+    }
+    // Indices of the night videos that can play, or [] outside the night hours / without night mode
+    function nightIndices() {
+        var list = settings.nightVideos
+        var out = []
+        if (!settings.nightMode || !Array.isArray(list) || !list.length || !nightHours(new Date()))
+            return out
+        for (var i = 0; i < playList.assets.length; i++) {
+            var asset = playList.assets[i]
+            if (list.indexOf(asset.id) !== -1 && playable(asset)) out.push(i)
+        }
+        return out
+    }
     function playRandomVideo() {
         // Wait for the decoder check; clock-only mode never starts a video
         if (!decoderDecided || decoderHeld || !playList || !poi)
             return
         stalledCounter = 0
         var allowed = allowedIndices()
+        // no video at all has the chosen source
+        if (allowed.length === 0)
+            return
         randomIndex = allowed[Math.floor(Math.random() * allowed.length)]
         if (!playList.assets[randomIndex].viewed) {
             if (playList.assets[randomIndex][settings.sourceType]) {

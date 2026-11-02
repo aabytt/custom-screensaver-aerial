@@ -3,6 +3,7 @@
     {
       "source": "Apple Aerials",
       "id": "83C65C90-270C-4490-9C69-F51FE03D7F06",
+      "timeOfDay": "day",
       "localizedNameKey": "SE_A016_C009_NAME",
       "categories": [
         "AerialCategoryUnderwater"
@@ -24,6 +25,7 @@
     {
       "source": "Apple Aerials",
       "id": "7719B48A-2005-4011-9280-2F64EEC6FD91",
+      "timeOfDay": "sunset",
       "localizedNameKey": "A114_C001_NAME",
       "categories": [
         "AerialCategorySpace"
@@ -54,6 +56,7 @@
     {
       "source": "Apple Aerials",
       "id": "2F52E34C-39D4-4AB1-9025-8F7141FAA720",
+      "timeOfDay": "day",
       "localizedNameKey": "GL_G002_C002_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -75,6 +78,7 @@
     {
       "source": "Apple Aerials",
       "id": "009BA758-7060-4479-8EE8-FB9B40C8FB97",
+      "timeOfDay": "night",
       "localizedNameKey": "GMT026_363A_103NC_E1027_KOREA_JAPAN_NIGHT_NAME",
       "categories": [
         "AerialCategorySpace"
@@ -104,6 +108,7 @@
     {
       "source": "Apple Aerials",
       "id": "BA4ECA11-592F-4727-9221-D2A32A16EB28",
+      "timeOfDay": "day",
       "localizedNameKey": "PA_A001_C007_NAME",
       "categories": [
         "AerialCategoryUnderwater"
@@ -127,6 +132,7 @@
     {
       "source": "Apple Aerials",
       "id": "92E48DE9-13A1-4172-B560-29B4668A87EE",
+      "timeOfDay": "day",
       "localizedNameKey": "LA_A008_C004_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -150,6 +156,7 @@
     {
       "source": "Apple Aerials",
       "id": "A5AAFF5D-8887-42BB-8AFD-867EF557ED85",
+      "timeOfDay": "day",
       "localizedNameKey": "L007_C007_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -178,6 +185,7 @@
     {
       "source": "Apple Aerials",
       "id": "A837FA8C-C643-4705-AE92-074EFDD067F7",
+      "timeOfDay": "night",
       "localizedNameKey": "GMT312_162NC_139M_1041_AFRICA_NIGHT_NAME",
       "categories": [
         "AerialCategorySpace"
@@ -207,6 +215,7 @@
     {
       "source": "Apple Aerials",
       "id": "9CCB8297-E9F5-4699-AE1F-890CFBD5E29C",
+      "timeOfDay": "day",
       "localizedNameKey": "CH_C002_C005_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -228,6 +237,7 @@
     {
       "source": "Apple Aerials",
       "id": "B8F204CE-6024-49AB-85F9-7CA2F6DCD226",
+      "timeOfDay": "sunrise",
       "localizedNameKey": "GL_G004_C010_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -249,6 +259,7 @@
     {
       "source": "Apple Aerials",
       "id": "F07CC61B-30FC-4614-BDAD-3240B61F6793",
+      "timeOfDay": "day",
       "localizedNameKey": "PA_A004_C003_NAME",
       "categories": [
         "AerialCategoryUnderwater"
@@ -270,6 +281,7 @@
     {
       "source": "Apple Aerials",
       "id": "35693AEA-F8C4-4A80-B77D-C94B20A68956",
+      "timeOfDay": "day",
       "localizedNameKey": "LA_A005_C009_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -291,6 +303,7 @@
     {
       "source": "Apple Aerials",
       "id": "E556BBC5-D0A0-4DB1-AC77-BC76E4A526F4",
+      "timeOfDay": "day",
       "localizedNameKey": "A009_C001_10181A_NAME",
       "categories": [
         "AerialCategorySpace"
@@ -321,6 +334,7 @@
     {
       "source": "Apple Aerials",
       "id": "F5804DD6-5963-40DA-9FA0-39C0C6E6DEF9",
+      "timeOfDay": "day",
       "localizedNameKey": "LA_A011_C003_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -342,6 +356,7 @@
     {
       "source": "Apple Aerials",
       "id": "6143116D-03BB-485E-864E-A8CF58ACF6F1",
+      "timeOfDay": "day",
       "localizedNameKey": "KP_A010_C002_NAME",
       "categories": [
         "AerialCategoryUnderwater"
@@ -363,6 +378,7 @@
     {
       "source": "Apple Aerials",
       "id": "44166C39-8566-4ECA-BD16-43159429B52F",
+      "timeOfDay": "night",
       "localizedNameKey": "N013_C004_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -386,6 +402,7 @@
     {
       "source": "Apple Aerials",
       "id": "E5DB138A-F04E-4619-B896-DE5CB538C534",
+      "timeOfDay": "night",
       "localizedNameKey": "GMT329_113NC_396B_1105_ITALY_TO_ASIA_NAME",
       "categories": [
         "AerialCategorySpace"
@@ -413,6 +430,7 @@
     {
       "source": "Apple Aerials",
       "id": "EC67726A-8212-4C5E-83CF-8412932740D2",
+      "timeOfDay": "sunset",
       "localizedNameKey": "LA_A006_C004_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -435,6 +453,7 @@
     {
       "source": "Apple Aerials",
       "id": "1088217C-1410-4CF7-BDE9-8F573A4DBCD9",
+      "timeOfDay": "night",
       "localizedNameKey": "A105_C002_NAME",
       "categories": [
         "AerialCategorySpace"
@@ -462,6 +481,7 @@
     {
       "source": "Apple Aerials",
       "id": "72B4390D-DF1D-4D51-B179-229BBAEFFF2C",
+      "timeOfDay": "day",
       "localizedNameKey": "A013_C012_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -487,6 +507,7 @@
     {
       "source": "Apple Aerials",
       "id": "2B30E324-E4FF-4CC1-BA45-A958C2D2B2EC",
+      "timeOfDay": "day",
       "localizedNameKey": "BO_A018_C029_NAME",
       "categories": [
         "AerialCategoryUnderwater"
@@ -508,6 +529,7 @@
     {
       "source": "Apple Aerials",
       "id": "D5E76230-81A3-4F65-A1BA-51B8CADED625",
+      "timeOfDay": "day",
       "localizedNameKey": "CH_C007_C004_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -529,6 +551,7 @@
     {
       "source": "Apple Aerials",
       "id": "737E9E24-49BE-4104-9B72-F352DE1AD2BF",
+      "timeOfDay": "sunrise",
       "localizedNameKey": "GMT314_139M_170NC_NORTH_AMERICA_AURORA_NAME",
       "categories": [
         "AerialCategorySpace"
@@ -561,6 +584,7 @@
     {
       "source": "Apple Aerials",
       "id": "CE279831-1CA7-4A83-A97B-FF1E20234396",
+      "timeOfDay": "sunset",
       "localizedNameKey": "LA_A006_C008_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -582,6 +606,7 @@
     {
       "source": "Apple Aerials",
       "id": "9680B8EB-CE2A-4395-AF41-402801F4D6A6",
+      "timeOfDay": "night",
       "localizedNameKey": "DB_D011_C010_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -605,6 +630,7 @@
     {
       "source": "Apple Aerials",
       "id": "63C042F0-90EF-4A95-B7CC-CC9A64BF8421",
+      "timeOfDay": "sunset",
       "localizedNameKey": "A001_C004_1207W5_NAME",
       "categories": [
         "AerialCategorySpace"
@@ -634,6 +660,7 @@
     {
       "source": "Apple Aerials",
       "id": "F439B0A7-D18C-4B14-9681-6520E6A74FE9",
+      "timeOfDay": "day",
       "localizedNameKey": "A083_C002_1130KZ_NAME",
       "categories": [
         "AerialCategorySpace"
@@ -657,6 +684,7 @@
     {
       "source": "Apple Aerials",
       "id": "E580E5A5-0888-4BE8-A4CA-F74A18A643C3",
+      "timeOfDay": "day",
       "localizedNameKey": "PA_A002_C009_NAME",
       "categories": [
         "AerialCategoryUnderwater"
@@ -678,6 +706,7 @@
     {
       "source": "Apple Aerials",
       "id": "4F881F8B-A7D9-4FDB-A917-17BF6AC5A589",
+      "timeOfDay": "day",
       "localizedNameKey": "GMT308_139K_142NC_CARIBBEAN_DAY_NAME",
       "categories": [
         "AerialCategorySpace"
@@ -706,6 +735,7 @@
     {
       "source": "Apple Aerials",
       "id": "3D729CFC-9000-48D3-A052-C5BD5B7A6842",
+      "timeOfDay": "day",
       "localizedNameKey": "H012_C009_0_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -727,6 +757,7 @@
     {
       "source": "Apple Aerials",
       "id": "EE01F02D-1413-436C-AB05-410F224A5B7B",
+      "timeOfDay": "day",
       "localizedNameKey": "GL_G010_C006_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -748,6 +779,7 @@
     {
       "source": "Apple Aerials",
       "id": "12318CCB-3F78-43B7-A854-EFDCCE5312CD",
+      "timeOfDay": "night",
       "localizedNameKey": "GMT306_139NC_139J_3066_CALI_TO_VEGAS_NAME",
       "categories": [
         "AerialCategorySpace"
@@ -776,6 +808,7 @@
     {
       "source": "Apple Aerials",
       "id": "3BA0CFC7-E460-4B59-A817-B97F9EBB9B89",
+      "timeOfDay": "day",
       "localizedNameKey": "N008_C009_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -798,6 +831,7 @@
     {
       "source": "Apple Aerials",
       "id": "89B1643B-06DD-4DEC-B1B0-774493B0F7B7",
+      "timeOfDay": "day",
       "localizedNameKey": "LA_A009_C009_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -819,6 +853,7 @@
     {
       "source": "Apple Aerials",
       "id": "F604AF56-EA77-4960-AEF7-82533CC1A8B3",
+      "timeOfDay": "day",
       "localizedNameKey": "L012_C002_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -845,6 +880,7 @@
     {
       "source": "Apple Aerials",
       "id": "258A6797-CC13-4C3A-AB35-4F25CA3BF474",
+      "timeOfDay": "day",
       "localizedNameKey": "H004_C009_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -866,6 +902,7 @@
     {
       "source": "Apple Aerials",
       "id": "D5CFB2FF-5F8C-4637-816B-3E42FC1229B8",
+      "timeOfDay": "night",
       "localizedNameKey": "A108_C001_NAME",
       "categories": [
         "AerialCategorySpace"
@@ -895,6 +932,7 @@
     {
       "source": "Apple Aerials",
       "id": "7C643A39-C0B2-4BA0-8BC2-2EAA47CC580E",
+      "timeOfDay": "sunrise",
       "localizedNameKey": "GMT329_117NC_401C_1037_IRELAND_TO_ASIA_NAME",
       "categories": [
         "AerialCategorySpace"
@@ -924,6 +962,7 @@
     {
       "source": "Apple Aerials",
       "id": "876D51F4-3D78-4221-8AD2-F9E78C0FD9B9",
+      "timeOfDay": "day",
       "localizedNameKey": "DB_D008_C010_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -945,6 +984,7 @@
     {
       "source": "Apple Aerials",
       "id": "044AD56C-A107-41B2-90CC-E60CCACFBCF5",
+      "timeOfDay": "day",
       "localizedNameKey": "C003_C003_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -966,6 +1006,7 @@
     {
       "source": "Apple Aerials",
       "id": "EC3DC957-D4C2-4732-AACE-7D0C0F390EC8",
+      "timeOfDay": "night",
       "localizedNameKey": "PA_A010_C007_NAME",
       "categories": [
         "AerialCategoryUnderwater"
@@ -987,6 +1028,7 @@
     {
       "source": "Apple Aerials",
       "id": "E99FA658-A59A-4A2D-9F3B-58E7BDC71A9A",
+      "timeOfDay": "sunset",
       "localizedNameKey": "HK_B005_C011_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -1008,6 +1050,7 @@
     {
       "source": "Apple Aerials",
       "id": "499995FA-E51A-4ACE-8DFD-BDF8AFF6C943",
+      "timeOfDay": "day",
       "localizedNameKey": "H005_C012_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -1029,6 +1072,7 @@
     {
       "source": "Apple Aerials",
       "id": "6324F6EB-E0F1-468F-AC2E-A983EBDDD53B",
+      "timeOfDay": "day",
       "localizedNameKey": "GMT329_2_113NC_396B_1105_NAME",
       "categories": [
         "AerialCategorySpace"
@@ -1054,6 +1098,7 @@
     {
       "source": "Apple Aerials",
       "id": "3E94AE98-EAF2-4B09-96E3-452F46BC114E",
+      "timeOfDay": "sunset",
       "localizedNameKey": "A015_C018_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -1077,6 +1122,7 @@
     {
       "source": "Apple Aerials",
       "id": "3C4678E4-4D3D-4A40-8817-77752AEA62EB",
+      "timeOfDay": "day",
       "localizedNameKey": "A050_C004_1027V8_NAME",
       "categories": [
         "AerialCategorySpace"
@@ -1106,6 +1152,7 @@
     {
       "source": "Apple Aerials",
       "id": "00BA71CD-2C54-415A-A68A-8358E677D750",
+      "timeOfDay": "night",
       "localizedNameKey": "DB_D002_C003_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -1128,6 +1175,7 @@
     {
       "source": "Apple Aerials",
       "id": "B876B645-3955-420E-99DF-60139E451CF3",
+      "timeOfDay": "night",
       "localizedNameKey": "CH_C007_C011_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -1149,6 +1197,7 @@
     {
       "source": "Apple Aerials",
       "id": "581A4F1A-2B6D-468C-A1BE-6F473F06D10B",
+      "timeOfDay": "day",
       "localizedNameKey": "A012_C031_NAME",
       "categories": [
         "AerialCategoryUnderwater"
@@ -1170,6 +1219,7 @@
     {
       "source": "Apple Aerials",
       "id": "78911B7E-3C69-47AD-B635-9C2486F6301D",
+      "timeOfDay": "sunrise",
       "localizedNameKey": "A105_C003_0212CT_NAME",
       "categories": [
         "AerialCategorySpace"
@@ -1194,6 +1244,7 @@
     {
       "source": "Apple Aerials",
       "id": "AFA22C08-A486-4CE8-9A13-E355B6C38559",
+      "timeOfDay": "sunset",
       "localizedNameKey": "LW_L001_C003_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -1215,6 +1266,7 @@
     {
       "source": "Apple Aerials",
       "id": "C8559883-6F3E-4AF2-8960-903710CD47B7",
+      "timeOfDay": "sunset",
       "localizedNameKey": "HK_H004_C010_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -1238,6 +1290,7 @@
     {
       "source": "Apple Aerials",
       "id": "87060EC2-D006-4102-98CC-3005C68BB343",
+      "timeOfDay": "sunset",
       "localizedNameKey": "A351_C001_1213SK_NAME",
       "categories": [
         "AerialCategorySpace"
@@ -1272,6 +1325,7 @@
     {
       "source": "Apple Aerials",
       "id": "687D03A2-18A5-4181-8E85-38F3A13409B9",
+      "timeOfDay": "day",
       "localizedNameKey": "BO_A014_C008_NAME",
       "categories": [
         "AerialCategoryUnderwater"
@@ -1293,6 +1347,7 @@
     {
       "source": "Apple Aerials",
       "id": "64D11DAB-3B57-4F14-AD2F-E59A9282FA44",
+      "timeOfDay": "sunset",
       "localizedNameKey": "A001_C001_120530_NAME",
       "categories": [
         "AerialCategorySpace"
@@ -1317,6 +1372,7 @@
     {
       "source": "Apple Aerials",
       "id": "DE851E6D-C2BE-4D9F-AB54-0F9CE994DC51",
+      "timeOfDay": "day",
       "localizedNameKey": "A006_C003_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -1340,6 +1396,7 @@
     {
       "source": "Apple Aerials",
       "id": "E991AC0C-F272-44D8-88F3-05F44EDFE3AE",
+      "timeOfDay": "night",
       "localizedNameKey": "DB_D001_C001_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -1361,6 +1418,7 @@
     {
       "source": "Apple Aerials",
       "id": "537A4DAB-83B0-4B66-BCD1-05E5DBB4A268",
+      "timeOfDay": "day",
       "localizedNameKey": "A014_C023_NAME",
       "categories": [
         "AerialCategoryUnderwater"
@@ -1382,6 +1440,7 @@
     {
       "source": "Apple Aerials",
       "id": "640DFB00-FBB9-45DA-9444-9F663859F4BC",
+      "timeOfDay": "day",
       "localizedNameKey": "N008_C003_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -1406,6 +1465,7 @@
     {
       "source": "Apple Aerials",
       "id": "03EC0F5E-CCA8-4E0A-9FEC-5BD1CE151182",
+      "timeOfDay": "sunrise",
       "localizedNameKey": "GMT110_112NC_364D_1054_AURORA_ANTARCTICA_NAME",
       "categories": [
         "AerialCategorySpace"
@@ -1427,6 +1487,7 @@
     {
       "source": "Apple Aerials",
       "id": "58754319-8709-4AB0-8674-B34F04E7FFE2",
+      "timeOfDay": "day",
       "localizedNameKey": "L010_C006_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -1451,6 +1512,7 @@
     {
       "source": "Apple Aerials",
       "id": "4AD99907-9E76-408D-A7FC-8429FF014201",
+      "timeOfDay": "sunset",
       "localizedNameKey": "A013_C004_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -1475,6 +1537,7 @@
     {
       "source": "Apple Aerials",
       "id": "2F72BC1E-3D76-456C-81EB-842EBA488C27",
+      "timeOfDay": "day",
       "localizedNameKey": "A103_C002_0205DG_NAME",
       "categories": [
         "AerialCategorySpace"
@@ -1504,6 +1567,7 @@
     {
       "source": "Apple Aerials",
       "id": "840FE8E4-D952-4680-B1A7-AC5BACA2C1F8",
+      "timeOfDay": "day",
       "localizedNameKey": "N003_C006_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -1528,6 +1592,7 @@
     {
       "source": "Apple Aerials",
       "id": "F0236EC5-EE72-4058-A6CE-1F7D2E8253BF",
+      "timeOfDay": "day",
       "localizedNameKey": "C001_C005_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -1549,6 +1614,7 @@
     {
       "source": "Apple Aerials",
       "id": "EE533FBD-90AE-419A-AD13-D7A60E2015D6",
+      "timeOfDay": "sunrise",
       "localizedNameKey": "A008_C007_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -1571,6 +1637,7 @@
     {
       "source": "Apple Aerials",
       "id": "B1B5DDC5-73C8-4920-8133-BACCE38A08DE",
+      "timeOfDay": "night",
       "localizedNameKey": "GMT307_136NC_134K_8277_NY_NIGHT_NAME",
       "categories": [
         "AerialCategorySpace"
@@ -1599,6 +1666,7 @@
     {
       "source": "Apple Aerials",
       "id": "7F4C26C2-67C2-4C3A-8F07-8A7BF6148C97",
+      "timeOfDay": "day",
       "localizedNameKey": "L004_C011_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -1625,6 +1693,7 @@
     {
       "source": "Apple Aerials",
       "id": "82BD33C9-B6D2-47E7-9C42-AA3B7758921A",
+      "timeOfDay": "sunset",
       "localizedNameKey": "H004_C007_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -1646,6 +1715,7 @@
     {
       "source": "Apple Aerials",
       "id": "024891DE-B7F6-4187-BFE0-E6D237702EF0",
+      "timeOfDay": "day",
       "localizedNameKey": "HK_H004_C013_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -1669,6 +1739,7 @@
     {
       "source": "Apple Aerials",
       "id": "3FFA2A97-7D28-49EA-AA39-5BC9051B2745",
+      "timeOfDay": "day",
       "localizedNameKey": "DB_D001_C005_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -1690,6 +1761,7 @@
     {
       "source": "Apple Aerials",
       "id": "85CE77BF-3413-4A7B-9B0F-732E96229A73",
+      "timeOfDay": "sunrise",
       "localizedNameKey": "A012_C014_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -1712,6 +1784,7 @@
     {
       "source": "Apple Aerials",
       "id": "12E0343D-2CD9-48EA-AB57-4D680FB6D0C7",
+      "timeOfDay": "day",
       "localizedNameKey": "H007_C003_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -1733,6 +1806,7 @@
     {
       "source": "Apple Aerials",
       "id": "FE8E1F9D-59BA-4207-B626-28E34D810D0A",
+      "timeOfDay": "day",
       "localizedNameKey": "HK_H004_C008_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -1754,6 +1828,7 @@
     {
       "source": "Apple Aerials",
       "id": "29BDF297-EB43-403A-8719-A78DA11A2948",
+      "timeOfDay": "day",
       "localizedNameKey": "A007_C017_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -1778,6 +1853,7 @@
     {
       "source": "Apple Aerials",
       "id": "001C94AE-2BA4-4E77-A202-F7DE60E8B1C8",
+      "timeOfDay": "day",
       "localizedNameKey": "LW_L001_C006_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -1799,6 +1875,7 @@
     {
       "source": "Apple Aerials",
       "id": "81337355-E156-4242-AAF4-711768D30A54",
+      "timeOfDay": "night",
       "localizedNameKey": "GMT060_117NC_363D_1034_AUSTRALIA_NAME",
       "categories": [
         "AerialCategorySpace"
@@ -1824,6 +1901,7 @@
     {
       "source": "Apple Aerials",
       "id": "22162A9B-DB90-4517-867C-C676BC3E8E95",
+      "timeOfDay": "day",
       "localizedNameKey": "C004_C003_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -1845,6 +1923,7 @@
     {
       "source": "Apple Aerials",
       "id": "DD47D8E1-CB66-4C12-BFEA-2ADB0D8D1E2E",
+      "timeOfDay": "day",
       "localizedNameKey": "D004_L014_NAME",
       "categories": [
         "AerialCategoryUnderwater"
@@ -1866,6 +1945,7 @@
     {
       "source": "Apple Aerials",
       "id": "27A37B0F-738D-4644-A7A4-E33E7A6C1175",
+      "timeOfDay": "day",
       "localizedNameKey": "B002_C011_NAME",
       "categories": [
         "AerialCategoryUnderwater"
@@ -1887,6 +1967,7 @@
     {
       "source": "Apple Aerials",
       "id": "149E7795-DBDA-4F5D-B39A-14712F841118",
+      "timeOfDay": "day",
       "localizedNameKey": "TH_803_A001_8_NAME",
       "categories": [
         "AerialCategoryUnderwater"
@@ -1908,6 +1989,7 @@
     {
       "source": "Apple Aerials",
       "id": "8C31B06F-91A4-4F7C-93ED-56146D7F48B9",
+      "timeOfDay": "day",
       "localizedNameKey": "TH_804_A001_8_NAME",
       "categories": [
         "AerialCategoryUnderwater"
@@ -1929,6 +2011,7 @@
     {
       "source": "Apple Aerials",
       "id": "82175C1F-153C-4EC8-AE37-2860EA828004",
+      "timeOfDay": "day",
       "localizedNameKey": "A008_C010_NAME",
       "categories": [
         "AerialCategoryUnderwater"
@@ -1950,6 +2033,7 @@
     {
       "source": "Apple Aerials",
       "id": "58C75C62-3290-47B8-849C-56A583173570",
+      "timeOfDay": "day",
       "localizedNameKey": "A006_C008_NAME",
       "categories": [
         "AerialCategoryUnderwater"
@@ -1971,6 +2055,7 @@
     {
       "source": "Apple Aerials",
       "id": "EB3F48E7-D30F-4079-858F-1A61331D5026",
+      "timeOfDay": "day",
       "localizedNameKey": "A016_C002_NAME",
       "categories": [
         "AerialCategoryUnderwater"
@@ -1992,6 +2077,7 @@
     {
       "source": "Apple Aerials",
       "id": "C7AD3D0A-7EDF-412C-A237-B3C9D27381A1",
+      "timeOfDay": "day",
       "localizedNameKey": "A003_C014_NAME",
       "categories": [
         "AerialCategoryUnderwater"
@@ -2013,6 +2099,7 @@
     {
       "source": "Apple Aerials",
       "id": "3716DD4B-01C0-4F5B-8DD6-DB771EC472FB",
+      "timeOfDay": "day",
       "localizedNameKey": "U009_C004_NAME",
       "categories": [
         "AerialCategoryUnderwater"
@@ -2034,6 +2121,7 @@
     {
       "source": "Apple Aerials",
       "id": "CE9B5D5B-B6E7-47C5-8C04-59BF182E98FB",
+      "timeOfDay": "day",
       "localizedNameKey": "A009_C007_NAME",
       "categories": [
         "AerialCategoryUnderwater"
@@ -2055,6 +2143,7 @@
     {
       "source": "Apple Aerials",
       "id": "C6DC4E54-1130-44F8-AF6F-A551D8E8A181",
+      "timeOfDay": "day",
       "localizedNameKey": "A004_C012_NAME",
       "categories": [
         "AerialCategoryUnderwater"
@@ -2076,6 +2165,7 @@
     {
       "source": "Apple Aerials",
       "id": "E334A6D2-7145-47C8-9B00-C20DED08B2D5",
+      "timeOfDay": "day",
       "localizedNameKey": "G007_C004_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2097,6 +2187,7 @@
     {
       "source": "Apple Aerials",
       "id": "DD266E1F-5DF2-4CDB-A2EB-26CE35664657",
+      "timeOfDay": "day",
       "localizedNameKey": "G008_C015_0106MB_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2118,6 +2209,7 @@
     {
       "source": "Apple Aerials",
       "id": "F9F918CD-E15F-4F01-A326-84A44650C5C9",
+      "timeOfDay": "day",
       "localizedNameKey": "G009_C003_010678_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2139,6 +2231,7 @@
     {
       "source": "Apple Aerials",
       "id": "AE0115AE-C53B-4DB9-B12F-CA4B7B630CC9",
+      "timeOfDay": "day",
       "localizedNameKey": "G009_C014_0106B9_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2160,6 +2253,7 @@
     {
       "source": "Apple Aerials",
       "id": "8002C4C8-C611-4894-A068-3D3A3C03472A",
+      "timeOfDay": "day",
       "localizedNameKey": "G010_C026_0107KE_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2181,6 +2275,7 @@
     {
       "source": "Apple Aerials",
       "id": "5C987900-AD53-469C-8210-CABBCCDDFCAE",
+      "timeOfDay": "day",
       "localizedNameKey": "P001_C005_11059D_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2202,6 +2297,7 @@
     {
       "source": "Apple Aerials",
       "id": "B004358B-5A27-42E5-B49E-93FC100B2371",
+      "timeOfDay": "day",
       "localizedNameKey": "P005_C002_1109E1_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2223,6 +2319,7 @@
     {
       "source": "Apple Aerials",
       "id": "25A6CFB2-3570-4448-B114-244A4E454B7A",
+      "timeOfDay": "day",
       "localizedNameKey": "P006_C002_11106T_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2244,6 +2341,7 @@
     {
       "source": "Apple Aerials",
       "id": "E5D58CC2-3C52-4206-9DA2-427DC88B5896",
+      "timeOfDay": "day",
       "localizedNameKey": "P007_C027_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2265,6 +2363,7 @@
     {
       "source": "Apple Aerials",
       "id": "E5799A24-1949-4E66-A17B-B5EB05F28C5D",
+      "timeOfDay": "day",
       "localizedNameKey": "Y004_C015_0227PD_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2288,6 +2387,7 @@
     {
       "source": "Apple Aerials",
       "id": "E487C6EF-B3FB-427B-A2BE-8CBA60F902F0",
+      "timeOfDay": "day",
       "localizedNameKey": "Y005_C003_0228SC_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2314,6 +2414,7 @@
     {
       "source": "Apple Aerials",
       "id": "E540DEE6-4C40-42C8-9CCC-D4CB0FAD7D7B",
+      "timeOfDay": "day",
       "localizedNameKey": "Y002_C013_0226_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2338,6 +2439,7 @@
     {
       "source": "Apple Aerials",
       "id": "81CA5ACD-E682-4D8B-A948-0F147EB6ED4F",
+      "timeOfDay": "day",
       "localizedNameKey": "Y003_C009_027_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2363,6 +2465,7 @@
     {
       "source": "Apple Aerials",
       "id": "4109D42A-D717-46A7-A9A2-FE53A82B25C0",
+      "timeOfDay": "day",
       "localizedNameKey": "Y011_C001_0305_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2390,6 +2493,7 @@
     {
       "source": "Apple Aerials",
       "id": "DAD82DCE-F3AE-4AEC-8A79-1694D412FC0A",
+      "timeOfDay": "day",
       "localizedNameKey": "Y009_C015_0304I_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2411,6 +2515,7 @@
     {
       "source": "Apple Aerials",
       "id": "8D04D70F-738B-441D-8D43-AF46B2BF8062",
+      "timeOfDay": "day",
       "localizedNameKey": "Y011_C008_030584_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2436,6 +2541,7 @@
     {
       "source": "Apple Aerials",
       "id": "DDE50C77-B7CB-4488-9EB1-D1B13BF21FFE",
+      "timeOfDay": "day",
       "localizedNameKey": "I003_C008_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2457,6 +2563,7 @@
     {
       "source": "Apple Aerials",
       "id": "0C747C29-4BF8-43F6-A5CC-2E012E555341",
+      "timeOfDay": "day",
       "localizedNameKey": "S003_C020_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2480,6 +2587,7 @@
     {
       "source": "Apple Aerials",
       "id": "E54D5AFE-F362-4D48-A20D-F2C21D2B5330",
+      "timeOfDay": "day",
       "localizedNameKey": "I003_C011_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2502,6 +2610,7 @@
     {
       "source": "Apple Aerials",
       "id": "8ACF5D77-B22C-416F-B12A-72FB35E2834F",
+      "timeOfDay": "day",
       "localizedNameKey": "I004_C014_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2523,6 +2632,7 @@
     {
       "source": "Apple Aerials",
       "id": "F9518D54-04A7-4793-8666-CFC114D73CE5",
+      "timeOfDay": "day",
       "localizedNameKey": "I003_C015_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2544,6 +2654,7 @@
     {
       "source": "Apple Aerials",
       "id": "8590D0C5-E344-4FAC-A39A-FD7BC652AEDA",
+      "timeOfDay": "day",
       "localizedNameKey": "I003_C004_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2565,6 +2676,7 @@
     {
       "source": "Apple Aerials",
       "id": "E161929C-0819-4BC2-8359-550C081C7D54",
+      "timeOfDay": "day",
       "localizedNameKey": "S006_C007_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2589,6 +2701,7 @@
     {
       "source": "Apple Aerials",
       "id": "3954A7C4-51EC-4ABC-ABA3-6757AC91C7CF",
+      "timeOfDay": "day",
       "localizedNameKey": "S005_C015_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2611,6 +2724,7 @@
     {
       "source": "Apple Aerials",
       "id": "2F17FCCE-6CCA-4AFA-A08A-C50BF9812DA5",
+      "timeOfDay": "day",
       "localizedNameKey": "I005_C008_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2737,6 +2851,7 @@
     {
       "source": "Apple Aerials",
       "id": "F390FE3B-FA61-483D-BADC-2447F89951BA",
+      "timeOfDay": "day",
       "localizedNameKey": "W014_C018_F01_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2758,6 +2873,7 @@
     {
       "source": "Apple Aerials",
       "id": "4A3590EC-FF30-41E7-85FE-210FF6112917",
+      "timeOfDay": "day",
       "localizedNameKey": "W015_C010_F01_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2779,6 +2895,7 @@
     {
       "source": "Apple Aerials",
       "id": "473C2FDC-0B75-497A-B1FE-AA1863C9C885",
+      "timeOfDay": "day",
       "localizedNameKey": "W015_C006_F01_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2800,6 +2917,7 @@
     {
       "source": "Apple Aerials",
       "id": "AA5E82B9-289A-480C-A14B-242989107275",
+      "timeOfDay": "day",
       "localizedNameKey": "R010_C003_F01_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2821,6 +2939,7 @@
     {
       "source": "Apple Aerials",
       "id": "97447D85-960C-4B2A-A101-048284D95853",
+      "timeOfDay": "day",
       "localizedNameKey": "R013_C039_F01_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2842,6 +2961,7 @@
     {
       "source": "Apple Aerials",
       "id": "8A57476A-E177-4AAD-B317-643F681584E1",
+      "timeOfDay": "sunset",
       "localizedNameKey": "R006_C013_S05_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2863,6 +2983,7 @@
     {
       "source": "Apple Aerials",
       "id": "15A8BC97-45AC-45DC-9AF9-313808C578BC",
+      "timeOfDay": "day",
       "localizedNameKey": "R004_C012_F01_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2885,6 +3006,7 @@
     {
       "source": "Apple Aerials",
       "id": "AB7FC3C3-8853-45CD-AB6E-89F0985C2922",
+      "timeOfDay": "sunset",
       "localizedNameKey": "M012_C065_S04_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2908,6 +3030,7 @@
     {
       "source": "Apple Aerials",
       "id": "47BC0599-72E7-43C4-8BE1-CBCE2432E2A5",
+      "timeOfDay": "day",
       "localizedNameKey": "M013_C012_F01_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2929,6 +3052,7 @@
     {
       "source": "Apple Aerials",
       "id": "7530C83C-8F7B-42C6-BB71-5FA2ED070BEC",
+      "timeOfDay": "day",
       "localizedNameKey": "M010_C005_F01_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2951,6 +3075,7 @@
     {
       "source": "Apple Aerials",
       "id": "100858D2-FE01-4B70-8E2D-3FCF20AFE6B5",
+      "timeOfDay": "sunset",
       "localizedNameKey": "M007_C007_F01_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2972,6 +3097,7 @@
     {
       "source": "Apple Aerials",
       "id": "1A17ED86-9E0D-4DF2-8CF3-5AB5DB67A348",
+      "timeOfDay": "day",
       "localizedNameKey": "M012_C023_S04_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2993,6 +3119,7 @@
     {
       "source": "Apple Aerials",
       "id": "D759828B-4BAB-456B-AD75-225BA238F925",
+      "timeOfDay": "sunset",
       "localizedNameKey": "M010_C009_F01_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3016,6 +3143,7 @@
     {
       "source": "Apple Aerials",
       "id": "A168628E-11EE-4456-AD66-E7E3E47D1B21",
+      "timeOfDay": "day",
       "localizedNameKey": "M005_C017_F01_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3089,6 +3217,7 @@
     {
       "source": "Apple Aerials",
       "id": "5929F26F-992D-4729-AFCC-BCDF23D15C32",
+      "timeOfDay": "day",
       "localizedNameKey": "ANN0010_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3110,6 +3239,7 @@
     {
       "source": "Apple Aerials",
       "id": "73120738-3D8D-47E7-B6E9-8AAC4D352577",
+      "timeOfDay": "day",
       "localizedNameKey": "ANN0020_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3131,6 +3261,7 @@
     {
       "source": "Apple Aerials",
       "id": "9C77AC8C-B23D-4ED9-ABD5-73D3CAD38317",
+      "timeOfDay": "day",
       "localizedNameKey": "ANN0040_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3152,6 +3283,7 @@
     {
       "source": "Apple Aerials",
       "id": "B13D40FC-C033-436D-A197-185900EC3552",
+      "timeOfDay": "day",
       "localizedNameKey": "ANN0060_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3173,6 +3305,7 @@
     {
       "source": "Apple Aerials",
       "id": "20633C28-FF90-4C54-B828-BB7F1669F7B4",
+      "timeOfDay": "day",
       "localizedNameKey": "ANN0070_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3194,6 +3327,7 @@
     {
       "source": "Apple Aerials",
       "id": "8A51AAE4-6ED6-432B-A222-4081D1F29D24",
+      "timeOfDay": "sunset",
       "localizedNameKey": "ANN0080_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3216,6 +3350,7 @@
     {
       "source": "Apple Aerials",
       "id": "0FA98CA1-0005-4C98-8DCF-8BE7A6B159CE",
+      "timeOfDay": "day",
       "localizedNameKey": "ANN0090_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3237,6 +3372,7 @@
     {
       "source": "Apple Aerials",
       "id": "4E9FE515-65B1-4677-B1A0-CAB75BDA1480",
+      "timeOfDay": "day",
       "localizedNameKey": "ANN0100_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3258,6 +3394,7 @@
     {
       "source": "Apple Aerials",
       "id": "B6461ECC-44F5-4BC9-877F-484A605D0D10",
+      "timeOfDay": "day",
       "localizedNameKey": "ANN0110_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3279,6 +3416,7 @@
     {
       "source": "Apple Aerials",
       "id": "A63179A7-BC32-4307-89F0-112694889A03",
+      "timeOfDay": "day",
       "localizedNameKey": "ANN0120_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3300,6 +3438,7 @@
     {
       "source": "Apple Aerials",
       "id": "A92E4A3F-9BFC-4772-B3A7-025B54AB1D3D",
+      "timeOfDay": "sunset",
       "localizedNameKey": "ANN0130_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4736,6 +4875,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-d1b2090f-f2ad-49fa-bbc7-4ec64957680b",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-d1b2090f-f2ad-49fa-bbc7-4ec64957680b.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-d1b2090f-f2ad-49fa-bbc7-4ec64957680b.mp4",
       "pointsOfInterest": {
@@ -4753,6 +4893,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-91fbd4d1-6ec9-4593-a7ac-f60a6ce76f3f",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-91fbd4d1-6ec9-4593-a7ac-f60a6ce76f3f.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-91fbd4d1-6ec9-4593-a7ac-f60a6ce76f3f.mp4",
       "pointsOfInterest": {
@@ -4770,6 +4911,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-07bdc4a2-e78d-4654-8654-43535af8c250",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-07bdc4a2-e78d-4654-8654-43535af8c250.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-07bdc4a2-e78d-4654-8654-43535af8c250.mp4",
       "pointsOfInterest": {
@@ -4787,6 +4929,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-eb587210-bad9-4007-b812-9c3ca0eea447",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-eb587210-bad9-4007-b812-9c3ca0eea447.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-eb587210-bad9-4007-b812-9c3ca0eea447.mp4",
       "pointsOfInterest": {
@@ -4804,6 +4947,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-cf158e88-0e98-46a7-9d1c-1d9e47d76475",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-cf158e88-0e98-46a7-9d1c-1d9e47d76475.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-cf158e88-0e98-46a7-9d1c-1d9e47d76475.mp4",
       "pointsOfInterest": {
@@ -4821,6 +4965,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-094ad2b1-07ec-40e4-8603-0f4e265d66a8",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-094ad2b1-07ec-40e4-8603-0f4e265d66a8.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-094ad2b1-07ec-40e4-8603-0f4e265d66a8.mp4",
       "pointsOfInterest": {
@@ -4838,6 +4983,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-ff0ab38d-d878-47cd-9499-7e2df0ada55b",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-ff0ab38d-d878-47cd-9499-7e2df0ada55b.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-ff0ab38d-d878-47cd-9499-7e2df0ada55b.mp4",
       "pointsOfInterest": {
@@ -4855,6 +5001,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-f5a26b43-4b28-420c-a4a3-05b011f22546",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-f5a26b43-4b28-420c-a4a3-05b011f22546.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-f5a26b43-4b28-420c-a4a3-05b011f22546.mp4",
       "pointsOfInterest": {
@@ -4872,6 +5019,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-6baf8f6b-0fcc-48c6-8d2f-7a72d8ab0166",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-6baf8f6b-0fcc-48c6-8d2f-7a72d8ab0166.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-6baf8f6b-0fcc-48c6-8d2f-7a72d8ab0166.mp4",
       "pointsOfInterest": {
@@ -4889,6 +5037,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-82f845c1-85ae-4eba-b57a-7860f1e8e998",
+      "timeOfDay": "sunset",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-82f845c1-85ae-4eba-b57a-7860f1e8e998.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-82f845c1-85ae-4eba-b57a-7860f1e8e998.mp4",
       "pointsOfInterest": {
@@ -4906,6 +5055,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-ac8b4de6-cc05-442e-aa2f-33a2ec8f92f7",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-ac8b4de6-cc05-442e-aa2f-33a2ec8f92f7.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-ac8b4de6-cc05-442e-aa2f-33a2ec8f92f7.mp4",
       "pointsOfInterest": {
@@ -4923,6 +5073,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-af6685b8-c7fe-44c5-865f-223e7cca26b4",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-af6685b8-c7fe-44c5-865f-223e7cca26b4.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-af6685b8-c7fe-44c5-865f-223e7cca26b4.mp4",
       "pointsOfInterest": {
@@ -4940,6 +5091,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-daf38cfa-0974-4c64-b332-8812cf8c831c",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-daf38cfa-0974-4c64-b332-8812cf8c831c.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-daf38cfa-0974-4c64-b332-8812cf8c831c.mp4",
       "pointsOfInterest": {
@@ -4957,6 +5109,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-f82d75b8-94e1-429d-bdb7-0db5c9fd9725",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-f82d75b8-94e1-429d-bdb7-0db5c9fd9725.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-f82d75b8-94e1-429d-bdb7-0db5c9fd9725.mp4",
       "pointsOfInterest": {
@@ -4974,6 +5127,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-447b1a9e-53f3-459c-a5cf-dbb717e3d010",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-447b1a9e-53f3-459c-a5cf-dbb717e3d010.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-447b1a9e-53f3-459c-a5cf-dbb717e3d010.mp4",
       "pointsOfInterest": {
@@ -4991,6 +5145,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-7a0c7986-cbf4-42a4-8673-b2402f5afc82",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-7a0c7986-cbf4-42a4-8673-b2402f5afc82.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-7a0c7986-cbf4-42a4-8673-b2402f5afc82.mp4",
       "pointsOfInterest": {
@@ -5008,6 +5163,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-90eef1c7-9c5d-42d9-a563-993b7d756846",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-90eef1c7-9c5d-42d9-a563-993b7d756846.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-90eef1c7-9c5d-42d9-a563-993b7d756846.mp4",
       "pointsOfInterest": {
@@ -5025,6 +5181,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-fada2d8c-130e-4000-967e-368559c6cc8e",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-fada2d8c-130e-4000-967e-368559c6cc8e.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-fada2d8c-130e-4000-967e-368559c6cc8e.mp4",
       "pointsOfInterest": {
@@ -5042,6 +5199,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-f9370703-48ca-447c-905e-234d1a51a0df",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-f9370703-48ca-447c-905e-234d1a51a0df.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-f9370703-48ca-447c-905e-234d1a51a0df.mp4",
       "pointsOfInterest": {
@@ -5059,6 +5217,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-29ee9e04-4562-43f0-8670-d9ed842615d1",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-29ee9e04-4562-43f0-8670-d9ed842615d1.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-29ee9e04-4562-43f0-8670-d9ed842615d1.mp4",
       "pointsOfInterest": {
@@ -5076,6 +5235,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-8dd41619-4b4d-4077-aa02-5ad62a658f7d",
+      "timeOfDay": "sunrise",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-8dd41619-4b4d-4077-aa02-5ad62a658f7d.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-8dd41619-4b4d-4077-aa02-5ad62a658f7d.mp4",
       "pointsOfInterest": {
@@ -5093,6 +5253,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-d372544f-388a-4811-8f12-1ad3d01f48b2",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-d372544f-388a-4811-8f12-1ad3d01f48b2.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-d372544f-388a-4811-8f12-1ad3d01f48b2.mp4",
       "pointsOfInterest": {
@@ -5110,6 +5271,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-dae24c2f-97d6-4ef1-8c94-e4b5e6d57544",
+      "timeOfDay": "sunrise",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-dae24c2f-97d6-4ef1-8c94-e4b5e6d57544.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-dae24c2f-97d6-4ef1-8c94-e4b5e6d57544.mp4",
       "pointsOfInterest": {
@@ -5127,6 +5289,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-aa6726c3-9b24-4e1b-8e74-46a061385087",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-aa6726c3-9b24-4e1b-8e74-46a061385087.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-aa6726c3-9b24-4e1b-8e74-46a061385087.mp4",
       "pointsOfInterest": {
@@ -5144,6 +5307,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-32bfa054-b5bb-48a3-b05f-e3024057abe1",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-32bfa054-b5bb-48a3-b05f-e3024057abe1.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-32bfa054-b5bb-48a3-b05f-e3024057abe1.mp4",
       "pointsOfInterest": {
@@ -5161,6 +5325,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-efa40377-381b-49b2-a3cb-cae70093fc34",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-efa40377-381b-49b2-a3cb-cae70093fc34.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-efa40377-381b-49b2-a3cb-cae70093fc34.mp4",
       "pointsOfInterest": {
@@ -5178,6 +5343,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-22b4f764-b0b9-41bc-b02a-4543139ed365",
+      "timeOfDay": "sunset",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-22b4f764-b0b9-41bc-b02a-4543139ed365.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-22b4f764-b0b9-41bc-b02a-4543139ed365.mp4",
       "pointsOfInterest": {
@@ -5195,6 +5361,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-02f6361d-390c-4015-a06d-e92bf6d727aa",
+      "timeOfDay": "sunrise",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-02f6361d-390c-4015-a06d-e92bf6d727aa.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-02f6361d-390c-4015-a06d-e92bf6d727aa.mp4",
       "pointsOfInterest": {
@@ -5212,6 +5379,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-adeb362a-47c2-475c-b5c5-37879c0a6dfc",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-adeb362a-47c2-475c-b5c5-37879c0a6dfc.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-adeb362a-47c2-475c-b5c5-37879c0a6dfc.mp4",
       "pointsOfInterest": {
@@ -5229,6 +5397,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-bfd4ffc6-0901-44dc-b939-da5f3e958eaa",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-bfd4ffc6-0901-44dc-b939-da5f3e958eaa.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-bfd4ffc6-0901-44dc-b939-da5f3e958eaa.mp4",
       "pointsOfInterest": {
@@ -5246,6 +5415,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-5853ae03-cf6e-4087-ad46-670ef0b225f2",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-5853ae03-cf6e-4087-ad46-670ef0b225f2.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-5853ae03-cf6e-4087-ad46-670ef0b225f2.mp4",
       "pointsOfInterest": {
@@ -5263,6 +5433,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-ed1551b4-1a65-4706-922b-1844fa2c85c7",
+      "timeOfDay": "sunset",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-ed1551b4-1a65-4706-922b-1844fa2c85c7.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-ed1551b4-1a65-4706-922b-1844fa2c85c7.mp4",
       "pointsOfInterest": {
@@ -5280,6 +5451,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-dacdbc4b-3132-4685-a9d1-8478488c8bb4",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-dacdbc4b-3132-4685-a9d1-8478488c8bb4.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-dacdbc4b-3132-4685-a9d1-8478488c8bb4.mp4",
       "pointsOfInterest": {
@@ -5297,6 +5469,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-98701494-85bf-4b51-90af-a60921221de8",
+      "timeOfDay": "sunset",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-98701494-85bf-4b51-90af-a60921221de8.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-98701494-85bf-4b51-90af-a60921221de8.mp4",
       "pointsOfInterest": {
@@ -5314,6 +5487,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-583ab8d7-e2d2-4237-9dba-d27b09e3ac34",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-583ab8d7-e2d2-4237-9dba-d27b09e3ac34.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-583ab8d7-e2d2-4237-9dba-d27b09e3ac34.mp4",
       "pointsOfInterest": {
@@ -5331,6 +5505,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-e09fee49-492e-4c84-87ab-16101cc7a8fd",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-e09fee49-492e-4c84-87ab-16101cc7a8fd.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-e09fee49-492e-4c84-87ab-16101cc7a8fd.mp4",
       "pointsOfInterest": {
@@ -5348,6 +5523,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-ee377c5d-2076-4279-843e-f5163e4703a3",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-ee377c5d-2076-4279-843e-f5163e4703a3.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-ee377c5d-2076-4279-843e-f5163e4703a3.mp4",
       "pointsOfInterest": {
@@ -5365,6 +5541,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-b3f2b993-31fd-4dea-b8d5-52f048be01e9",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-b3f2b993-31fd-4dea-b8d5-52f048be01e9.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-b3f2b993-31fd-4dea-b8d5-52f048be01e9.mp4",
       "pointsOfInterest": {
@@ -5382,6 +5559,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-9f2ce803-dda4-4974-a7ed-7003da8c599b",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-9f2ce803-dda4-4974-a7ed-7003da8c599b.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-9f2ce803-dda4-4974-a7ed-7003da8c599b.mp4",
       "pointsOfInterest": {
@@ -5399,6 +5577,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-c36dc382-9f10-4e77-b766-1e35b21eda19",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-c36dc382-9f10-4e77-b766-1e35b21eda19.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-c36dc382-9f10-4e77-b766-1e35b21eda19.mp4",
       "pointsOfInterest": {
@@ -5416,6 +5595,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-be105994-60f3-4db2-91cb-284eb96ce9cc",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-be105994-60f3-4db2-91cb-284eb96ce9cc.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-be105994-60f3-4db2-91cb-284eb96ce9cc.mp4",
       "pointsOfInterest": {
@@ -5433,6 +5613,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-36e9f743-c256-45b9-a63b-82654e1c5b42",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-36e9f743-c256-45b9-a63b-82654e1c5b42.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-36e9f743-c256-45b9-a63b-82654e1c5b42.mp4",
       "pointsOfInterest": {
@@ -5450,6 +5631,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-2f3ab81b-7375-4265-b71f-0202059420b9",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-2f3ab81b-7375-4265-b71f-0202059420b9.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-2f3ab81b-7375-4265-b71f-0202059420b9.mp4",
       "pointsOfInterest": {
@@ -5467,6 +5649,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-e854de73-a53f-490a-a9c8-cf84396982eb",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-e854de73-a53f-490a-a9c8-cf84396982eb.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-e854de73-a53f-490a-a9c8-cf84396982eb.mp4",
       "pointsOfInterest": {
@@ -5484,6 +5667,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-f4047615-05b8-4bfa-b298-e4658eec7772",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-f4047615-05b8-4bfa-b298-e4658eec7772.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-f4047615-05b8-4bfa-b298-e4658eec7772.mp4",
       "pointsOfInterest": {
@@ -5501,6 +5685,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-24ffa36c-1959-42a1-a4c1-71fd8452122b",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-24ffa36c-1959-42a1-a4c1-71fd8452122b.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-24ffa36c-1959-42a1-a4c1-71fd8452122b.mp4",
       "pointsOfInterest": {
@@ -5518,6 +5703,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-075374d8-6139-41f7-924f-5d3575903663",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-075374d8-6139-41f7-924f-5d3575903663.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-075374d8-6139-41f7-924f-5d3575903663.mp4",
       "pointsOfInterest": {
@@ -5535,6 +5721,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-6a822dcb-7920-485e-be60-8b320110a15a",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-6a822dcb-7920-485e-be60-8b320110a15a.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-6a822dcb-7920-485e-be60-8b320110a15a.mp4",
       "pointsOfInterest": {
@@ -5552,6 +5739,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-d56fd6d4-533f-4f21-bb26-fe178b4f3eff",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-d56fd6d4-533f-4f21-bb26-fe178b4f3eff.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-d56fd6d4-533f-4f21-bb26-fe178b4f3eff.mp4",
       "pointsOfInterest": {
@@ -5569,6 +5757,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-6fcd1260-daa6-4491-825d-3a1025b7e308",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-6fcd1260-daa6-4491-825d-3a1025b7e308.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-6fcd1260-daa6-4491-825d-3a1025b7e308.mp4",
       "pointsOfInterest": {
@@ -5586,6 +5775,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-e6d9324f-826e-4adf-93e5-7ccfc9cac7b0",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-e6d9324f-826e-4adf-93e5-7ccfc9cac7b0.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-e6d9324f-826e-4adf-93e5-7ccfc9cac7b0.mp4",
       "pointsOfInterest": {
@@ -5603,6 +5793,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-c05cef2e-8370-44f2-9622-bd3ee48ab959",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-c05cef2e-8370-44f2-9622-bd3ee48ab959.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-c05cef2e-8370-44f2-9622-bd3ee48ab959.mp4",
       "pointsOfInterest": {
@@ -5620,6 +5811,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-b18313eb-00a1-4bde-a91e-89689dd8a9d0",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-b18313eb-00a1-4bde-a91e-89689dd8a9d0.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-b18313eb-00a1-4bde-a91e-89689dd8a9d0.mp4",
       "pointsOfInterest": {
@@ -5637,6 +5829,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-b3a8177f-11a4-4b98-9596-c8d940cb553f",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-b3a8177f-11a4-4b98-9596-c8d940cb553f.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-b3a8177f-11a4-4b98-9596-c8d940cb553f.mp4",
       "pointsOfInterest": {
@@ -5654,6 +5847,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-98313e1f-eac2-433e-b6a9-b9468c95b74c",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-98313e1f-eac2-433e-b6a9-b9468c95b74c.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-98313e1f-eac2-433e-b6a9-b9468c95b74c.mp4",
       "pointsOfInterest": {
@@ -5671,6 +5865,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-a3c12727-09a4-4b36-8032-5d0ec4433c4b",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-a3c12727-09a4-4b36-8032-5d0ec4433c4b.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-a3c12727-09a4-4b36-8032-5d0ec4433c4b.mp4",
       "pointsOfInterest": {
@@ -5688,6 +5883,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-dcfaebce-8cc0-44de-ae49-2b547f4570a3",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-dcfaebce-8cc0-44de-ae49-2b547f4570a3.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-dcfaebce-8cc0-44de-ae49-2b547f4570a3.mp4",
       "pointsOfInterest": {
@@ -5705,6 +5901,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-bfb0980c-80d6-4f6f-abb2-542b2c802898",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-bfb0980c-80d6-4f6f-abb2-542b2c802898.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-bfb0980c-80d6-4f6f-abb2-542b2c802898.mp4",
       "pointsOfInterest": {
@@ -5722,6 +5919,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-76a244a0-19d9-4897-95d4-f76aab8ef060",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-76a244a0-19d9-4897-95d4-f76aab8ef060.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-76a244a0-19d9-4897-95d4-f76aab8ef060.mp4",
       "pointsOfInterest": {
@@ -5739,6 +5937,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-1988ca2a-79bd-434c-bee4-680abfb79e29",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-1988ca2a-79bd-434c-bee4-680abfb79e29.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-1988ca2a-79bd-434c-bee4-680abfb79e29.mp4",
       "pointsOfInterest": {
@@ -5756,6 +5955,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-8b631bb5-fa9b-455c-bea5-1a010539a97b",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-8b631bb5-fa9b-455c-bea5-1a010539a97b.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-8b631bb5-fa9b-455c-bea5-1a010539a97b.mp4",
       "pointsOfInterest": {
@@ -5773,6 +5973,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-fc1b76f6-4948-4076-9264-3923644ba291",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-fc1b76f6-4948-4076-9264-3923644ba291.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-fc1b76f6-4948-4076-9264-3923644ba291.mp4",
       "pointsOfInterest": {
@@ -5790,6 +5991,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-eab433cf-10cb-4adb-9f07-2dca2f8ebb6e",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-eab433cf-10cb-4adb-9f07-2dca2f8ebb6e.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-eab433cf-10cb-4adb-9f07-2dca2f8ebb6e.mp4",
       "pointsOfInterest": {
@@ -5807,6 +6009,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-6bbf7359-01d8-44ac-bb21-98a70a5917cb",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-6bbf7359-01d8-44ac-bb21-98a70a5917cb.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-6bbf7359-01d8-44ac-bb21-98a70a5917cb.mp4",
       "pointsOfInterest": {
@@ -5824,6 +6027,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-7b30a2e7-f8f6-4b74-9334-8480025c855c",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-7b30a2e7-f8f6-4b74-9334-8480025c855c.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-7b30a2e7-f8f6-4b74-9334-8480025c855c.mp4",
       "pointsOfInterest": {
@@ -5841,6 +6045,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-0337ea90-e015-4a9a-84cc-a34e968a1d10",
+      "timeOfDay": "sunset",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-0337ea90-e015-4a9a-84cc-a34e968a1d10.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-0337ea90-e015-4a9a-84cc-a34e968a1d10.mp4",
       "pointsOfInterest": {
@@ -5858,6 +6063,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-375f9f99-1a78-44f7-8563-cf370a252896",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-375f9f99-1a78-44f7-8563-cf370a252896.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-375f9f99-1a78-44f7-8563-cf370a252896.mp4",
       "pointsOfInterest": {
@@ -5875,6 +6081,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-695f5f09-1d34-43ef-bbcd-9e637b8fbfe2",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-695f5f09-1d34-43ef-bbcd-9e637b8fbfe2.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-695f5f09-1d34-43ef-bbcd-9e637b8fbfe2.mp4",
       "pointsOfInterest": {
@@ -5892,6 +6099,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-b6efb9f4-7489-4d53-a243-03f8e1c22d6f",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-b6efb9f4-7489-4d53-a243-03f8e1c22d6f.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-b6efb9f4-7489-4d53-a243-03f8e1c22d6f.mp4",
       "pointsOfInterest": {
@@ -5909,6 +6117,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-9fdd7289-060c-47ab-8bd5-0fe657f1a50c",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-9fdd7289-060c-47ab-8bd5-0fe657f1a50c.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-9fdd7289-060c-47ab-8bd5-0fe657f1a50c.mp4",
       "pointsOfInterest": {
@@ -5926,6 +6135,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-a741d464-cc97-443d-93c5-2597cc482fa7",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-a741d464-cc97-443d-93c5-2597cc482fa7.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-a741d464-cc97-443d-93c5-2597cc482fa7.mp4",
       "pointsOfInterest": {
@@ -5943,6 +6153,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-cee0c4ce-e264-4b34-9340-40fa6292ac59",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-cee0c4ce-e264-4b34-9340-40fa6292ac59.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-cee0c4ce-e264-4b34-9340-40fa6292ac59.mp4",
       "pointsOfInterest": {
@@ -5960,6 +6171,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-5109df9c-c9dd-417a-b682-24e3e6edc3e5",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-5109df9c-c9dd-417a-b682-24e3e6edc3e5.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-5109df9c-c9dd-417a-b682-24e3e6edc3e5.mp4",
       "pointsOfInterest": {
@@ -5977,6 +6189,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-0d31b9ce-c733-4089-9257-ba8234b6eef2",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-0d31b9ce-c733-4089-9257-ba8234b6eef2.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-0d31b9ce-c733-4089-9257-ba8234b6eef2.mp4",
       "pointsOfInterest": {
@@ -5994,6 +6207,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-07a65dc6-ccc9-458d-8d35-d6e3079a9496",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-07a65dc6-ccc9-458d-8d35-d6e3079a9496.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-07a65dc6-ccc9-458d-8d35-d6e3079a9496.mp4",
       "pointsOfInterest": {
@@ -6011,6 +6225,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-5cd28834-7c08-40fa-8660-6ce892e45a8d",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-5cd28834-7c08-40fa-8660-6ce892e45a8d.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-5cd28834-7c08-40fa-8660-6ce892e45a8d.mp4",
       "pointsOfInterest": {
@@ -6028,6 +6243,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-797f3ba6-8913-4215-bdec-29c3ef3be88c",
+      "timeOfDay": "sunset",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-797f3ba6-8913-4215-bdec-29c3ef3be88c.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-797f3ba6-8913-4215-bdec-29c3ef3be88c.mp4",
       "pointsOfInterest": {
@@ -6045,6 +6261,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-85922aa7-18a3-4b58-8d8c-4b530070c353",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-85922aa7-18a3-4b58-8d8c-4b530070c353.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-85922aa7-18a3-4b58-8d8c-4b530070c353.mp4",
       "pointsOfInterest": {
@@ -6062,6 +6279,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-8bce100d-9817-420c-b535-5cdd631ec5a9",
+      "timeOfDay": "night",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-8bce100d-9817-420c-b535-5cdd631ec5a9.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-8bce100d-9817-420c-b535-5cdd631ec5a9.mp4",
       "pointsOfInterest": {
@@ -6079,6 +6297,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-df92b4e1-0409-4a57-9ed8-fa63a8c2c597",
+      "timeOfDay": "night",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-df92b4e1-0409-4a57-9ed8-fa63a8c2c597.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-df92b4e1-0409-4a57-9ed8-fa63a8c2c597.mp4",
       "pointsOfInterest": {
@@ -6096,6 +6315,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-f440e359-8b39-48e3-b9b2-c666bc270e27",
+      "timeOfDay": "night",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-f440e359-8b39-48e3-b9b2-c666bc270e27.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-f440e359-8b39-48e3-b9b2-c666bc270e27.mp4",
       "pointsOfInterest": {
@@ -6113,6 +6333,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-f5e21abc-a775-4d9d-bb07-2983787a1a10",
+      "timeOfDay": "sunset",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-f5e21abc-a775-4d9d-bb07-2983787a1a10.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-f5e21abc-a775-4d9d-bb07-2983787a1a10.mp4",
       "pointsOfInterest": {
@@ -6130,6 +6351,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-d22ed373-a23c-416d-b856-9d3848275279",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-d22ed373-a23c-416d-b856-9d3848275279.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-d22ed373-a23c-416d-b856-9d3848275279.mp4",
       "pointsOfInterest": {
@@ -6147,6 +6369,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-cbea0741-c4b1-4613-b339-2b2d9049f3aa",
+      "timeOfDay": "sunset",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-cbea0741-c4b1-4613-b339-2b2d9049f3aa.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-cbea0741-c4b1-4613-b339-2b2d9049f3aa.mp4",
       "pointsOfInterest": {
@@ -6164,6 +6387,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-9956ed96-db87-4283-b6df-a5982dcdd9b2",
+      "timeOfDay": "sunrise",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-9956ed96-db87-4283-b6df-a5982dcdd9b2.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-9956ed96-db87-4283-b6df-a5982dcdd9b2.mp4",
       "pointsOfInterest": {
@@ -6181,6 +6405,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-ab4b56de-5bbe-4475-91ba-daaf63aca172",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-ab4b56de-5bbe-4475-91ba-daaf63aca172.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-ab4b56de-5bbe-4475-91ba-daaf63aca172.mp4",
       "pointsOfInterest": {
@@ -6198,6 +6423,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-8d28ff8d-e91b-47d4-8b8d-792444ea92da",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-8d28ff8d-e91b-47d4-8b8d-792444ea92da.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-8d28ff8d-e91b-47d4-8b8d-792444ea92da.mp4",
       "pointsOfInterest": {
@@ -6215,6 +6441,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-5f937efd-3e34-4947-86f9-9161b0a2238d",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-5f937efd-3e34-4947-86f9-9161b0a2238d.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-5f937efd-3e34-4947-86f9-9161b0a2238d.mp4",
       "pointsOfInterest": {
@@ -6232,6 +6459,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-1ce566be-9002-4143-ac65-d90f307a4ab8",
+      "timeOfDay": "sunrise",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-1ce566be-9002-4143-ac65-d90f307a4ab8.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-1ce566be-9002-4143-ac65-d90f307a4ab8.mp4",
       "pointsOfInterest": {
@@ -6249,6 +6477,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-fe8f3976-fcfa-405e-8d5c-286f57df7e74",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-fe8f3976-fcfa-405e-8d5c-286f57df7e74.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-fe8f3976-fcfa-405e-8d5c-286f57df7e74.mp4",
       "pointsOfInterest": {
@@ -6266,6 +6495,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-c0055cd6-1b36-459d-8d79-b6ac7a892fcf",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-c0055cd6-1b36-459d-8d79-b6ac7a892fcf.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-c0055cd6-1b36-459d-8d79-b6ac7a892fcf.mp4",
       "pointsOfInterest": {
@@ -6283,6 +6513,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-a5448b6c-0a36-4c23-baed-9cd106f2d71e",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-a5448b6c-0a36-4c23-baed-9cd106f2d71e.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-a5448b6c-0a36-4c23-baed-9cd106f2d71e.mp4",
       "pointsOfInterest": {
@@ -6300,6 +6531,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-b69c91bf-9b03-4697-b3e8-23be15b75afc",
+      "timeOfDay": "sunset",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-b69c91bf-9b03-4697-b3e8-23be15b75afc.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-b69c91bf-9b03-4697-b3e8-23be15b75afc.mp4",
       "pointsOfInterest": {
@@ -6317,6 +6549,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-0c7e91c9-bec7-453b-9163-cd9605186157",
+      "timeOfDay": "night",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-0c7e91c9-bec7-453b-9163-cd9605186157.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-0c7e91c9-bec7-453b-9163-cd9605186157.mp4",
       "pointsOfInterest": {
@@ -6334,6 +6567,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-77793fbb-1315-41ca-9b66-0eb92048ea17",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-77793fbb-1315-41ca-9b66-0eb92048ea17.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-77793fbb-1315-41ca-9b66-0eb92048ea17.mp4",
       "pointsOfInterest": {
@@ -6351,6 +6585,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-e72ec070-a9ee-4a8b-9845-d5d0525e9347",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-e72ec070-a9ee-4a8b-9845-d5d0525e9347.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-e72ec070-a9ee-4a8b-9845-d5d0525e9347.mp4",
       "pointsOfInterest": {
@@ -6368,6 +6603,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-3fb8f0dc-83e9-43d8-a500-d95364e60fa4",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-3fb8f0dc-83e9-43d8-a500-d95364e60fa4.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-3fb8f0dc-83e9-43d8-a500-d95364e60fa4.mp4",
       "pointsOfInterest": {
@@ -6385,6 +6621,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-902bec1a-d887-4b15-b119-1ad179910b44",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-902bec1a-d887-4b15-b119-1ad179910b44.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-902bec1a-d887-4b15-b119-1ad179910b44.mp4",
       "pointsOfInterest": {
@@ -6402,6 +6639,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-d74dea5b-648d-47c2-abc0-ec0876c2eb27",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-d74dea5b-648d-47c2-abc0-ec0876c2eb27.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-d74dea5b-648d-47c2-abc0-ec0876c2eb27.mp4",
       "pointsOfInterest": {
@@ -6419,6 +6657,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-0e2c8ff3-1f28-4c59-bc08-9d813e695100",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-0e2c8ff3-1f28-4c59-bc08-9d813e695100.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-0e2c8ff3-1f28-4c59-bc08-9d813e695100.mp4",
       "pointsOfInterest": {
@@ -6436,6 +6675,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-0d9639cb-46b1-44b1-952b-abd80507f0b5",
+      "timeOfDay": "sunset",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-0d9639cb-46b1-44b1-952b-abd80507f0b5.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-0d9639cb-46b1-44b1-952b-abd80507f0b5.mp4",
       "pointsOfInterest": {
@@ -6453,6 +6693,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-832de54b-ef9b-469f-bf15-459ab668d1ca",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-832de54b-ef9b-469f-bf15-459ab668d1ca.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-832de54b-ef9b-469f-bf15-459ab668d1ca.mp4",
       "pointsOfInterest": {
@@ -6470,6 +6711,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-8cc628a1-1f11-43aa-92a4-8d3026a53272",
+      "timeOfDay": "night",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-8cc628a1-1f11-43aa-92a4-8d3026a53272.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-8cc628a1-1f11-43aa-92a4-8d3026a53272.mp4",
       "pointsOfInterest": {
@@ -6487,6 +6729,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-dc50fb3c-701a-4c6b-b3e0-e8f82d8b5142",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-dc50fb3c-701a-4c6b-b3e0-e8f82d8b5142.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-dc50fb3c-701a-4c6b-b3e0-e8f82d8b5142.mp4",
       "pointsOfInterest": {
@@ -6504,6 +6747,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-cef6e713-0c1b-4eaa-bb5b-21f156046711",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-cef6e713-0c1b-4eaa-bb5b-21f156046711.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-cef6e713-0c1b-4eaa-bb5b-21f156046711.mp4",
       "pointsOfInterest": {
@@ -6521,6 +6765,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-5a9b48bd-f1ba-48d7-a630-5df8345ce488",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-5a9b48bd-f1ba-48d7-a630-5df8345ce488.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-5a9b48bd-f1ba-48d7-a630-5df8345ce488.mp4",
       "pointsOfInterest": {
@@ -6538,6 +6783,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-e9e7e61e-5ade-4164-95b7-68a0a4e570c2",
+      "timeOfDay": "day",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-e9e7e61e-5ade-4164-95b7-68a0a4e570c2.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-e9e7e61e-5ade-4164-95b7-68a0a4e570c2.mp4",
       "pointsOfInterest": {
@@ -6555,6 +6801,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-d4f623e8-d559-4993-b943-cc849024939b",
+      "timeOfDay": "night",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-d4f623e8-d559-4993-b943-cc849024939b.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-d4f623e8-d559-4993-b943-cc849024939b.mp4",
       "pointsOfInterest": {
@@ -6572,6 +6819,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-a5ba1bdf-afc1-4066-9803-098c31237296",
+      "timeOfDay": "night",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-a5ba1bdf-afc1-4066-9803-098c31237296.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-a5ba1bdf-afc1-4066-9803-098c31237296.mp4",
       "pointsOfInterest": {
@@ -6589,6 +6837,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-ca8346df-646d-47e1-b997-e0c68785800f",
+      "timeOfDay": "night",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-ca8346df-646d-47e1-b997-e0c68785800f.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-ca8346df-646d-47e1-b997-e0c68785800f.mp4",
       "pointsOfInterest": {
@@ -6606,6 +6855,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-41afee51-85ba-48b2-93da-21fd5a2d165d",
+      "timeOfDay": "night",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-41afee51-85ba-48b2-93da-21fd5a2d165d.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-41afee51-85ba-48b2-93da-21fd5a2d165d.mp4",
       "pointsOfInterest": {
@@ -6623,6 +6873,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-0a1d2549-ab74-4f18-a9ed-b0b9cfa031ff",
+      "timeOfDay": "night",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-0a1d2549-ab74-4f18-a9ed-b0b9cfa031ff.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-0a1d2549-ab74-4f18-a9ed-b0b9cfa031ff.mp4",
       "pointsOfInterest": {

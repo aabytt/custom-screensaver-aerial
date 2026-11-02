@@ -599,7 +599,20 @@
   "countNone": "{on} of {total} videos in playlist (nothing selected: all videos will be played)",
   "osdOpacitySplit": "Separate opacity for Dolby Vision / HDR and SDR",
   "osdOpacityDv": "Text opacity, % (Dolby Vision / HDR)",
-  "osdOpacitySdr": "Text opacity, % (SDR)"
+  "osdOpacitySdr": "Text opacity, % (SDR)",
+  "nightMode": "Night mode: a separate playlist at night",
+  "nightStart": "Night starts at (hour)",
+  "nightEnd": "Night ends at (hour)",
+  "nightPlaylist": "Night playlist",
+  "nightInfo": "{on} videos",
+  "nightInfoSome": "{on} videos, {playable} of them play with the chosen video format",
+  "nightInfoOne": "1 video",
+  "nightInfoNone": "None of its videos plays with the chosen video format: the normal playlist plays at night",
+  "nightInfoSameHours": "Night starts and ends at the same hour, so night mode never applies",
+  "nightInfoEmpty": "No videos: the normal playlist plays at night",
+  "nightCountCategory": "{on} of {total} videos of this category in the night playlist ({allOn} of {allTotal} in total)",
+  "nightCountAll": "{on} of {total} videos in the night playlist",
+  "nightCountNone": "{on} of {total} videos in the night playlist (nothing selected: the normal playlist plays at night)"
  },
  "es-ES": {
   "uiLanguage": "Idioma de la interfaz",

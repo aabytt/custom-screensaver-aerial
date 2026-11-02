@@ -8,6 +8,8 @@ var
   Marquee = require('moonstone/Marquee'),
   ExpandablePicker = require('moonstone/ExpandablePicker'),
   Popup = require('moonstone/Popup'),
+  ToggleItem = require('moonstone/ToggleItem'),
+  SimpleIntegerPicker = require('moonstone/SimpleIntegerPicker'),
   Control = require('enyo/Control'),
   Spotlight = require('spotlight'),
   LunaService = require('enyo-webos/LunaService'),
@@ -63,6 +65,27 @@ var CATEGORY_ORDER = ['AerialCategoryLandscapes', 'AerialCategoryCities', 'Aeria
 
 // order of sources in the Source picker (others go after these, alphabetically)
 var SOURCE_ORDER = ['Apple Aerials', 'Amazon Fire OS', 'Jetson Creative', 'Robin Fourcade'];
+
+// Night mode: default hours, and which videos the night playlist starts with (the ones Apple and
+// Amazon tag "night", plus the ones whose English name says Night)
+var NIGHT_START = 22, NIGHT_END = 7;
+var NIGHT_NAME = /\bnight\b/i;
+
+// Whether the screensavers can play a video with the chosen format (same rules as pickSourceKey in
+// web-screensaver.html and playRandomVideo in screensaver-main.qml)
+function playableWith(a, s) {
+  var type = s.sourceType;
+  if (a[type]) { return true; }
+  if (!s.playLowerQuality) { return false; }
+  if (type === 'url-4K-HDR') { return !!a['url-4K-SDR']; }
+  if (type === 'url-1080-HDR') { return !!(a['url-1080-SDR'] || a['url-1080-H264']); }
+  return false;
+}
+
+function hourOr(v, def) {
+  v = parseInt(v, 10);
+  return v >= 0 && v <= 23 ? v : def;
+}
 
 // how long OK / click has to be held to start a preview
 var LONG_PRESS_MS = 600;
@@ -390,6 +413,8 @@ var VideoSelectPanel = kind({
   settingsPath: '',
   // 'categories' = first level (category tiles), 'videos' = video tiles
   mode: 'categories',
+  // which playlist the tiles select: 'day' = the normal one (disabledVideos), 'night' = nightVideos
+  list: 'day',
   // set on the second-level panel
   categoryId: '',
   isChild: false,
@@ -406,6 +431,24 @@ var VideoSelectPanel = kind({
     {kind: Scroller, name: 'scroller', fit: true, components: [
       {style: 'margin: 0 20px', components: [
         {kind: BodyText, name: 'count', i18n: 'loading'},
+        // night mode: only on the first level of the normal playlist
+        {name: 'night', showing: false, style: 'margin: 0 0 16px', components: [
+          {kind: ToggleItem, name: 'nightMode', i18n: 'nightMode', onchange: 'nightToggle'},
+          {name: 'nightOptions', showing: false, components: [
+            {kind: Item, components: [
+              {kind: Marquee.Text, i18n: 'nightStart'},
+              {kind: SimpleIntegerPicker, name: 'nightStart', min: 0, max: 23, step: 1, unit: '', onChange: 'nightHourChanged'}
+            ]},
+            {kind: Item, components: [
+              {kind: Marquee.Text, i18n: 'nightEnd'},
+              {kind: SimpleIntegerPicker, name: 'nightEnd', min: 0, max: 23, step: 1, unit: '', onChange: 'nightHourChanged'}
+            ]},
+            {kind: Item, name: 'nightOpen', ontap: 'openNight', components: [
+              {kind: Marquee.Text, i18n: 'nightPlaylist'},
+              {kind: BodyText, name: 'nightInfo', style: 'margin: 0; font-size: 24px; opacity: 0.8;'}
+            ]}
+          ]}
+        ]},
         {name: 'filters', showing: false, components: [
           {name: 'sourceBox'},
           {name: 'stateBox'}
@@ -451,6 +494,8 @@ var VideoSelectPanel = kind({
       this.categories = this.shared.categories;
       this.strings = this.shared.strings;
       this.disabled = this.shared.disabled;
+      // first level of the night playlist: refreshed when its categories change
+      if (this.list === 'night' && this.mode === 'categories') { this.shared.root = this; }
       this.start();
       return;
     }
@@ -470,6 +515,10 @@ var VideoSelectPanel = kind({
     if (this.dirty) {
       this.stopJob('save');
       this.save();
+    }
+    if (this.settingsDirty) {
+      this.stopJob('saveSettings');
+      this.saveSettings();
     }
     this.stopJob('batch');
     this.stopJob('toastHide');
@@ -577,6 +626,7 @@ var VideoSelectPanel = kind({
     }
     // Select all / Deselect all only make sense inside a category, not on the categories page
     this.$.bulk.set('showing', this.mode === 'videos');
+    if (this.list === 'day' && !this.isChild && this.mode === 'categories') { this.initNight(); }
     this.renderTiles();
   },
 
@@ -755,6 +805,7 @@ var VideoSelectPanel = kind({
         headerType: 'small',
         mode: 'videos',
         isChild: true,
+        list: this.list,
         categoryId: evt.id,
         shared: this.shared,
         settings: this.settings,
@@ -1227,18 +1278,20 @@ var VideoSelectPanel = kind({
   },
 
   updateCount: function () {
-    var all = this.categoryStats(''), text;
+    var all = this.categoryStats(''), text, night = this.list === 'night';
     if (this.mode === 'videos' && this.categoryId) {
       var cat = this.categoryStats(this.categoryId);
-      text = I18n.t('countCategory', {on: cat.on, total: cat.total, allOn: all.on, allTotal: all.total});
+      text = I18n.t(night ? 'nightCountCategory' : 'countCategory', {on: cat.on, total: cat.total, allOn: all.on, allTotal: all.total});
     } else {
-      text = I18n.t(all.on === 0 ? 'countNone' : 'countAll', {on: all.on, total: all.total});
+      text = I18n.t(all.on === 0 ? (night ? 'nightCountNone' : 'countNone') : (night ? 'nightCountAll' : 'countAll'),
+        {on: all.on, total: all.total});
     }
     this.$.count.set('content', text);
   },
 
   markDirty: function () {
     this.dirty = true;
+    if (this.list === 'night') { this.settings.nightVideos = this.selectedIds(); }
     this.updateCount();
     if (this.isChild && this.shared && this.shared.onChange) {
       this.shared.onChange();
@@ -1248,8 +1301,156 @@ var VideoSelectPanel = kind({
 
   save: function () {
     this.dirty = false;
-    this.settings.disabledVideos = Object.keys(this.disabled);
+    if (this.list === 'night') {
+      this.settings.nightVideos = this.selectedIds();
+    } else {
+      this.settings.disabledVideos = Object.keys(this.disabled);
+    }
     this.$.save.send({command: SettingsStore.saveCommand(this.settings)});   // app copy + persistent copy
+  },
+
+  // ids of the videos that are on, in videos.json order
+  selectedIds: function () {
+    return this.assets.filter(function (a) { return !this.disabled[a.id]; }, this).map(function (a) { return a.id; });
+  },
+
+  // ---- night mode (first level of the normal playlist) ----
+
+  initNight: function () {
+    var s = this.settings;
+    this.initializing = true;
+    this.$.nightMode.set('checked', !!s.nightMode);
+    this.$.nightStart.set('value', hourOr(s.nightStart, NIGHT_START));
+    this.$.nightEnd.set('value', hourOr(s.nightEnd, NIGHT_END));
+    this.$.nightOptions.set('showing', !!s.nightMode);
+    this.$.night.set('showing', true);
+    this.initializing = false;
+    // switched on without hours or a list (settings.json edited by hand): save what the pickers
+    // show, and start with the default list
+    if (s.nightMode && (hourOr(s.nightStart, -1) < 0 || hourOr(s.nightEnd, -1) < 0)) {
+      s.nightStart = hourOr(s.nightStart, NIGHT_START);
+      s.nightEnd = hourOr(s.nightEnd, NIGHT_END);
+      this.markSettingsDirty();
+    }
+    if (s.nightMode && !Array.isArray(s.nightVideos)) {
+      this.ensureNightList(function () {
+        this.updateNightInfo();
+        this.markSettingsDirty();
+      });
+    } else {
+      this.updateNightInfo();
+    }
+  },
+
+  nightToggle: function (sender) {
+    var on = !!sender.active, s = this.settings;
+    if (this.initializing || on === !!s.nightMode) { return; }
+    s.nightMode = on;
+    if (on) {
+      s.nightStart = hourOr(s.nightStart, NIGHT_START);
+      s.nightEnd = hourOr(s.nightEnd, NIGHT_END);
+    }
+    this.$.nightOptions.set('showing', on);
+    this.ensureNightList(function () {
+      this.updateNightInfo();
+      this.markSettingsDirty();
+    });
+  },
+
+  nightHourChanged: function (sender) {
+    var v = sender.get('value');
+    if (this.initializing || this.settings[sender.name] === v) { return; }
+    this.settings[sender.name] = v;
+    this.updateNightInfo();
+    this.markSettingsDirty();
+  },
+
+  // The first time: the night playlist starts with the videos tagged "night" and the ones with
+  // Night in their English name
+  ensureNightList: function (done) {
+    var self = this;
+    function fill(data) {
+      var en = (data && data.strings) || {};
+      if (self.destroyed) { return; }   // left the screen before the names were read
+      self.settings.nightVideos = self.assets.filter(function (a) {
+        return a.timeOfDay === 'night' || NIGHT_NAME.test(en[a.localizedNameKey] || a.name || '');
+      }).map(function (a) { return a.id; });
+      done.call(self);
+    }
+    if (Array.isArray(this.settings.nightVideos)) { done.call(this); return; }
+    this.loadJSON('assets/locales/' + DEFAULT_LANG + '.json', this.basePath + '/assets/locales/' + DEFAULT_LANG + '.json',
+      fill, function () { fill({}); });
+  },
+
+  updateNightInfo: function () {
+    var s = this.settings, ids = {}, on = 0, playable = 0, text;
+    (Array.isArray(s.nightVideos) ? s.nightVideos : []).forEach(function (id) { ids[id] = true; });
+    this.assets.forEach(function (a) {
+      if (ids[a.id]) {
+        on++;
+        if (playableWith(a, s)) { playable++; }
+      }
+    });
+    if (hourOr(s.nightStart, NIGHT_START) === hourOr(s.nightEnd, NIGHT_END)) {
+      text = I18n.t('nightInfoSameHours');
+    } else if (!on) {
+      text = I18n.t('nightInfoEmpty');
+    } else if (!playable) {
+      text = I18n.t('nightInfoNone');
+    } else if (playable < on) {
+      text = I18n.t('nightInfoSome', {on: on, playable: playable});
+    } else {
+      text = I18n.t(on === 1 ? 'nightInfoOne' : 'nightInfo', {on: on});
+    }
+    this.$.nightInfo.set('content', text);
+  },
+
+  // the night playlist: the same screens, selecting nightVideos
+  openNight: function () {
+    var panels = this.findPanels();
+    if (!panels) { return true; }
+    this.ensureNightList(function () {
+      var ids = {}, disabled = {};
+      this.settings.nightVideos.forEach(function (id) { ids[id] = true; });
+      this.assets.forEach(function (a) { if (!ids[a.id]) { disabled[a.id] = true; } });
+      this.nightShared = {
+        assets: this.assets,
+        categories: this.categories,
+        strings: this.strings,
+        disabled: disabled,
+        thumbs: this.shared.thumbs,
+        categoryImages: this.shared.categoryImages,
+        onChange: this.bindSafely('nightChanged')
+      };
+      panels.pushPanel({
+        kind: VideoSelectPanel,
+        title: I18n.t('nightPlaylist'),
+        headerType: 'small',
+        mode: 'categories',
+        isChild: true,
+        list: 'night',
+        shared: this.nightShared,
+        settings: this.settings,
+        settingsPath: this.settingsPath
+      });
+    });
+    return true;
+  },
+
+  nightChanged: function () {
+    var root = this.nightShared && this.nightShared.root;
+    this.updateNightInfo();
+    if (root && !root.destroyed) { root.refreshCounts(); }
+  },
+
+  markSettingsDirty: function () {
+    this.settingsDirty = true;
+    this.startJob('saveSettings', 'saveSettings', 500);
+  },
+
+  saveSettings: function () {
+    this.settingsDirty = false;
+    this.$.save.send({command: SettingsStore.saveCommand(this.settings)});
   }
 });
 
