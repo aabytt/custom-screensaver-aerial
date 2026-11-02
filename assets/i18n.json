@@ -85,7 +85,14 @@
   "nightInfoEmpty": "لا توجد مقاطع: ستُشغَّل قائمة التشغيل العادية ليلًا",
   "nightCountCategory": "{on} من {total} من مقاطع هذه الفئة في قائمة التشغيل الليلية ({allOn} من {allTotal} في المجموع)",
   "nightCountAll": "{on} من {total} من المقاطع في قائمة التشغيل الليلية",
-  "nightCountNone": "{on} من {total} من المقاطع في قائمة التشغيل الليلية (لم يتم تحديد شيء: ستُشغَّل قائمة التشغيل العادية ليلًا)"
+  "nightCountNone": "{on} من {total} من المقاطع في قائمة التشغيل الليلية (لم يتم تحديد شيء: ستُشغَّل قائمة التشغيل العادية ليلًا)",
+  "reportTitle": "ملاحظات حول التوافق",
+  "reportModel": "طراز التلفزيون",
+  "reportFirmware": "البرنامج الثابت",
+  "reportApp": "إصدار التطبيق",
+  "reportHint": "امسح رمز QR بهاتفك: سيفتح النموذج وبياناته معبأة مسبقًا. اختر الحالة ثم أرسله.",
+  "reportCaption": "ملاحظات حول التوافق (GitHub issue)",
+  "reportClose": "إغلاق"
  },
  "be-BY": {
   "uiLanguage": "Мова інтэрфейсу",
@@ -173,7 +180,14 @@
   "nightInfoEmpty": "Няма відэа: уначы будзе прайгравацца звычайны плэйліст",
   "nightCountCategory": "{on} з {total} відэа гэтай катэгорыі ў начным плэйлісце ({allOn} з {allTotal} усяго)",
   "nightCountAll": "{on} з {total} відэа ў начным плэйлісце",
-  "nightCountNone": "{on} з {total} відэа ў начным плэйлісце (нічога не выбрана: уначы будзе прайгравацца звычайны плэйліст)"
+  "nightCountNone": "{on} з {total} відэа ў начным плэйлісце (нічога не выбрана: уначы будзе прайгравацца звычайны плэйліст)",
+  "reportTitle": "Водгук аб сумяшчальнасці",
+  "reportModel": "Мадэль ТБ",
+  "reportFirmware": "Прашыўка",
+  "reportApp": "Версія праграмы",
+  "reportHint": "Адсканіруйце QR-код тэлефонам: адкрыецца форма з ужо запоўненымі данымі. Абярыце статус і адпраўце.",
+  "reportCaption": "Водгук аб сумяшчальнасці (GitHub issue)",
+  "reportClose": "Закрыць"
  },
  "ca-ES": {
   "uiLanguage": "Idioma de la interfície",
@@ -261,7 +275,14 @@
   "nightInfoEmpty": "No hi ha vídeos: a la nit es reproduirà la llista normal",
   "nightCountCategory": "{on} de {total} vídeos d'aquesta categoria a la llista nocturna ({allOn} de {allTotal} en total)",
   "nightCountAll": "{on} de {total} vídeos a la llista nocturna",
-  "nightCountNone": "{on} de {total} vídeos a la llista nocturna (res seleccionat: a la nit es reproduirà la llista normal)"
+  "nightCountNone": "{on} de {total} vídeos a la llista nocturna (res seleccionat: a la nit es reproduirà la llista normal)",
+  "reportTitle": "Comentaris sobre la compatibilitat",
+  "reportModel": "Model de televisor",
+  "reportFirmware": "Microprogramari",
+  "reportApp": "Versió de l'aplicació",
+  "reportHint": "Escaneja el codi QR amb el mòbil: s'obrirà el formulari amb aquestes dades ja emplenades. Tria l'estat i envia'l.",
+  "reportCaption": "Comentaris sobre la compatibilitat (GitHub issue)",
+  "reportClose": "Tanca"
  },
  "cs-CZ": {
   "uiLanguage": "Jazyk rozhraní",
@@ -349,7 +370,14 @@
   "nightInfoEmpty": "Žádná videa: v noci se přehrává běžný playlist",
   "nightCountCategory": "{on} z {total} videí této kategorie v nočním playlistu ({allOn} z {allTotal} celkem)",
   "nightCountAll": "{on} z {total} videí v nočním playlistu",
-  "nightCountNone": "{on} z {total} videí v nočním playlistu (nic nevybráno: v noci se přehrává běžný playlist)"
+  "nightCountNone": "{on} z {total} videí v nočním playlistu (nic nevybráno: v noci se přehrává běžný playlist)",
+  "reportTitle": "Zpětná vazba ke kompatibilitě",
+  "reportModel": "Model TV",
+  "reportFirmware": "Firmware",
+  "reportApp": "Verze aplikace",
+  "reportHint": "Naskenujte QR kód telefonem: otevře se formulář s již vyplněnými údaji. Vyberte stav a odešlete ho.",
+  "reportCaption": "Zpětná vazba ke kompatibilitě (GitHub issue)",
+  "reportClose": "Zavřít"
  },
  "da-DK": {
   "uiLanguage": "Grænsefladesprog",
@@ -437,7 +465,14 @@
   "nightInfoEmpty": "Ingen videoer: den normale afspilningsliste afspilles om natten",
   "nightCountCategory": "{on} af {total} videoer i denne kategori på natafspilningslisten ({allOn} af {allTotal} i alt)",
   "nightCountAll": "{on} af {total} videoer på natafspilningslisten",
-  "nightCountNone": "{on} af {total} videoer på natafspilningslisten (intet valgt: den normale afspilningsliste afspilles om natten)"
+  "nightCountNone": "{on} af {total} videoer på natafspilningslisten (intet valgt: den normale afspilningsliste afspilles om natten)",
+  "reportTitle": "Feedback om kompatibilitet",
+  "reportModel": "TV-model",
+  "reportFirmware": "Firmware",
+  "reportApp": "App-version",
+  "reportHint": "Scan QR-koden med din telefon: formularen åbnes med disse data udfyldt. Vælg status og send.",
+  "reportCaption": "Feedback om kompatibilitet (GitHub issue)",
+  "reportClose": "Luk"
  },
  "de-DE": {
   "uiLanguage": "Sprache der Oberfläche",
@@ -525,7 +560,14 @@
   "nightInfoEmpty": "Keine Videos: nachts läuft die normale Playlist",
   "nightCountCategory": "{on} von {total} Videos dieser Kategorie in der Nacht-Playlist ({allOn} von {allTotal} insgesamt)",
   "nightCountAll": "{on} von {total} Videos in der Nacht-Playlist",
-  "nightCountNone": "{on} von {total} Videos in der Nacht-Playlist (nichts ausgewählt: nachts läuft die normale Playlist)"
+  "nightCountNone": "{on} von {total} Videos in der Nacht-Playlist (nichts ausgewählt: nachts läuft die normale Playlist)",
+  "reportTitle": "Kompatibilitäts-Feedback",
+  "reportModel": "TV-Modell",
+  "reportFirmware": "Firmware",
+  "reportApp": "App-Version",
+  "reportHint": "Scanne den QR-Code mit deinem Handy: Das Formular öffnet sich mit diesen bereits eingetragenen Daten. Wähle den Status und sende es ab.",
+  "reportCaption": "Feedback zur Kompatibilität (GitHub-Issue)",
+  "reportClose": "Schließen"
  },
  "el-GR": {
   "uiLanguage": "Γλώσσα διεπαφής",
@@ -613,7 +655,14 @@
   "nightInfoEmpty": "Δεν υπάρχουν βίντεο: τη νύχτα θα παίζει η κανονική λίστα",
   "nightCountCategory": "{on} από {total} βίντεο αυτής της κατηγορίας στη νυχτερινή λίστα ({allOn} από {allTotal} συνολικά)",
   "nightCountAll": "{on} από {total} βίντεο στη νυχτερινή λίστα",
-  "nightCountNone": "{on} από {total} βίντεο στη νυχτερινή λίστα (δεν έχει επιλεγεί τίποτα: τη νύχτα θα παίζει η κανονική λίστα)"
+  "nightCountNone": "{on} από {total} βίντεο στη νυχτερινή λίστα (δεν έχει επιλεγεί τίποτα: τη νύχτα θα παίζει η κανονική λίστα)",
+  "reportTitle": "Σχόλια συμβατότητας",
+  "reportModel": "Μοντέλο τηλεόρασης",
+  "reportFirmware": "Υλικολογισμικό",
+  "reportApp": "Έκδοση εφαρμογής",
+  "reportHint": "Σαρώστε τον κωδικό QR με το κινητό σας: θα ανοίξει η φόρμα με τα στοιχεία ήδη συμπληρωμένα. Επιλέξτε την κατάσταση και στείλτε την.",
+  "reportCaption": "Σχόλια για τη συμβατότητα (GitHub issue)",
+  "reportClose": "Κλείσιμο"
  },
  "en-AU": "en-US",
  "en-GB": "en-US",
@@ -703,7 +752,14 @@
   "nightInfoEmpty": "No videos: the normal playlist plays at night",
   "nightCountCategory": "{on} of {total} videos of this category in the night playlist ({allOn} of {allTotal} in total)",
   "nightCountAll": "{on} of {total} videos in the night playlist",
-  "nightCountNone": "{on} of {total} videos in the night playlist (nothing selected: the normal playlist plays at night)"
+  "nightCountNone": "{on} of {total} videos in the night playlist (nothing selected: the normal playlist plays at night)",
+  "reportTitle": "Compatibility feedback",
+  "reportModel": "TV model",
+  "reportFirmware": "Firmware",
+  "reportApp": "App version",
+  "reportHint": "Scan the QR code with your phone: the form opens with this data filled in. Choose the status and send it.",
+  "reportCaption": "Feedback on compatibility (GitHub issue)",
+  "reportClose": "Close"
  },
  "es-ES": {
   "uiLanguage": "Idioma de la interfaz",
@@ -791,7 +847,14 @@
   "nightInfoEmpty": "No hay vídeos: por la noche se reproducirá la lista normal",
   "nightCountCategory": "{on} de {total} vídeos de esta categoría en la lista nocturna ({allOn} de {allTotal} en total)",
   "nightCountAll": "{on} de {total} vídeos en la lista nocturna",
-  "nightCountNone": "{on} de {total} vídeos en la lista nocturna (nada seleccionado: por la noche se reproducirá la lista normal)"
+  "nightCountNone": "{on} de {total} vídeos en la lista nocturna (nada seleccionado: por la noche se reproducirá la lista normal)",
+  "reportTitle": "Comentarios sobre la compatibilidad",
+  "reportModel": "Modelo de TV",
+  "reportFirmware": "Firmware",
+  "reportApp": "Versión de la app",
+  "reportHint": "Escanea el código QR con el móvil: se abrirá el formulario con estos datos ya rellenados. Elige el estado y envíalo.",
+  "reportCaption": "Comentarios sobre la compatibilidad (GitHub issue)",
+  "reportClose": "Cerrar"
  },
  "es-419": "es-ES",
  "fi-FI": {
@@ -880,7 +943,14 @@
   "nightInfoEmpty": "Ei videoita: yöllä toistetaan tavallinen soittolista",
   "nightCountCategory": "{on}/{total} tämän luokan videota on yösoittolistalla ({allOn}/{allTotal} yhteensä)",
   "nightCountAll": "{on}/{total} videota on yösoittolistalla",
-  "nightCountNone": "{on}/{total} videota on yösoittolistalla (ei valintaa: yöllä toistetaan tavallinen soittolista)"
+  "nightCountNone": "{on}/{total} videota on yösoittolistalla (ei valintaa: yöllä toistetaan tavallinen soittolista)",
+  "reportTitle": "Yhteensopivuuspalaute",
+  "reportModel": "TV-malli",
+  "reportFirmware": "Laiteohjelmisto",
+  "reportApp": "Sovelluksen versio",
+  "reportHint": "Skannaa QR-koodi puhelimellasi: lomake avautuu valmiiksi täytettynä näillä tiedoilla. Valitse tila ja lähetä.",
+  "reportCaption": "Palaute yhteensopivuudesta (GitHub issue)",
+  "reportClose": "Sulje"
  },
  "fr-CA": "fr-FR",
  "fr-FR": {
@@ -969,7 +1039,14 @@
   "nightInfoEmpty": "Aucune vidéo : la liste normale est lue la nuit",
   "nightCountCategory": "{on} sur {total} vidéos de cette catégorie dans la liste de nuit ({allOn} sur {allTotal} au total)",
   "nightCountAll": "{on} sur {total} vidéos dans la liste de nuit",
-  "nightCountNone": "{on} sur {total} vidéos dans la liste de nuit (rien de sélectionné : la liste normale est lue la nuit)"
+  "nightCountNone": "{on} sur {total} vidéos dans la liste de nuit (rien de sélectionné : la liste normale est lue la nuit)",
+  "reportTitle": "Retour sur la compatibilité",
+  "reportModel": "Modèle de TV",
+  "reportFirmware": "Firmware",
+  "reportApp": "Version de l'application",
+  "reportHint": "Scannez le code QR avec votre téléphone : le formulaire s'ouvre avec ces données déjà remplies. Choisissez le statut et envoyez-le.",
+  "reportCaption": "Retour sur la compatibilité (GitHub issue)",
+  "reportClose": "Fermer"
  },
  "he-IL": {
   "uiLanguage": "שפת הממשק",
@@ -1057,7 +1134,14 @@
   "nightInfoEmpty": "אין סרטונים: בלילה תושמע רשימת ההשמעה הרגילה",
   "nightCountCategory": "{on} מתוך {total} סרטונים בקטגוריה זו ברשימת ההשמעה ללילה ({allOn} מתוך {allTotal} בסך הכול)",
   "nightCountAll": "{on} מתוך {total} סרטונים ברשימת ההשמעה ללילה",
-  "nightCountNone": "{on} מתוך {total} סרטונים ברשימת ההשמעה ללילה (לא נבחר דבר: בלילה תושמע רשימת ההשמעה הרגילה)"
+  "nightCountNone": "{on} מתוך {total} סרטונים ברשימת ההשמעה ללילה (לא נבחר דבר: בלילה תושמע רשימת ההשמעה הרגילה)",
+  "reportTitle": "משוב על תאימות",
+  "reportModel": "דגם הטלוויזיה",
+  "reportFirmware": "קושחה",
+  "reportApp": "גרסת האפליקציה",
+  "reportHint": "סרקו את קוד ה-QR עם הטלפון: הטופס ייפתח כשהנתונים האלה כבר מולאו. בחרו את הסטטוס ושלחו.",
+  "reportCaption": "משוב על תאימות (GitHub issue)",
+  "reportClose": "סגירה"
  },
  "hi-IN": {
   "uiLanguage": "इंटरफ़ेस की भाषा",
@@ -1145,7 +1229,14 @@
   "nightInfoEmpty": "कोई वीडियो नहीं: रात में सामान्य प्लेलिस्ट चलेगी",
   "nightCountCategory": "इस श्रेणी के {total} में से {on} वीडियो रात की प्लेलिस्ट में हैं (कुल {allTotal} में से {allOn})",
   "nightCountAll": "{total} में से {on} वीडियो रात की प्लेलिस्ट में हैं",
-  "nightCountNone": "{total} में से {on} वीडियो रात की प्लेलिस्ट में हैं (कुछ भी चुना नहीं गया: रात में सामान्य प्लेलिस्ट चलेगी)"
+  "nightCountNone": "{total} में से {on} वीडियो रात की प्लेलिस्ट में हैं (कुछ भी चुना नहीं गया: रात में सामान्य प्लेलिस्ट चलेगी)",
+  "reportTitle": "संगतता पर फ़ीडबैक",
+  "reportModel": "टीवी मॉडल",
+  "reportFirmware": "फ़र्मवेयर",
+  "reportApp": "ऐप संस्करण",
+  "reportHint": "अपने फ़ोन से QR कोड स्कैन करें: यह डेटा पहले से भरा हुआ फ़ॉर्म खुल जाएगा। स्थिति चुनें और भेजें।",
+  "reportCaption": "संगतता पर फ़ीडबैक (GitHub issue)",
+  "reportClose": "बंद करें"
  },
  "hr-HR": {
   "uiLanguage": "Jezik sučelja",
@@ -1233,7 +1324,14 @@
   "nightInfoEmpty": "Nema videozapisa: noću će se reproducirati uobičajeni popis",
   "nightCountCategory": "{on} od {total} videozapisa ove kategorije nalazi se na noćnom popisu ({allOn} od {allTotal} ukupno)",
   "nightCountAll": "{on} od {total} videozapisa nalazi se na noćnom popisu",
-  "nightCountNone": "{on} od {total} videozapisa nalazi se na noćnom popisu (ništa nije odabrano: noću će se reproducirati uobičajeni popis)"
+  "nightCountNone": "{on} od {total} videozapisa nalazi se na noćnom popisu (ništa nije odabrano: noću će se reproducirati uobičajeni popis)",
+  "reportTitle": "Povratne informacije o kompatibilnosti",
+  "reportModel": "Model televizora",
+  "reportFirmware": "Firmware",
+  "reportApp": "Verzija aplikacije",
+  "reportHint": "Skenirajte QR kôd mobitelom: otvorit će se obrazac s već unesenim podacima. Odaberite status i pošaljite.",
+  "reportCaption": "Povratne informacije o kompatibilnosti (GitHub issue)",
+  "reportClose": "Zatvori"
  },
  "hu-HU": {
   "uiLanguage": "A felület nyelve",
@@ -1321,7 +1419,14 @@
   "nightInfoEmpty": "Nincs videó: éjszaka a normál lista szól",
   "nightCountCategory": "Ebből a kategóriából {total} videóból {on} szerepel az éjszakai listán (összesen {allTotal} közül {allOn})",
   "nightCountAll": "{total} videóból {on} szerepel az éjszakai listán",
-  "nightCountNone": "{total} videóból {on} szerepel az éjszakai listán (nincs kijelölve semmi: éjszaka a normál lista szól)"
+  "nightCountNone": "{total} videóból {on} szerepel az éjszakai listán (nincs kijelölve semmi: éjszaka a normál lista szól)",
+  "reportTitle": "Kompatibilitási visszajelzés",
+  "reportModel": "TV-modell",
+  "reportFirmware": "Firmware",
+  "reportApp": "Alkalmazás verziója",
+  "reportHint": "Olvassa be a QR-kódot a telefonjával: megnyílik az űrlap, az adatokkal már kitöltve. Válassza ki az állapotot, és küldje el.",
+  "reportCaption": "Visszajelzés a kompatibilitásról (GitHub issue)",
+  "reportClose": "Bezárás"
  },
  "id-ID": {
   "uiLanguage": "Bahasa antarmuka",
@@ -1409,7 +1514,14 @@
   "nightInfoEmpty": "Tidak ada video: daftar putar normal akan diputar di malam hari",
   "nightCountCategory": "{on} dari {total} video kategori ini ada di daftar putar malam ({allOn} dari {allTotal} secara total)",
   "nightCountAll": "{on} dari {total} video ada di daftar putar malam",
-  "nightCountNone": "{on} dari {total} video ada di daftar putar malam (tidak ada yang dipilih: daftar putar normal akan diputar di malam hari)"
+  "nightCountNone": "{on} dari {total} video ada di daftar putar malam (tidak ada yang dipilih: daftar putar normal akan diputar di malam hari)",
+  "reportTitle": "Umpan balik kompatibilitas",
+  "reportModel": "Model TV",
+  "reportFirmware": "Firmware",
+  "reportApp": "Versi aplikasi",
+  "reportHint": "Pindai kode QR dengan ponsel Anda: formulir akan terbuka dengan data ini sudah terisi. Pilih status lalu kirim.",
+  "reportCaption": "Umpan balik kompatibilitas (GitHub issue)",
+  "reportClose": "Tutup"
  },
  "it-IT": {
   "uiLanguage": "Lingua dell'interfaccia",
@@ -1497,7 +1609,14 @@
   "nightInfoEmpty": "Nessun video: di notte viene riprodotta la playlist normale",
   "nightCountCategory": "{on} di {total} video di questa categoria nella playlist notturna ({allOn} di {allTotal} in totale)",
   "nightCountAll": "{on} di {total} video nella playlist notturna",
-  "nightCountNone": "{on} di {total} video nella playlist notturna (nessuna selezione: di notte viene riprodotta la playlist normale)"
+  "nightCountNone": "{on} di {total} video nella playlist notturna (nessuna selezione: di notte viene riprodotta la playlist normale)",
+  "reportTitle": "Feedback sulla compatibilità",
+  "reportModel": "Modello TV",
+  "reportFirmware": "Firmware",
+  "reportApp": "Versione dell'app",
+  "reportHint": "Inquadra il codice QR con il telefono: si apre il modulo con questi dati già compilati. Scegli lo stato e invialo.",
+  "reportCaption": "Feedback sulla compatibilità (GitHub issue)",
+  "reportClose": "Chiudi"
  },
  "ja-JP": {
   "uiLanguage": "インターフェースの言語",
@@ -1585,7 +1704,14 @@
   "nightInfoEmpty": "動画がありません: 夜間は通常のプレイリストが再生されます",
   "nightCountCategory": "このカテゴリの動画 {total} 本中 {on} 本が夜間プレイリストにあります（全体では {allTotal} 本中 {allOn} 本）",
   "nightCountAll": "動画 {total} 本中 {on} 本が夜間プレイリストにあります",
-  "nightCountNone": "動画 {total} 本中 {on} 本が夜間プレイリストにあります（何も選択されていません: 夜間は通常のプレイリストが再生されます）"
+  "nightCountNone": "動画 {total} 本中 {on} 本が夜間プレイリストにあります（何も選択されていません: 夜間は通常のプレイリストが再生されます）",
+  "reportTitle": "互換性のフィードバック",
+  "reportModel": "テレビのモデル",
+  "reportFirmware": "ファームウェア",
+  "reportApp": "アプリのバージョン",
+  "reportHint": "スマートフォンで QR コードを読み取ると、これらの情報が入力済みのフォームが開きます。ステータスを選んで送信してください。",
+  "reportCaption": "互換性のフィードバック（GitHub issue）",
+  "reportClose": "閉じる"
  },
  "ko-KR": {
   "uiLanguage": "인터페이스 언어",
@@ -1673,7 +1799,14 @@
   "nightInfoEmpty": "비디오가 없습니다: 밤에는 일반 재생 목록이 재생됩니다",
   "nightCountCategory": "이 카테고리의 비디오 {total}개 중 {on}개가 야간 재생 목록에 있습니다 (전체 {allTotal}개 중 {allOn}개)",
   "nightCountAll": "비디오 {total}개 중 {on}개가 야간 재생 목록에 있습니다",
-  "nightCountNone": "비디오 {total}개 중 {on}개가 야간 재생 목록에 있습니다 (선택된 항목 없음: 밤에는 일반 재생 목록이 재생됩니다)"
+  "nightCountNone": "비디오 {total}개 중 {on}개가 야간 재생 목록에 있습니다 (선택된 항목 없음: 밤에는 일반 재생 목록이 재생됩니다)",
+  "reportTitle": "호환성 피드백",
+  "reportModel": "TV 모델",
+  "reportFirmware": "펌웨어",
+  "reportApp": "앱 버전",
+  "reportHint": "휴대폰으로 QR 코드를 스캔하면 이 정보가 미리 입력된 양식이 열립니다. 상태를 선택하고 제출하세요.",
+  "reportCaption": "호환성 피드백 (GitHub issue)",
+  "reportClose": "닫기"
  },
  "mk-MK": {
   "uiLanguage": "Јазик на интерфејсот",
@@ -1761,7 +1894,14 @@
   "nightInfoEmpty": "Нема видеа: навечер ќе се пушта редовната плејлиста",
   "nightCountCategory": "{on} од {total} видеа од оваа категорија се во ноќната плејлиста ({allOn} од {allTotal} вкупно)",
   "nightCountAll": "{on} од {total} видеа се во ноќната плејлиста",
-  "nightCountNone": "{on} од {total} видеа се во ноќната плејлиста (ништо не е избрано: навечер ќе се пушта редовната плејлиста)"
+  "nightCountNone": "{on} од {total} видеа се во ноќната плејлиста (ништо не е избрано: навечер ќе се пушта редовната плејлиста)",
+  "reportTitle": "Повратни информации за компатибилност",
+  "reportModel": "Модел на телевизорот",
+  "reportFirmware": "Фирмвер",
+  "reportApp": "Верзија на апликацијата",
+  "reportHint": "Скенирајте го QR-кодот со телефонот: ќе се отвори формулар со веќе пополнети податоци. Изберете статус и испратете.",
+  "reportCaption": "Повратни информации за компатибилност (GitHub issue)",
+  "reportClose": "Затвори"
  },
  "ms-MY": {
   "uiLanguage": "Bahasa antara muka",
@@ -1849,7 +1989,14 @@
   "nightInfoEmpty": "Tiada video: senarai main biasa akan dimainkan pada waktu malam",
   "nightCountCategory": "{on} daripada {total} video kategori ini dalam senarai main malam ({allOn} daripada {allTotal} keseluruhan)",
   "nightCountAll": "{on} daripada {total} video dalam senarai main malam",
-  "nightCountNone": "{on} daripada {total} video dalam senarai main malam (tiada yang dipilih: senarai main biasa akan dimainkan pada waktu malam)"
+  "nightCountNone": "{on} daripada {total} video dalam senarai main malam (tiada yang dipilih: senarai main biasa akan dimainkan pada waktu malam)",
+  "reportTitle": "Maklum balas keserasian",
+  "reportModel": "Model TV",
+  "reportFirmware": "Perisian tegar",
+  "reportApp": "Versi aplikasi",
+  "reportHint": "Imbas kod QR dengan telefon anda: borang akan dibuka dengan data ini sudah diisi. Pilih status dan hantar.",
+  "reportCaption": "Maklum balas keserasian (GitHub issue)",
+  "reportClose": "Tutup"
  },
  "nl-NL": {
   "uiLanguage": "Interfacetaal",
@@ -1937,7 +2084,14 @@
   "nightInfoEmpty": "Geen video's: 's nachts wordt de normale afspeellijst afgespeeld",
   "nightCountCategory": "{on} van {total} video's van deze categorie in de nachtafspeellijst ({allOn} van {allTotal} in totaal)",
   "nightCountAll": "{on} van {total} video's in de nachtafspeellijst",
-  "nightCountNone": "{on} van {total} video's in de nachtafspeellijst (niets geselecteerd: 's nachts wordt de normale afspeellijst afgespeeld)"
+  "nightCountNone": "{on} van {total} video's in de nachtafspeellijst (niets geselecteerd: 's nachts wordt de normale afspeellijst afgespeeld)",
+  "reportTitle": "Feedback over compatibiliteit",
+  "reportModel": "Tv-model",
+  "reportFirmware": "Firmware",
+  "reportApp": "App-versie",
+  "reportHint": "Scan de QR-code met je telefoon: het formulier opent met deze gegevens al ingevuld. Kies de status en verstuur het.",
+  "reportCaption": "Feedback over compatibiliteit (GitHub-issue)",
+  "reportClose": "Sluiten"
  },
  "nb-NO": {
   "uiLanguage": "Grensesnittspråk",
@@ -2025,7 +2179,14 @@
   "nightInfoEmpty": "Ingen videoer: den vanlige spillelisten spilles av om natten",
   "nightCountCategory": "{on} av {total} videoer i denne kategorien i nattspillelisten ({allOn} av {allTotal} totalt)",
   "nightCountAll": "{on} av {total} videoer i nattspillelisten",
-  "nightCountNone": "{on} av {total} videoer i nattspillelisten (ingenting valgt: den vanlige spillelisten spilles av om natten)"
+  "nightCountNone": "{on} av {total} videoer i nattspillelisten (ingenting valgt: den vanlige spillelisten spilles av om natten)",
+  "reportTitle": "Tilbakemelding om kompatibilitet",
+  "reportModel": "TV-modell",
+  "reportFirmware": "Firmware",
+  "reportApp": "Appversjon",
+  "reportHint": "Skann QR-koden med telefonen: skjemaet åpnes med disse dataene allerede utfylt. Velg status og send.",
+  "reportCaption": "Tilbakemelding om kompatibilitet (GitHub issue)",
+  "reportClose": "Lukk"
  },
  "pl-PL": {
   "uiLanguage": "Język interfejsu",
@@ -2113,7 +2274,14 @@
   "nightInfoEmpty": "Brak filmów: w nocy zostanie odtworzona zwykła playlista",
   "nightCountCategory": "{on} z {total} filmów z tej kategorii na playliście nocnej ({allOn} z {allTotal} łącznie)",
   "nightCountAll": "{on} z {total} filmów na playliście nocnej",
-  "nightCountNone": "{on} z {total} filmów na playliście nocnej (nic nie wybrano: w nocy zostanie odtworzona zwykła playlista)"
+  "nightCountNone": "{on} z {total} filmów na playliście nocnej (nic nie wybrano: w nocy zostanie odtworzona zwykła playlista)",
+  "reportTitle": "Opinia o zgodności",
+  "reportModel": "Model telewizora",
+  "reportFirmware": "Oprogramowanie sprzętowe",
+  "reportApp": "Wersja aplikacji",
+  "reportHint": "Zeskanuj kod QR telefonem: otworzy się formularz z już wypełnionymi danymi. Wybierz status i wyślij.",
+  "reportCaption": "Opinia o zgodności (GitHub issue)",
+  "reportClose": "Zamknij"
  },
  "pt-BR": {
   "uiLanguage": "Idioma da interface",
@@ -2201,7 +2369,14 @@
   "nightInfoEmpty": "Nenhum vídeo: à noite a playlist normal será reproduzida",
   "nightCountCategory": "{on} de {total} vídeos desta categoria na playlist noturna ({allOn} de {allTotal} no total)",
   "nightCountAll": "{on} de {total} vídeos na playlist noturna",
-  "nightCountNone": "{on} de {total} vídeos na playlist noturna (nada selecionado: à noite a playlist normal será reproduzida)"
+  "nightCountNone": "{on} de {total} vídeos na playlist noturna (nada selecionado: à noite a playlist normal será reproduzida)",
+  "reportTitle": "Feedback de compatibilidade",
+  "reportModel": "Modelo da TV",
+  "reportFirmware": "Firmware",
+  "reportApp": "Versão do app",
+  "reportHint": "Escaneie o código QR com o celular: o formulário abre com esses dados já preenchidos. Escolha o status e envie.",
+  "reportCaption": "Feedback de compatibilidade (GitHub issue)",
+  "reportClose": "Fechar"
  },
  "pt-PT": {
   "uiLanguage": "Idioma da interface",
@@ -2289,7 +2464,14 @@
   "nightInfoEmpty": "Sem vídeos: durante a noite será reproduzida a lista normal",
   "nightCountCategory": "{on} de {total} vídeos desta categoria na lista noturna ({allOn} de {allTotal} no total)",
   "nightCountAll": "{on} de {total} vídeos na lista noturna",
-  "nightCountNone": "{on} de {total} vídeos na lista noturna (nada selecionado: durante a noite será reproduzida a lista normal)"
+  "nightCountNone": "{on} de {total} vídeos na lista noturna (nada selecionado: durante a noite será reproduzida a lista normal)",
+  "reportTitle": "Feedback de compatibilidade",
+  "reportModel": "Modelo da TV",
+  "reportFirmware": "Firmware",
+  "reportApp": "Versão da aplicação",
+  "reportHint": "Leia o código QR com o telemóvel: o formulário abre com estes dados já preenchidos. Escolha o estado e envie.",
+  "reportCaption": "Feedback de compatibilidade (GitHub issue)",
+  "reportClose": "Fechar"
  },
  "ro-RO": {
   "uiLanguage": "Limba interfeței",
@@ -2377,7 +2559,14 @@
   "nightInfoEmpty": "Niciun videoclip: noaptea se va reda lista normală",
   "nightCountCategory": "{on} din {total} videoclipuri din această categorie în lista de noapte ({allOn} din {allTotal} în total)",
   "nightCountAll": "{on} din {total} videoclipuri în lista de noapte",
-  "nightCountNone": "{on} din {total} videoclipuri în lista de noapte (nimic selectat: noaptea se va reda lista normală)"
+  "nightCountNone": "{on} din {total} videoclipuri în lista de noapte (nimic selectat: noaptea se va reda lista normală)",
+  "reportTitle": "Feedback despre compatibilitate",
+  "reportModel": "Modelul televizorului",
+  "reportFirmware": "Firmware",
+  "reportApp": "Versiunea aplicației",
+  "reportHint": "Scanează codul QR cu telefonul: se deschide formularul cu aceste date deja completate. Alege starea și trimite.",
+  "reportCaption": "Feedback despre compatibilitate (GitHub issue)",
+  "reportClose": "Închide"
  },
  "ru-RU": {
   "uiLanguage": "Язык интерфейса",
@@ -2465,7 +2654,14 @@
   "nightInfoEmpty": "Нет видео: ночью будет воспроизводиться обычный плейлист",
   "nightCountCategory": "{on} из {total} видео этой категории в ночном плейлисте ({allOn} из {allTotal} всего)",
   "nightCountAll": "{on} из {total} видео в ночном плейлисте",
-  "nightCountNone": "{on} из {total} видео в ночном плейлисте (ничего не выбрано: ночью будет воспроизводиться обычный плейлист)"
+  "nightCountNone": "{on} из {total} видео в ночном плейлисте (ничего не выбрано: ночью будет воспроизводиться обычный плейлист)",
+  "reportTitle": "Отзыв о совместимости",
+  "reportModel": "Модель ТВ",
+  "reportFirmware": "Прошивка",
+  "reportApp": "Версия приложения",
+  "reportHint": "Отсканируйте QR-код телефоном: откроется форма с уже заполненными данными. Выберите статус и отправьте.",
+  "reportCaption": "Отзыв о совместимости (GitHub issue)",
+  "reportClose": "Закрыть"
  },
  "sk-SK": {
   "uiLanguage": "Jazyk rozhrania",
@@ -2553,7 +2749,14 @@
   "nightInfoEmpty": "Žiadne videá: v noci sa prehráva bežný playlist",
   "nightCountCategory": "{on} z {total} videí tejto kategórie v nočnom playliste ({allOn} z {allTotal} celkom)",
   "nightCountAll": "{on} z {total} videí v nočnom playliste",
-  "nightCountNone": "{on} z {total} videí v nočnom playliste (nič nie je vybrané: v noci sa prehráva bežný playlist)"
+  "nightCountNone": "{on} z {total} videí v nočnom playliste (nič nie je vybrané: v noci sa prehráva bežný playlist)",
+  "reportTitle": "Spätná väzba ku kompatibilite",
+  "reportModel": "Model TV",
+  "reportFirmware": "Firmvér",
+  "reportApp": "Verzia aplikácie",
+  "reportHint": "Naskenujte QR kód telefónom: otvorí sa formulár s už vyplnenými údajmi. Vyberte stav a odošlite ho.",
+  "reportCaption": "Spätná väzba ku kompatibilite (GitHub issue)",
+  "reportClose": "Zavrieť"
  },
  "sl-SI": {
   "uiLanguage": "Jezik vmesnika",
@@ -2641,7 +2844,14 @@
   "nightInfoEmpty": "Ni videoposnetkov: ponoči se bo predvajal običajni seznam",
   "nightCountCategory": "{on} od {total} videoposnetkov te kategorije je na nočnem seznamu predvajanja ({allOn} od {allTotal} skupaj)",
   "nightCountAll": "{on} od {total} videoposnetkov je na nočnem seznamu predvajanja",
-  "nightCountNone": "{on} od {total} videoposnetkov je na nočnem seznamu predvajanja (nič ni izbrano: ponoči se bo predvajal običajni seznam)"
+  "nightCountNone": "{on} od {total} videoposnetkov je na nočnem seznamu predvajanja (nič ni izbrano: ponoči se bo predvajal običajni seznam)",
+  "reportTitle": "Povratne informacije o združljivosti",
+  "reportModel": "Model televizorja",
+  "reportFirmware": "Vdelana programska oprema",
+  "reportApp": "Različica aplikacije",
+  "reportHint": "Optično preberite kodo QR s telefonom: odpre se obrazec z že izpolnjenimi podatki. Izberite stanje in pošljite.",
+  "reportCaption": "Povratne informacije o združljivosti (GitHub issue)",
+  "reportClose": "Zapri"
  },
  "sv-SE": {
   "uiLanguage": "Gränssnittsspråk",
@@ -2729,7 +2939,14 @@
   "nightInfoEmpty": "Inga videor: den vanliga spellistan spelas upp på natten",
   "nightCountCategory": "{on} av {total} videor i den här kategorin i nattspellistan ({allOn} av {allTotal} totalt)",
   "nightCountAll": "{on} av {total} videor i nattspellistan",
-  "nightCountNone": "{on} av {total} videor i nattspellistan (inget valt: den vanliga spellistan spelas upp på natten)"
+  "nightCountNone": "{on} av {total} videor i nattspellistan (inget valt: den vanliga spellistan spelas upp på natten)",
+  "reportTitle": "Feedback om kompatibilitet",
+  "reportModel": "TV-modell",
+  "reportFirmware": "Firmware",
+  "reportApp": "Appversion",
+  "reportHint": "Skanna QR-koden med mobilen: formuläret öppnas med dessa uppgifter redan ifyllda. Välj status och skicka.",
+  "reportCaption": "Feedback om kompatibilitet (GitHub issue)",
+  "reportClose": "Stäng"
  },
  "th-TH": {
   "uiLanguage": "ภาษาของอินเทอร์เฟซ",
@@ -2817,7 +3034,14 @@
   "nightInfoEmpty": "ไม่มีวิดีโอ: ตอนกลางคืนจะเล่นเพลย์ลิสต์ปกติ",
   "nightCountCategory": "{on} จาก {total} วิดีโอในหมวดหมู่นี้อยู่ในเพลย์ลิสต์กลางคืน (รวมทั้งหมด {allOn} จาก {allTotal})",
   "nightCountAll": "{on} จาก {total} วิดีโออยู่ในเพลย์ลิสต์กลางคืน",
-  "nightCountNone": "{on} จาก {total} วิดีโออยู่ในเพลย์ลิสต์กลางคืน (ยังไม่ได้เลือก: ตอนกลางคืนจะเล่นเพลย์ลิสต์ปกติ)"
+  "nightCountNone": "{on} จาก {total} วิดีโออยู่ในเพลย์ลิสต์กลางคืน (ยังไม่ได้เลือก: ตอนกลางคืนจะเล่นเพลย์ลิสต์ปกติ)",
+  "reportTitle": "ความคิดเห็นเรื่องความเข้ากันได้",
+  "reportModel": "รุ่นทีวี",
+  "reportFirmware": "เฟิร์มแวร์",
+  "reportApp": "เวอร์ชันแอป",
+  "reportHint": "สแกนคิวอาร์โค้ดด้วยโทรศัพท์ แบบฟอร์มจะเปิดขึ้นพร้อมข้อมูลนี้ที่กรอกไว้แล้ว เลือกสถานะแล้วส่ง",
+  "reportCaption": "ความคิดเห็นเรื่องความเข้ากันได้ (GitHub issue)",
+  "reportClose": "ปิด"
  },
  "tr-TR": {
   "uiLanguage": "Arayüz dili",
@@ -2905,7 +3129,14 @@
   "nightInfoEmpty": "Video yok: geceleri normal oynatma listesi oynatılır",
   "nightCountCategory": "Bu kategorideki {total} videonun {on} tanesi gece oynatma listesinde (toplamda {allTotal} videonun {allOn} tanesi)",
   "nightCountAll": "{total} videonun {on} tanesi gece oynatma listesinde",
-  "nightCountNone": "{total} videonun {on} tanesi gece oynatma listesinde (hiçbiri seçilmedi: geceleri normal oynatma listesi oynatılır)"
+  "nightCountNone": "{total} videonun {on} tanesi gece oynatma listesinde (hiçbiri seçilmedi: geceleri normal oynatma listesi oynatılır)",
+  "reportTitle": "Uyumluluk geri bildirimi",
+  "reportModel": "TV modeli",
+  "reportFirmware": "Donanım yazılımı",
+  "reportApp": "Uygulama sürümü",
+  "reportHint": "QR kodunu telefonunuzla tarayın: form bu bilgiler önceden doldurulmuş olarak açılır. Durumu seçip gönderin.",
+  "reportCaption": "Uyumluluk geri bildirimi (GitHub issue)",
+  "reportClose": "Kapat"
  },
  "uk-UA": {
   "uiLanguage": "Мова інтерфейсу",
@@ -2993,7 +3224,14 @@
   "nightInfoEmpty": "Немає відео: уночі відтворюватиметься звичайний плейлист",
   "nightCountCategory": "{on} із {total} відео цієї категорії в нічному плейлисті ({allOn} із {allTotal} загалом)",
   "nightCountAll": "{on} із {total} відео в нічному плейлисті",
-  "nightCountNone": "{on} із {total} відео в нічному плейлисті (нічого не вибрано: уночі відтворюватиметься звичайний плейлист)"
+  "nightCountNone": "{on} із {total} відео в нічному плейлисті (нічого не вибрано: уночі відтворюватиметься звичайний плейлист)",
+  "reportTitle": "Відгук про сумісність",
+  "reportModel": "Модель ТВ",
+  "reportFirmware": "Прошивка",
+  "reportApp": "Версія застосунку",
+  "reportHint": "Скануйте QR-код телефоном: відкриється форма із заповненими даними. Виберіть статус і надішліть.",
+  "reportCaption": "Відгук про сумісність (GitHub issue)",
+  "reportClose": "Закрити"
  },
  "vi-VN": {
   "uiLanguage": "Ngôn ngữ giao diện",
@@ -3081,7 +3319,14 @@
   "nightInfoEmpty": "Không có video: ban đêm sẽ phát danh sách phát thường",
   "nightCountCategory": "{on} / {total} video của danh mục này trong danh sách phát ban đêm ({allOn} / {allTotal} tổng cộng)",
   "nightCountAll": "{on} / {total} video trong danh sách phát ban đêm",
-  "nightCountNone": "{on} / {total} video trong danh sách phát ban đêm (chưa chọn gì: ban đêm sẽ phát danh sách phát thường)"
+  "nightCountNone": "{on} / {total} video trong danh sách phát ban đêm (chưa chọn gì: ban đêm sẽ phát danh sách phát thường)",
+  "reportTitle": "Phản hồi về khả năng tương thích",
+  "reportModel": "Kiểu TV",
+  "reportFirmware": "Firmware",
+  "reportApp": "Phiên bản ứng dụng",
+  "reportHint": "Quét mã QR bằng điện thoại: biểu mẫu sẽ mở ra với các thông tin này đã được điền sẵn. Chọn trạng thái và gửi.",
+  "reportCaption": "Phản hồi về khả năng tương thích (GitHub issue)",
+  "reportClose": "Đóng"
  },
  "zh-CN": {
   "uiLanguage": "界面语言",
@@ -3169,7 +3414,14 @@
   "nightInfoEmpty": "没有视频：夜间将播放常规播放列表",
   "nightCountCategory": "此分类的 {total} 个视频中有 {on} 个在夜间播放列表中（总共 {allTotal} 个中有 {allOn} 个）",
   "nightCountAll": "{total} 个视频中有 {on} 个在夜间播放列表中",
-  "nightCountNone": "{total} 个视频中有 {on} 个在夜间播放列表中（未选择任何内容：夜间将播放常规播放列表）"
+  "nightCountNone": "{total} 个视频中有 {on} 个在夜间播放列表中（未选择任何内容：夜间将播放常规播放列表）",
+  "reportTitle": "兼容性反馈",
+  "reportModel": "电视型号",
+  "reportFirmware": "固件",
+  "reportApp": "应用版本",
+  "reportHint": "用手机扫描二维码：将打开已填好这些信息的表单。选择状态后提交。",
+  "reportCaption": "兼容性反馈（GitHub issue）",
+  "reportClose": "关闭"
  },
  "zh-HK": "zh-TW",
  "zh-TW": {
@@ -3258,6 +3510,13 @@
   "nightInfoEmpty": "沒有影片：夜間將播放一般播放清單",
   "nightCountCategory": "此分類的 {total} 部影片中有 {on} 部在夜間播放清單中（總共 {allTotal} 部中有 {allOn} 部）",
   "nightCountAll": "{total} 部影片中有 {on} 部在夜間播放清單中",
-  "nightCountNone": "{total} 部影片中有 {on} 部在夜間播放清單中（尚未選取任何項目：夜間將播放一般播放清單）"
+  "nightCountNone": "{total} 部影片中有 {on} 部在夜間播放清單中（尚未選取任何項目：夜間將播放一般播放清單）",
+  "reportTitle": "相容性回饋",
+  "reportModel": "電視型號",
+  "reportFirmware": "韌體",
+  "reportApp": "應用程式版本",
+  "reportHint": "用手機掃描 QR Code：將開啟已填好這些資料的表單。選擇狀態後送出。",
+  "reportCaption": "相容性回饋（GitHub issue）",
+  "reportClose": "關閉"
  }
 }

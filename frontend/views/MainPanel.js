@@ -10,11 +10,13 @@ var
   Divider = require('moonstone/Divider'),
   Scroller = require('moonstone/Scroller'),
   Item = require('moonstone/Item'),
+  Popup = require('moonstone/Popup'),
   ToggleItem = require('moonstone/ToggleItem'),
   VideoSelectPanel = require('./VideoSelectPanel.js'),
   DisplayPanel = require('./DisplayPanel.js'),
   LanguagePanel = require('./LanguagePanel.js'),
   SettingsStore = require('./SettingsStore.js'),
+  QrCode = require('./QrCode.js'),
   I18n = require('./I18n.js');
 var basePath = SettingsStore.basePath;
 var applyPath = basePath + "/assets/apply.sh";
@@ -66,6 +68,34 @@ function titleRow(icon, titleProps) {
 }
 var DESC_STYLE = 'margin: 0 0 0 ' + (ICON_SIZE + ICON_GAP) + 'px;';
 
+// Compatibility report: a QR code with a link to the GitHub issue form, already filled in with this TV's data.
+// The query parameters are the ids of the fields of .github/ISSUE_TEMPLATE/compatibility.yml.
+var REPORT_URL = 'https://github.com/aabytt/custom-screensaver-aerial/issues/new?template=compatibility.yml';
+var REPORT_SHORT = 'github.com/aabytt/custom-screensaver-aerial';
+// release from the TV ("10.3.0") -> the option of the "webOS version" dropdown of the form (exact text), '' if none fits
+function webosLabel(release) {
+  var m = String(release || '').match(/(\d+)(?:\.(\d+))?/), major, minor;
+  var byMajor = {1: 'webOS 1', 2: 'webOS 2', 5: 'webOS 5', 6: 'webOS 6', 7: 'webOS 22 (7)', 8: 'webOS 23 (8)',
+    9: 'webOS 24 (9)', 10: 'webOS 25 (10)', 11: 'webOS 26 (11)'};
+  if (!m) { return ''; }
+  major = parseInt(m[1], 10);
+  minor = parseInt(m[2] || '0', 10);
+  if (major === 3 || major === 4) { return 'webOS ' + major + (minor >= 5 ? '.5' : ''); }
+  return byMajor[major] || '';
+}
+// translated text, or the English fallback while the key is not in the translation files yet
+function tr(key, fallback) {
+  var s = I18n.t(key);
+  return (typeof s === 'string' && s && s.indexOf(key) < 0) ? s : fallback;
+}
+// "label   value" row of the report card
+function infoRow(name) {
+  return {style: 'display: flex; margin: 0 0 14px; font-size: 34px;', components: [
+    {tag: 'span', name: name + 'Label', style: 'flex: none; width: 270px; opacity: 0.6;'},
+    {tag: 'span', name: name, style: 'flex: 1 1 auto; min-width: 0; word-break: break-all;'}
+  ]};
+}
+
 // "v1.2.3" / "1.2.3-beta" -> [1, 2, 3]; anything non-numeric after the leading number is ignored
 function parseVersion(v) {
   var m = String(v || '').match(/\d+(\.\d+)*/);
@@ -101,7 +131,10 @@ module.exports = kind({
                 iconComponent('globe'),
                 {tag: 'span', name: 'langText', style: 'flex: none;'}
               ]},
-              {kind: BodyText, name: 'versionInfo', style: 'margin: 0; flex: none;', content: ''}
+              // the version opens the compatibility report card (QR code)
+              {kind: Item, name: 'versionLink', style: 'flex: none;', ontap: 'openReport', components: [
+                {kind: BodyText, name: 'versionInfo', style: 'margin: 0;', content: ''}
+              ]}
             ]},
             // texts with an `i18n` key are filled in by I18n.apply() (see refreshStrings)
             {kind: ToggleItem, name: 'autostart', allowHtml: true, disabled: true, onchange: 'autostartToggle'},
@@ -139,10 +172,29 @@ module.exports = kind({
         {kind: BodyText, name: 'result', content: ''}
       ]}
     ]},
+    // compatibility report card: not full screen, data on the left, QR code on the right
+    {kind: Popup, name: 'reportPopup', centered: true, floating: true, modal: true, autoDismiss: true,
+      style: 'width: 1280px; max-width: 94%; padding: 8px 36px 20px; background: #1b1b1d; color: #f2f2f2; border-radius: 12px;', components: [
+      {kind: Divider, name: 'reportTitle', style: 'margin-top: 0; font-size: 30px; color: #f2f2f2;', content: ''},
+      {style: 'display: flex; align-items: flex-start; margin: 0;', components: [
+        {style: 'flex: 1 1 auto; min-width: 0; margin-right: 40px;', components: [
+          infoRow('rModel'), infoRow('rWebos'), infoRow('rFirmware'), infoRow('rApp'),
+          {kind: BodyText, name: 'reportHint', style: 'margin: 24px 0 0; font-size: 28px; color: #bdbdc2;', content: ''}
+        ]},
+        {name: 'qrCol', style: 'flex: none; text-align: center;', components: [
+          {name: 'qr', allowHtml: true, style: 'line-height: 0;', content: ''},
+          {kind: BodyText, name: 'reportCaption', style: 'margin: 12px 0 0; font-size: 26px; color: #bdbdc2;', content: ''}
+        ]}
+      ]},
+      {style: 'margin: 20px 0 0; text-align: right;', components: [
+        {kind: Button, name: 'reportClose', small: true, style: 'margin: 0', ontap: 'closeReport'}
+      ]}
+    ]},
     {kind: LunaService, name: 'statusCheck', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onStatusCheck', onError: 'onStatusCheck'},
     {kind: LunaService, name: 'exec', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onExec', onError: 'onExec'},
     {kind: LunaService, name: 'init', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onInit', onError: 'onInit'},
     {kind: LunaService, name: 'restore', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec'},
+    {kind: LunaService, name: 'sysinfo', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onSysInfo', onError: 'onSysInfo'},
     {kind: LunaService, name: 'locale', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onLocale', onError: 'onLocale'},
     // covers the whole panel until the settings are read (see hideSplash), so the half-filled panel is never seen
     {name: 'splash', style: 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 1000; ' +
@@ -189,6 +241,7 @@ module.exports = kind({
     });
     this.startJob('settingsTimeout', 'settingsTimeout', 5000);
     this.loadVersion();
+    this.loadDeviceInfo();
   },
 
   // (re)write every translated text; called when the language changes
@@ -446,6 +499,76 @@ module.exports = kind({
     };
     xhr.onerror = xhr.ontimeout = function () { console.info('Update check failed'); };
     xhr.send();
+  },
+
+  // TV model, firmware and webOS release for the report card. Read once at startup (so the card opens at once):
+  //  model / firmware / sdk version: the system property service; webOS release: nyx os_info.json
+  loadDeviceInfo: function () {
+    this.$.sysinfo.send({
+      command: "luna-send -n 1 'luna://com.webos.service.tv.systemproperty/getSystemInfo' " +
+        "'{\"keys\":[\"modelName\",\"firmwareVersion\",\"sdkVersion\"]}'; echo '@@'; cat /var/run/nyx/os_info.json 2>/dev/null"
+    });
+  },
+
+  onSysInfo: function (sender, evt) {
+    console.info('sysinfo', evt);
+    var parts = String((evt && evt.stdoutString) || '').split('@@'), sys = {}, os = {};
+    try { sys = JSON.parse(parts[0]) || {}; } catch (e) { console.info('getSystemInfo: no data'); }
+    try { os = JSON.parse(parts[1]) || {}; } catch (e) { console.info('os_info.json: no data'); }
+    this.device = {
+      model: sys.modelName || '',
+      firmware: sys.firmwareVersion || '',
+      release: os.webos_release || sys.sdkVersion || ''
+    };
+    if (this.$.reportPopup && this.$.reportPopup.showing) { this.refreshReport(); }
+  },
+
+  // link to the issue form with the fields that are known already filled in (the user picks the status)
+  reportUrl: function () {
+    var d = this.device || {}, params = [
+      ['tv_model', d.model], ['webos', webosLabel(d.release)], ['webos_full', d.release], ['firmware', d.firmware],
+      ['aerial', this.version]
+    ];
+    return REPORT_URL + params.filter(function (p) { return p[1]; }).map(function (p) {
+      return '&' + p[0] + '=' + encodeURIComponent(p[1]).replace(/%20/g, '+');
+    }).join('');
+  },
+
+  // fills the card: texts in the current language, device data, QR code
+  refreshReport: function () {
+    var d = this.device, none = '\u2014', qr = null;
+    this.$.reportTitle.set('content', tr('reportTitle', 'Compatibility feedback'));
+    this.$.rModelLabel.set('content', tr('reportModel', 'TV model'));
+    this.$.rWebosLabel.set('content', 'webOS');
+    this.$.rFirmwareLabel.set('content', tr('reportFirmware', 'Firmware'));
+    this.$.rAppLabel.set('content', tr('reportApp', 'App version'));
+    this.$.rModel.set('content', (d && d.model) || (d ? none : '\u2026'));
+    this.$.rWebos.set('content', d && d.release ? 'webOS ' + d.release : (d ? none : '\u2026'));
+    this.$.rFirmware.set('content', (d && d.firmware) || (d ? none : '\u2026'));
+    this.$.rApp.set('content', this.version || none);
+    this.$.reportHint.set('content', tr('reportHint',
+      'Scan the QR code with your phone: the form opens with this data filled in. Choose the status and send it.'));
+    this.$.reportCaption.set('allowHtml', true);
+    this.$.reportCaption.set('content', tr('reportCaption', 'Feedback on compatibility (GitHub issue)') +
+      '<br />' + REPORT_SHORT);
+    this.$.reportClose.set('content', tr('reportClose', 'Close'));
+    try {
+      qr = QrCode.svg(this.reportUrl(), 'M', 360);
+    } catch (e) {
+      console.error(e);
+    }
+    this.$.qr.set('content', qr ? qr.markup : '');
+    // the caption wraps at the width of the code
+    this.$.qrCol.applyStyle('width', qr ? qr.px + 'px' : 'auto');
+  },
+
+  openReport: function () {
+    this.refreshReport();
+    this.$.reportPopup.show();
+  },
+
+  closeReport: function () {
+    this.$.reportPopup.hide();
   },
 
   openHbChannel: function () {
