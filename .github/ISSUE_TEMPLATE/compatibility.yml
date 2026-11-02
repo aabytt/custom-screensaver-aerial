@@ -26,8 +26,16 @@ body:
         - webOS 22 (7)
         - webOS 23 (8)
         - webOS 24 (9)
-        - webOS 25 (10) 
+        - webOS 25 (10)
         - webOS 26 (11)
+    validations:
+      required: true
+  - type: input
+    id: webos_full
+    attributes:
+      label: webOS full version
+      description: Filled in automatically by the app
+      placeholder: "e.g. 10.3.0" 
     validations:
       required: true
   - type: input
