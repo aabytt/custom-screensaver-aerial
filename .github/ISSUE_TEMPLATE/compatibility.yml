@@ -1,5 +1,6 @@
 name: Compatibility report
 description: Report whether Aerial screensaver works on your TV
+title: "[Compat] "
 labels: ["compatibility"]
 body:
   - type: input

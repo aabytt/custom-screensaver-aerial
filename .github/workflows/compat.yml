@@ -34,6 +34,21 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add COMPATIBILITY.md compat.csv
           git diff --cached --quiet || (git commit -m "Update compatibility table (#${{ github.event.issue.number }})" && git pull --rebase && git push)
+          
+      - name: Set issue title
+        if: github.event.action == 'opened'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          TITLE=$(python - <<'EOF'
+          import os, re
+          b = os.environ["ISSUE_BODY"].replace("\r", "")
+          f = {m.group(1).strip(): m.group(2).strip() for m in re.finditer(r"^### (.+?)\s*\n+(.*?)(?=^### |\Z)", b, re.S | re.M)}
+          print(f"[Compat] {f.get('TV Model','')} | {f.get('webOS version','')} | {f.get('Status','')}")
+          EOF
+          )
+          gh issue edit ${{ github.event.issue.number }} --repo ${{ github.repository }} --title "$TITLE"          
 
       - name: Close issue
         if: github.event.action == 'opened'
