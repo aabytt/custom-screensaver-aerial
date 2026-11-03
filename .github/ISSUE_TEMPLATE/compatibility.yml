@@ -6,7 +6,9 @@ body:
   - type: markdown
     attributes:
       value: |
-        ## Run the app and tap `version` to see TV model and firmware
+        # Run the app and tap version to see TV model and firmware.
+          The values will be shown on screen. Copy them into the fields below.
+          
   - type: input
     id: tv_model
     attributes:
