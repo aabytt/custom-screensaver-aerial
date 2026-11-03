@@ -88,11 +88,11 @@ function tr(key, fallback) {
   var s = I18n.t(key);
   return (typeof s === 'string' && s && s.indexOf(key) < 0) ? s : fallback;
 }
-// "label   value" row of the report card
+// "label   value" row of the report card: small gray label, large white value, thin separator
 function infoRow(name) {
-  return {style: 'display: flex; margin: 0 0 14px; font-size: 34px;', components: [
-    {tag: 'span', name: name + 'Label', style: 'flex: none; width: 270px; opacity: 0.6;'},
-    {tag: 'span', name: name, style: 'flex: 1 1 auto; min-width: 0; word-break: break-all;'}
+  return {style: 'display: flex; align-items: baseline; padding: 12px 0; border-bottom: 1px solid #2c2c2e;', components: [
+    {tag: 'span', name: name + 'Label', style: 'flex: none; width: 300px; font-size: 25px; color: #8e8e93;'},
+    {tag: 'span', name: name, style: 'flex: 1 1 auto; min-width: 0; font-size: 34px; color: #fff; word-break: break-all;'}
   ]};
 }
 
@@ -172,22 +172,27 @@ module.exports = kind({
         {kind: BodyText, name: 'result', content: ''}
       ]}
     ]},
-    // compatibility report card: not full screen, data on the left, QR code on the right
+    // compatibility report card: not full screen, data on the left, QR code on the right,
+    // footer with the Update button (only when a newer version exists) and Close
     {kind: Popup, name: 'reportPopup', centered: true, floating: true, modal: true, autoDismiss: true,
-      style: 'width: 1280px; max-width: 94%; padding: 8px 36px 20px; background: #1b1b1d; color: #f2f2f2; border-radius: 12px;', components: [
-      {kind: Divider, name: 'reportTitle', style: 'margin-top: 0; font-size: 30px; color: #f2f2f2;', content: ''},
-      {style: 'display: flex; align-items: flex-start; margin: 0;', components: [
-        {style: 'flex: 1 1 auto; min-width: 0; margin-right: 40px;', components: [
+      style: 'width: 1280px; max-width: 94%; padding: 30px 44px 28px; background: #000; color: #f2f2f2; border: 2px solid #808080; border-radius: 16px;', components: [
+      {name: 'reportTitle', style: 'font-size: 36px; font-weight: bold; color: #fff; padding-bottom: 16px; border-bottom: 2px solid #3a3a3c;', content: ''},
+      {style: 'display: flex; align-items: flex-start; margin: 14px 0 0;', components: [
+        {style: 'flex: 1 1 auto; min-width: 0; margin-right: 52px;', components: [
           infoRow('rModel'), infoRow('rWebos'), infoRow('rFirmware'), infoRow('rApp'),
-          {kind: BodyText, name: 'reportHint', style: 'margin: 24px 0 0; font-size: 28px; color: #bdbdc2;', content: ''}
+          {kind: BodyText, name: 'reportHint', style: 'margin: 26px 0 0; font-size: 26px; line-height: 1.4; color: #a8a8ad;', content: ''}
         ]},
         {name: 'qrCol', style: 'flex: none; text-align: center;', components: [
-          {name: 'qr', allowHtml: true, style: 'line-height: 0;', content: ''},
-          {kind: BodyText, name: 'reportCaption', style: 'margin: 12px 0 0; font-size: 26px; color: #bdbdc2;', content: ''}
+          {name: 'qr', allowHtml: true, style: 'line-height: 0; border-radius: 14px; overflow: hidden;', content: ''},
+          {kind: BodyText, name: 'reportCaption', style: 'margin: 14px 0 0; font-size: 24px; line-height: 1.35; color: #8e8e93; text-align: center;', content: ''}
         ]}
       ]},
-      {style: 'margin: 20px 0 0; text-align: right;', components: [
-        {kind: Button, name: 'reportClose', small: true, style: 'margin: 0', ontap: 'closeReport'}
+      {style: 'display: flex; align-items: center; margin: 26px 0 0; padding-top: 22px; border-top: 2px solid #3a3a3c;', components: [
+        {name: 'reportUpdateBox', showing: false, style: 'flex: 1 1 auto; min-width: 0; margin-right: 24px;', components: [
+          {tag: 'span', name: 'reportUpdateText', style: 'font-size: 28px; font-weight: bold; color: #4cd964; margin-right: 26px; vertical-align: middle;'},
+          {kind: Button, name: 'reportUpdate', small: true, style: 'margin: 0; vertical-align: middle;', ontap: 'openHbChannel'}
+        ]},
+        {kind: Button, name: 'reportClose', small: true, style: 'flex: none; margin: 0 0 0 auto;', ontap: 'closeReport'}
       ]}
     ]},
     {kind: LunaService, name: 'statusCheck', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onStatusCheck', onError: 'onStatusCheck'},
@@ -495,6 +500,7 @@ module.exports = kind({
         self.renderVersion();
         self.$.updateButton.set('showing', true);
         self.refit();
+        if (self.$.reportPopup && self.$.reportPopup.showing) { self.refreshReport(); }
       }
     };
     xhr.onerror = xhr.ontimeout = function () { console.info('Update check failed'); };
@@ -550,8 +556,14 @@ module.exports = kind({
       'Scan the QR code with your phone: the form opens with this data filled in. Choose the status and send it.'));
     this.$.reportCaption.set('allowHtml', true);
     this.$.reportCaption.set('content', tr('reportCaption', 'Feedback on compatibility (GitHub issue)') +
-      '<br />' + REPORT_SHORT);
+      '<br /><span style="color: #fff;">' + REPORT_SHORT + '</span>');
     this.$.reportClose.set('content', tr('reportClose', 'Close'));
+    // the same Update button as on the main screen, only while a newer version exists
+    this.$.reportUpdateBox.set('showing', !!this.latest);
+    if (this.latest) {
+      this.$.reportUpdateText.set('content', I18n.t('updateAvailable', {version: this.version, latest: this.latest}));
+      this.$.reportUpdate.set('content', tr('update', 'Update'));
+    }
     try {
       qr = QrCode.svg(this.reportUrl(), 'M', 360);
     } catch (e) {
