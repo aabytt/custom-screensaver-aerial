@@ -93,7 +93,7 @@ function tr(key, fallback) {
 // "label   value" row of the report card: small gray label, large white value, thin separator
 function infoRow(name) {
   return {style: 'display: flex; align-items: baseline; padding: 12px 0; border-bottom: 1px solid #2c2c2e;', components: [
-    {tag: 'span', name: name + 'Label', style: 'flex: none; width: 300px; font-size: 25px; color: #8e8e93;'},
+    {tag: 'span', name: name + 'Label', style: 'flex: none; width: 270px; font-size: 25px; color: #8e8e93;'},
     {tag: 'span', name: name, style: 'flex: 1 1 auto; min-width: 0; font-size: 34px; color: #fff; word-break: break-all;'}
   ]};
 }
@@ -179,14 +179,15 @@ module.exports = kind({
     {kind: Popup, name: 'reportPopup', centered: true, floating: true, modal: true, autoDismiss: true,
       style: 'width: 1280px; max-width: 94%; padding: 30px 44px 28px; background: #000; color: #f2f2f2; border: 2px solid #808080; border-radius: 16px;', components: [
       {name: 'reportTitle', style: 'font-size: 36px; font-weight: bold; color: #fff; padding-bottom: 16px; border-bottom: 2px solid #3a3a3c;', content: ''},
-      {style: 'display: flex; align-items: flex-start; margin: 14px 0 0;', components: [
-        {style: 'flex: 1 1 auto; min-width: 0; margin-right: 52px;', components: [
-          infoRow('rModel'), infoRow('rWebos'), infoRow('rFirmware'), infoRow('rApp'),
-          {kind: BodyText, name: 'reportHint', style: 'margin: 26px 0 0; font-size: 26px; line-height: 1.4; color: #a8a8ad;', content: ''}
+      {style: 'display: flex; align-items: stretch; margin: 14px 0 0;', components: [
+        // left: data rows on top, the hint card pinned to the bottom (level with the QR caption)
+        {style: 'flex: 1 1 auto; min-width: 0; margin-right: 52px; display: flex; flex-direction: column;', components: [
+          {style: 'margin: 0 0 22px;', components: [infoRow('rModel'), infoRow('rWebos'), infoRow('rFirmware'), infoRow('rApp')]},
+          {kind: BodyText, name: 'reportHint', style: 'margin: auto 0 0; padding: 16px 22px; background: #141416; border-radius: 12px; font-size: 26px; line-height: 1.4; color: #b4b4b9;', content: ''}
         ]},
         {name: 'qrCol', style: 'flex: none; text-align: center;', components: [
           {name: 'qr', allowHtml: true, style: 'line-height: 0; border-radius: 14px; overflow: hidden;', content: ''},
-          {kind: BodyText, name: 'reportCaption', style: 'margin: 14px 0 0; font-size: 24px; line-height: 1.35; color: #8e8e93; text-align: center;', content: ''}
+          {name: 'reportCaption', allowHtml: true, style: 'margin: 14px 0 0; font-size: 24px; line-height: 1.35; color: #8e8e93; text-align: center;', content: ''}
         ]}
       ]},
       {style: 'display: flex; align-items: center; margin: 26px 0 0; padding-top: 22px; border-top: 2px solid #3a3a3c;', components: [
