@@ -11,4 +11,5 @@ Tested your TV? [Submit a report](https://github.com/aabytt/custom-screensaver-a
 | OLED65CXRLA | webOS 5 · 5.3.0 | 04.30.58 | 3.0.4 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ Works | [#79](../../issues/79) |
 <!-- COMPAT:END -->
 **Idle**: screensaver starts on idle · **Test**: starts from the in-app test · **SDR / DV**: SDR / Dolby Vision playback · **UI**: UI and settings
+
 ✅ Works · ❌ Doesn't work · ➖ Not tested · 🚫 Not supported by TV
