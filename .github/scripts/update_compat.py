@@ -5,16 +5,23 @@ num = os.environ["ISSUE_NUMBER"]
 remove = os.environ.get("REMOVE") == "1"
 readme = "COMPATIBILITY.md"
 data = "compat.csv"
-cols = ["issue", "tv_model", "webos", "webos_full", "firmware", "aerial", "status", "details"]
+cols = [
+    "issue", "tv_model", "webos", "webos_full", "firmware", "aerial",
+    "idle_start", "app_test", "sdr", "dolby_vision", "ui_settings",
+    "status", "details",
+]
 
 fields = {
     m.group(1).strip(): m.group(2).strip()
     for m in re.finditer(r"^### (.+?)\s*\n+(.*?)(?=^### |\Z)", body, re.S | re.M)
 }
 
-def val(k):
-    v = fields.get(k, "")
-    return "" if v == "_No response_" else v.replace("\n", " ").strip()
+def val(prefix):
+    """Find a field by the start of its label (robust to small label edits)."""
+    for k, v in fields.items():
+        if k.lower().startswith(prefix.lower()):
+            return "" if v == "_No response_" else v.replace("\n", " ").strip()
+    return ""
 
 rows = {}
 if os.path.exists(data):
@@ -27,10 +34,15 @@ if not remove and val("TV Model"):
     rows[num] = {
         "issue": num,
         "tv_model": val("TV Model"),
-        "webos": val("webOS version"),
+        "webos": val("webOS major version"),
         "webos_full": val("webOS full version"),
         "firmware": val("Firmware version"),
         "aerial": val("Aerial screensaver version"),
+        "idle_start": val("Screensaver starts on idle"),
+        "app_test": val("Screensaver starts from the in-app test"),
+        "sdr": val("SDR playback"),
+        "dolby_vision": val("Dolby Vision playback"),
+        "ui_settings": val("UI and settings"),
         "status": val("Status"),
         "details": val("Details"),
     }
@@ -38,28 +50,48 @@ if not remove and val("TV Model"):
 ordered = sorted(rows.values(), key=lambda r: r["tv_model"].lower())
 
 with open(data, "w", encoding="utf-8", newline="") as f:
-    w = csv.DictWriter(f, fieldnames=cols)
+    w = csv.DictWriter(f, fieldnames=cols, restval="", extrasaction="ignore")
     w.writeheader()
     w.writerows(ordered)
 
-icons = {
+status_icons = {
     "Works": "✅ Works",
     "Partially works": "⚠️ Partial",
     "Not working": "❌ Not working",
 }
+feature_icons = {
+    "Works": "✅",
+    "Doesn't work": "❌",
+    "Not tested": "➖",
+    "Not supported by this TV": "🚫",
+}
 
 def cell(v):
-    return v.replace("|", "\\|")
+    return (v or "").replace("|", "\\|")
+
+def feat(v):
+    return feature_icons.get(v, "➖" if not v else cell(v))
 
 lines = [
-    "| TV model | webOS | Firmware | Aerial | Status | Details | Issue |",
-    "|---|---|---|---|---|---|---|",
+    "| TV model | webOS | Firmware | Aerial | Idle | Test | SDR | DV | UI | Status | Issue |",
+    "|---|---|---|---|---|---|---|---|---|---|---|",
 ]
 for r in ordered:
+    webos = r.get("webos", "")
+    if r.get("webos_full"):
+        webos += " · " + r["webos_full"]
     lines.append("| " + " | ".join([
-        cell(r["tv_model"]), cell(r["webos"] + (" · " + r.get("webos_full", "") if r.get("webos_full") else "")), cell(r["firmware"]),
-        cell(r["aerial"]), icons.get(r["status"], cell(r["status"])),
-        cell(r["details"][:80] + ("…" if len(r["details"]) > 80 else "")), f"[#{r['issue']}](../../issues/{r['issue']})",
+        cell(r["tv_model"]),
+        cell(webos),
+        cell(r.get("firmware")),
+        cell(r.get("aerial")),
+        feat(r.get("idle_start")),
+        feat(r.get("app_test")),
+        feat(r.get("sdr")),
+        feat(r.get("dolby_vision")),
+        feat(r.get("ui_settings")),
+        status_icons.get(r.get("status"), cell(r.get("status"))),
+        f"[#{r['issue']}](../../issues/{r['issue']})",
     ]) + " |")
 
 start, end = "<!-- COMPAT:START -->", "<!-- COMPAT:END -->"
