@@ -41,6 +41,8 @@ var ICONS = {
   video: '<rect x="2.5" y="4.5" width="19" height="14" rx="2"/><path d="M10 8.5l5 3-5 3z"/>',
   uturn: '<path d="M7 20.5V10a5 5 0 0 1 10 0v9"/><path d="M13.5 15.5L17 19l3.5-3.5"/>'
 };
+// Moonstone highlight color (focused item background); the "update available" text uses it, and turns white on focus
+var ACCENT = '#cf0652';
 var ICON_SIZE = 30, ICON_GAP = 14;   // px; text next to an icon starts ICON_SIZE + ICON_GAP further right
 function svgMarkup(name) {
   return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" ' +
@@ -132,7 +134,8 @@ module.exports = kind({
                 {tag: 'span', name: 'langText', style: 'flex: none;'}
               ]},
               // the version opens the compatibility report card (QR code)
-              {kind: Item, name: 'versionLink', style: 'flex: none;', ontap: 'openReport', components: [
+              {kind: Item, name: 'versionLink', style: 'flex: none;', ontap: 'openReport',
+                onSpotlightFocused: 'versionFocused', onSpotlightBlur: 'versionBlurred', components: [
                 {kind: BodyText, name: 'versionInfo', style: 'margin: 0;', content: ''}
               ]}
             ]},
@@ -188,7 +191,7 @@ module.exports = kind({
       ]},
       {style: 'display: flex; align-items: center; margin: 26px 0 0; padding-top: 22px; border-top: 2px solid #3a3a3c;', components: [
         {name: 'reportUpdateBox', showing: false, style: 'flex: 1 1 auto; min-width: 0; margin-right: 24px;', components: [
-          {tag: 'span', name: 'reportUpdateText', style: 'font-size: 28px; font-weight: bold; color: #4cd964; margin-right: 26px; vertical-align: middle;'},
+          {tag: 'span', name: 'reportUpdateText', style: 'font-size: 28px; font-weight: bold; color: ' + ACCENT + '; margin-right: 26px; vertical-align: middle;'},
           {kind: Button, name: 'reportUpdate', small: true, style: 'margin: 0; vertical-align: middle;', ontap: 'openHbChannel'}
         ]},
         {kind: Button, name: 'reportClose', small: true, style: 'flex: none; margin: 0 0 0 auto;', ontap: 'closeReport'}
@@ -459,18 +462,29 @@ module.exports = kind({
     xhr.send();
   },
 
-  // "Version 1.2.3", or the highlighted "update available" line (marker, green, bold) if a newer release exists
+  // "Version 1.2.3", or the highlighted "update available" line (marker, accent color, bold) if a newer release exists.
+  // The accent-colored text would vanish on the accent-colored focus background, so it is white while focused.
   renderVersion: function () {
     var info = this.$.versionInfo;
     if (!this.version) { return; }
     if (this.latest) {
       info.set('content', I18n.t('updateAvailable', {version: this.version, latest: this.latest}));
-      info.applyStyle('color', '#4cd964');
+      info.applyStyle('color', this.versionFocus ? '#fff' : ACCENT);
       info.applyStyle('font-weight', 'bold');
     } else {
       info.set('content', I18n.t('version', {version: this.version}));
     }
     this.refit();
+  },
+
+  versionFocused: function () {
+    this.versionFocus = true;
+    if (this.latest) { this.$.versionInfo.applyStyle('color', '#fff'); }
+  },
+
+  versionBlurred: function () {
+    this.versionFocus = false;
+    if (this.latest) { this.$.versionInfo.applyStyle('color', ACCENT); }
   },
 
   // Compares with the version listed in the webosbrew (Homebrew Channel) repository; the update is offered
