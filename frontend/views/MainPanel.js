@@ -128,7 +128,7 @@ module.exports = kind({
   components: [
     {kind: FittableRows, name: 'rows', style: 'height: 100%;', components: [
       {kind: Scroller, fit: true, components: [
-        {name: 'content', style: 'margin-left: 7%; width: 60%;', components: [
+        {name: 'content', style: 'margin-left: 7%; width: 78%;', components: [
           {components: [
             // one line (wraps if the screen is narrow): the language in use as an item that opens the
             // language list, then the version
@@ -274,7 +274,7 @@ module.exports = kind({
     this.$.source.set('content', iconLabel('video', I18n.t('videoFormat')));
     this.$.playLowerQuality.set('content', iconLabel('uturn', I18n.t('fallbackSdr')));
     this.$.protectionTitle.set('content', tr('protection', 'Panel protection'));
-    this.$.protectionInfo.set('content', tr('protectionInfo', 'Protects the screen from burn-in'));
+    this.updateProtectionInfo();
     if (!this.resultShown) {
       this.$.result.set('content', I18n.t('nothing'));
       this.$.result.applyStyle('opacity', 0.45);   // the empty state is quiet; a real message is full strength
@@ -770,6 +770,12 @@ module.exports = kind({
     }
   },
 
+  // summary line under "Panel protection": what is switched on, or the general description
+  updateProtectionInfo: function () {
+    this.$.protectionInfo.set('content', ProtectionPanel.summary(settings) ||
+      tr('protectionInfo', 'Protects the screen from burn-in'));
+  },
+
   openProtection: function () {
     if (!settings.sourceType) {
       this.setResult(I18n.t('noSettings'));
@@ -779,7 +785,8 @@ module.exports = kind({
       this.doRequestPushPanel({panel: {
         kind: ProtectionPanel,
         settings: settings,
-        settingsPath: settingsPath
+        settingsPath: settingsPath,
+        onChange: this.bindSafely('updateProtectionInfo')
       }});
     } catch (e) {
       console.error(e);
