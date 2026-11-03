@@ -13,7 +13,8 @@ var
   FittableColumns = require('layout/FittableColumns'),
   LunaService = require('enyo-webos/LunaService'),
   SettingsStore = require('./SettingsStore.js'),
-  I18n = require('./I18n.js');
+  I18n = require('./I18n.js'),
+  Theme = require('./Theme.js');
 
 // Language list lives here so MainPanel can reuse it for the summary line
 var LANGUAGES = [
@@ -213,7 +214,6 @@ var DisplayPanel = kind({
           {components: [
             {kind: ExpandablePicker, name: 'language', i18n: 'textLang', onChange: 'selectLang',
               components: LANGUAGES},
-            {kind: ToggleItem, name: 'debug', i18n: 'debugInfo', onchange: 'debugToggle'},
             {kind: ToggleItem, name: 'tgOpacitySplit', onchange: 'splitToggle'},
             {kind: Item, name: 'opacityDvItem', showing: false, components: [
               {kind: Marquee.Text, name: 'opacityDvLabel'},
@@ -261,6 +261,11 @@ var DisplayPanel = kind({
             ]},
             {kind: ToggleItem, name: 'tgSeconds', osdKey: 'seconds', onchange: 'toggleOpt'},
             {kind: ToggleItem, name: 'tgClock24', osdKey: 'clock24', onchange: 'toggleOpt'}
+          ]},
+
+          // rarely needed: at the very end, behind a thin line
+          {style: 'margin: 28px 0 0; border-top: 2px solid ' + Theme.RULE + ';', components: [
+            {kind: ToggleItem, name: 'debug', i18n: 'debugInfo', onchange: 'debugToggle'}
           ]}
         ]}
       ]},
@@ -268,7 +273,7 @@ var DisplayPanel = kind({
       // preview: a 1920x1080 stage scaled to 840x472
       {style: 'width: ' + PREVIEW_W + 'px; margin: 10px 30px 0 20px;', components: [
         {name: 'frame', style: 'position: relative; width: ' + PREVIEW_W + 'px; height: ' + PREVIEW_H + 'px; overflow: hidden; ' +
-          'border-radius: 6px; background: linear-gradient(160deg, #1d3557 0%, #457b9d 55%, #e9a66b 100%);', components: [
+          'border-radius: 6px; border: 2px solid ' + Theme.MODAL_BORDER + '; box-sizing: content-box; background: linear-gradient(160deg, #1d3557 0%, #457b9d 55%, #e9a66b 100%);', components: [
           {name: 'stage', style: 'position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; ' +
             'background: url(' + BACKDROP + ') center / cover no-repeat; ' +
             '-webkit-transform: scale(' + STAGE_SCALE + '); transform: scale(' + STAGE_SCALE + '); ' +
@@ -377,7 +382,8 @@ var DisplayPanel = kind({
     this.$.fontLabel.set('content', tt('osdFont'));
     this.$.fontPicker.createComponents(FONTS.map(function (f, i) {
       if (f.id === self.osdGet('font')) { fontIndex = i; }
-      return {content: f.label, value: f.id};
+      return {content: f.label, value: f.id,
+        style: "font-family: 'OsdFont-" + f.id + "', 'Segoe UI', sans-serif; letter-spacing: " + f.spacing + 'px;'};
     }), {owner: this});
     this.$.fontPicker.set('selectedIndex', fontIndex);
   },

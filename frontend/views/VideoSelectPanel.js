@@ -14,14 +14,28 @@ var
   Spotlight = require('spotlight'),
   LunaService = require('enyo-webos/LunaService'),
   SettingsStore = require('./SettingsStore.js'),
-  I18n = require('./I18n.js');
+  I18n = require('./I18n.js'),
+  Theme = require('./Theme.js');
+
+var ACCENT = Theme.ACCENT;
+
+// spinner of the preview window: keyframes injected once
+function ensureSpinStyle() {
+  var st;
+  if (document.getElementById('aerial-spin-style')) { return; }
+  st = document.createElement('style');
+  st.id = 'aerial-spin-style';
+  st.textContent = '@-webkit-keyframes aerialSpin { to { -webkit-transform: rotate(360deg); } } ' +
+    '@keyframes aerialSpin { to { transform: rotate(360deg); } }';
+  document.head.appendChild(st);
+}
 
 // Toast: bottom center. It is a plain DOM node in the floating layer, NOT an Enyo control inside the
 // panel: a control next to the fit:true scroller makes the Fittable layout resize the scroller every
 // time the toast is shown / hidden, and the focus then ends up outside of the visible area.
 var TOAST_STYLE = 'display:none; position:fixed; left:50%; bottom:50px; -webkit-transform:translateX(-50%); transform:translateX(-50%); ' +
   'z-index:100000; padding:16px 36px; border-radius:40px; font-family:inherit; font-size:30px; color:#fff; white-space:nowrap; ' +
-  'background:rgba(0,0,0,0.88); border:2px solid #cf0652; pointer-events:none;';
+  'background:rgba(0,0,0,0.88); border:2px solid ' + Theme.MODAL_BORDER + '; pointer-events:none;';
 var TOAST_MS = 5000;
 
 // Scrolling inside a category with groups (Moonstone only scrolls the focused item into view).
@@ -220,7 +234,7 @@ var VideoTile = kind({
   },
   components: [
     {name: 'img', tag: 'img', style: IMG_STYLE},
-    {name: 'badge', content: '\u2713', style: 'position:absolute; top:12px; right:12px; width:36px; height:36px; line-height:36px; text-align:center; border-radius:18px; font-size:24px; background:#cf0652; color:#fff;'},
+    {name: 'badge', content: '\u2713', style: 'position:absolute; top:12px; right:12px; width:36px; height:36px; line-height:36px; text-align:center; border-radius:18px; font-size:24px; background:' + ACCENT + '; color:#fff;'},
     // the name sits on the bottom of the picture (dark gradient keeps it readable)
     {name: 'caption', style: 'position:absolute; left:6px; right:6px; bottom:6px; padding:28px 12px 2px; color:#fff; ' +
       'background:linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.85)); pointer-events:none;', components: [
@@ -470,7 +484,7 @@ var PreviewButton = kind({
   },
   focused: function () {
     this.applyStyle('border-color', '#fff');
-    this.applyStyle('background', '#cf0652');
+    this.applyStyle('background', ACCENT);
   },
   blurred: function () {
     this.applyStyle('border-color', 'transparent');
@@ -496,7 +510,7 @@ var PreviewSeek = kind({
   },
   components: [
     {name: 'track', style: 'position:absolute; left:12px; right:12px; top:15px; height:6px; border-radius:3px; background:rgba(255,255,255,0.3);', components: [
-      {name: 'fill', style: 'width:0; height:100%; border-radius:3px; background:#cf0652;'},
+      {name: 'fill', style: 'width:0; height:100%; border-radius:3px; background:' + ACCENT + ';'},
       {name: 'knob', showing: false, style: 'position:absolute; left:0; top:-6px; width:18px; height:18px; margin-left:-9px; border-radius:50%; background:#fff;'}
     ]}
   ],
@@ -566,7 +580,7 @@ var PreviewBadge = kind({
   // st: {text, current, failed}
   setState: function (st) {
     this.set('content', st.text);
-    this.applyStyle('background', st.current ? '#cf0652' : 'rgba(0,0,0,0.6)');
+    this.applyStyle('background', st.current ? ACCENT : 'rgba(0,0,0,0.6)');
     this.applyStyle('font-weight', st.current ? 'bold' : 'normal');
     this.applyStyle('text-decoration', st.failed ? 'line-through' : 'none');
     this.applyStyle('opacity', st.failed ? '0.5' : (st.current ? '1' : '0.9'));
@@ -653,15 +667,17 @@ var VideoSelectPanel = kind({
       onHide: 'previewHidden', onkeydown: 'previewKey', onkeyup: 'previewKey', onPlayVariant: 'playVariant',
       onSpotlightUp: 'previewUp', onSpotlightDown: 'previewDown',
       style: 'left:0; top:0; right:auto; bottom:auto; width:1280px; height:822px; margin:0; padding:12px; box-sizing:border-box; '
-        + 'background:#17171c; color:#fff; outline:2px solid #3a3a44; border-radius:6px; box-shadow:0 0 40px rgba(0,0,0,0.8); '
+        + 'background:' + Theme.MODAL_BG + '; color:#fff; outline:' + Theme.MODAL_BORDER_PX + 'px solid ' + Theme.MODAL_BORDER + '; border-radius:' + Theme.MODAL_RADIUS + 'px; box-shadow:0 0 40px rgba(0,0,0,0.8); '
         + 'transform:none !important; -webkit-transform:none !important; transition:none !important; -webkit-transition:none !important;',
       components: [
         {kind: Control, name: 'pvBox', spotlight: 'container', style: 'outline:none; position:relative;', components: [
-          {name: 'pv', tag: 'video', attributes: {autoplay: 'autoplay', loop: 'loop', muted: 'muted'}, style: 'display:block; width:100%; height:706px; background:#000;'},
+          {name: 'pv', tag: 'video', attributes: {autoplay: 'autoplay', loop: 'loop', muted: 'muted'}, style: 'display:block; width:100%; height:706px; background:#000; border-radius:8px;'},
+          // loading ring while the video starts (gone once it plays or fails)
+          {name: 'pvLoading', showing: false, style: 'position:absolute; left:50%; top:320px; width:64px; height:64px; margin-left:-32px; box-sizing:border-box; border:5px solid rgba(255,255,255,0.25); border-top-color:' + ACCENT + '; border-radius:50%; z-index:1; pointer-events:none; -webkit-animation:aerialSpin 0.9s linear infinite; animation:aerialSpin 0.9s linear infinite;'},
           // shown over the video when it cannot be played
           {name: 'pvError', showing: false, style: 'position:absolute; left:0; right:0; top:0; height:706px; z-index:1; pointer-events:none;', components: [
             {style: 'display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;', components: [
-              {content: '!', style: 'width:84px; height:84px; line-height:76px; text-align:center; border:4px solid #cf0652; border-radius:50%; font-size:56px; font-weight:bold; color:#cf0652;'},
+              {content: '!', style: 'width:84px; height:84px; line-height:76px; text-align:center; border:4px solid ' + ACCENT + '; border-radius:50%; font-size:56px; font-weight:bold; color:' + ACCENT + ';'},
               {name: 'pvErrorText', style: 'margin-top:20px; max-width:70%; text-align:center; font-size:30px; color:#fff;'}
             ]}
           ]},
@@ -686,6 +702,7 @@ var VideoSelectPanel = kind({
     I18n.apply(this);   // texts of the controls with an `i18n` key
     // Moonstone Popup resets inline `bottom` when animate is off; the preview positions itself with top/left
     this.$.preview.applyStyle('bottom', 'auto');
+    ensureSpinStyle();
     this.dirty = false;
     this.settings = this.settings || {};
 
@@ -1339,6 +1356,7 @@ var VideoSelectPanel = kind({
     popup.applyStyle('height', g.height + 'px');
     this.$.pv.applyStyle('height', g.videoH + 'px');
     this.$.pvError.applyStyle('height', g.videoH + 'px');
+    this.$.pvLoading.applyStyle('top', Math.round(g.videoH / 2 - 32) + 'px');
     // from the bottom: progress line (36), then one row with time / full screen button, POI above
     this.$.pvSeek.applyStyle('top', Math.max(0, g.videoH - 36) + 'px');
     this.$.pvTime.applyStyle('top', Math.max(0, g.videoH - 84) + 'px');
@@ -1360,6 +1378,7 @@ var VideoSelectPanel = kind({
     node.addEventListener('durationchange', function () { self.updateTime(node.currentTime, node.duration); });
     node.addEventListener('playing', function () {
       self.clearPreviewTimer();
+      self.$.pvLoading.set('showing', false);
       if (self.pvList && !self.pvPlaying) {
         self.pvPlaying = true;
         self.pvOk[self.pvIndex] = true;
@@ -1421,8 +1440,8 @@ var VideoSelectPanel = kind({
     var popup = this.$.preview;
     this.pvFull = !!on;
     popup.applyStyle('padding', on ? '0' : PREVIEW_PAD + 'px');
-    popup.applyStyle('border-radius', on ? '0' : '6px');
-    popup.applyStyle('outline', on ? 'none' : '2px solid #3a3a44');
+    popup.applyStyle('border-radius', on ? '0' : Theme.MODAL_RADIUS + 'px');
+    popup.applyStyle('outline', on ? 'none' : Theme.MODAL_BORDER_PX + 'px solid ' + Theme.MODAL_BORDER);
     popup.applyStyle('box-shadow', on ? 'none' : '0 0 40px rgba(0,0,0,0.8)');
     this.$.previewTitle.set('showing', !on);
     this.$.previewInfo.set('showing', !on);
@@ -1471,6 +1490,7 @@ var VideoSelectPanel = kind({
     this.pvPoiText = null;
     this.showPoi('');   // no point-of-interest caption over a video that does not play
     this.$.pvErrorText.set('content', text);
+    this.$.pvLoading.set('showing', false);
     this.$.pvError.set('showing', true);
   },
   hidePvError: function () {
@@ -1489,6 +1509,7 @@ var VideoSelectPanel = kind({
       (!this.pvManual && this.pvIndex ? '  ' + I18n.t('fallbackOf', {n: this.pvIndex + 1, total: list.length}) : ''));
     this.pvPlaying = false;
     this.refreshBadges();
+    this.$.pvLoading.set('showing', true);
     this.$.pv.setAttribute('src', item.url);
     if (node) {
       try {
@@ -1613,6 +1634,7 @@ var VideoSelectPanel = kind({
 
   previewHidden: function () {
     this.stopPreview();
+    this.$.pvLoading.set('showing', false);
     this.showToast(I18n.t('toastHold'));
   },
 

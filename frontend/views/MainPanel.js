@@ -17,7 +17,8 @@ var
   LanguagePanel = require('./LanguagePanel.js'),
   SettingsStore = require('./SettingsStore.js'),
   QrCode = require('./QrCode.js'),
-  I18n = require('./I18n.js');
+  I18n = require('./I18n.js'),
+  Theme = require('./Theme.js');
 var basePath = SettingsStore.basePath;
 var applyPath = basePath + "/assets/apply.sh";
 var linkPath = "/var/lib/webosbrew/init.d/50-custom-screensaver-aerial";
@@ -39,10 +40,12 @@ var ICONS = {
   display: '<rect x="2.5" y="4.5" width="19" height="14" rx="2"/><path d="M6.5 9.5h11M6.5 13.5h6"/>',
   power: '<path d="M12 3v8.5"/><path d="M6.4 6.6a8.5 8.5 0 1 0 11.2 0"/>',
   video: '<rect x="2.5" y="4.5" width="19" height="14" rx="2"/><path d="M10 8.5l5 3-5 3z"/>',
+  chat: '<path d="M4 4.5h16a1 1 0 0 1 1 1V15a1 1 0 0 1-1 1H10l-5 4v-4H4a1 1 0 0 1-1-1V5.5a1 1 0 0 1 1-1z"/><path d="M7.5 9h9M7.5 12h5.5"/>',
+  chevron: '<path d="M9 5l7 7-7 7"/>',
   uturn: '<path d="M7 20.5V10a5 5 0 0 1 10 0v9"/><path d="M13.5 15.5L17 19l3.5-3.5"/>'
 };
 // Moonstone highlight color (focused item background); the "update available" text uses it, and turns white on focus
-var ACCENT = '#cf0652';
+var ACCENT = Theme.ACCENT;
 var ICON_SIZE = 30, ICON_GAP = 14;   // px; text next to an icon starts ICON_SIZE + ICON_GAP further right
 function svgMarkup(name) {
   return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" ' +
@@ -93,7 +96,7 @@ function tr(key, fallback) {
 // "label   value" row of the report card: small gray label, large white value, thin separator
 function infoRow(name) {
   return {style: 'display: flex; align-items: baseline; padding: 12px 0; border-bottom: 1px solid #2c2c2e;', components: [
-    {tag: 'span', name: name + 'Label', style: 'flex: none; width: 270px; font-size: 25px; color: #8e8e93;'},
+    {tag: 'span', name: name + 'Label', style: 'flex: none; width: 270px; font-size: 25px; color: ' + Theme.MUTED + ';'},
     {tag: 'span', name: name, style: 'flex: 1 1 auto; min-width: 0; font-size: 34px; color: #fff; word-break: break-all;'}
   ]};
 }
@@ -134,9 +137,12 @@ module.exports = kind({
                 {tag: 'span', name: 'langText', style: 'flex: none;'}
               ]},
               // the version opens the compatibility report card (QR code)
-              {kind: Item, name: 'versionLink', style: 'flex: none;', ontap: 'openReport',
+              // icon + text + chevron: it is a button (feedback card, update), and it looks like one
+              {kind: Item, name: 'versionLink', style: 'flex: none; ' + ICON_ITEM, ontap: 'openReport',
                 onSpotlightFocused: 'versionFocused', onSpotlightBlur: 'versionBlurred', components: [
-                {kind: BodyText, name: 'versionInfo', style: 'margin: 0;', content: ''}
+                {name: 'versionIcon', allowHtml: true, style: 'flex: none; width: ' + ICON_SIZE + 'px; height: ' + ICON_SIZE + 'px; margin-right: ' + ICON_GAP + 'px; line-height: 0;', content: svgMarkup('chat')},
+                {kind: BodyText, name: 'versionInfo', style: 'margin: 0;', content: ''},
+                {name: 'versionChev', allowHtml: true, style: 'flex: none; width: 22px; height: 22px; margin-left: 10px; line-height: 0; opacity: 0.7;', content: svgMarkup('chevron')}
               ]}
             ]},
             // texts with an `i18n` key are filled in by I18n.apply() (see refreshStrings)
@@ -177,20 +183,23 @@ module.exports = kind({
     // compatibility report card: not full screen, data on the left, QR code on the right,
     // footer with the Update button (only when a newer version exists) and Close
     {kind: Popup, name: 'reportPopup', centered: true, floating: true, modal: true, autoDismiss: true,
-      style: 'width: 1280px; max-width: 94%; padding: 30px 44px 28px; background: #000; color: #f2f2f2; border: 2px solid #808080; border-radius: 16px;', components: [
-      {name: 'reportTitle', style: 'font-size: 36px; font-weight: bold; color: #fff; padding-bottom: 16px; border-bottom: 2px solid #3a3a3c;', content: ''},
+      style: 'width: 1280px; max-width: 94%; padding: 30px 44px 28px; background: ' + Theme.MODAL_BG + '; color: ' + Theme.TEXT + '; border: ' + Theme.MODAL_BORDER_PX + 'px solid ' + Theme.MODAL_BORDER + '; border-radius: ' + Theme.MODAL_RADIUS + 'px;', components: [
+      {style: 'position: relative; padding-bottom: 16px; border-bottom: 2px solid ' + Theme.RULE + ';', components: [
+        {name: 'reportTitle', style: 'font-size: 36px; font-weight: bold; color: #fff;', content: ''},
+        {style: 'position: absolute; left: 0; bottom: -2px; width: 120px; height: 2px; background: ' + ACCENT + ';'}
+      ]},
       {style: 'display: flex; align-items: stretch; margin: 14px 0 0;', components: [
         // left: data rows on top, the hint card pinned to the bottom (level with the QR caption)
         {style: 'flex: 1 1 auto; min-width: 0; margin-right: 52px; display: flex; flex-direction: column;', components: [
           {style: 'margin: 0 0 22px;', components: [infoRow('rModel'), infoRow('rWebos'), infoRow('rFirmware'), infoRow('rApp')]},
-          {kind: BodyText, name: 'reportHint', style: 'margin: auto 0 0; padding: 16px 22px; background: #141416; border-radius: 12px; font-size: 26px; line-height: 1.4; color: #b4b4b9;', content: ''}
+          {kind: BodyText, name: 'reportHint', style: 'margin: auto 0 0; padding: 16px 22px; background: ' + Theme.CARD + '; border-radius: 12px; font-size: 26px; line-height: 1.4; color: #b4b4b9;', content: ''}
         ]},
         {name: 'qrCol', style: 'flex: none; text-align: center;', components: [
           {name: 'qr', allowHtml: true, style: 'line-height: 0; border-radius: 14px; overflow: hidden;', content: ''},
-          {name: 'reportCaption', allowHtml: true, style: 'margin: 14px 0 0; font-size: 24px; line-height: 1.35; color: #8e8e93; text-align: center;', content: ''}
+          {name: 'reportCaption', allowHtml: true, style: 'margin: 14px 0 0; font-size: 24px; line-height: 1.35; color: ' + Theme.MUTED + '; text-align: center;', content: ''}
         ]}
       ]},
-      {style: 'display: flex; align-items: center; margin: 26px 0 0; padding-top: 22px; border-top: 2px solid #3a3a3c;', components: [
+      {style: 'display: flex; align-items: center; margin: 26px 0 0; padding-top: 22px; border-top: 2px solid ' + Theme.RULE + ';', components: [
         {name: 'reportUpdateBox', showing: false, style: 'flex: 1 1 auto; min-width: 0; margin-right: 24px;', components: [
           {tag: 'span', name: 'reportUpdateText', style: 'font-size: 28px; font-weight: bold; color: ' + ACCENT + '; margin-right: 26px; vertical-align: middle;'},
           {kind: Button, name: 'reportUpdate', small: true, style: 'margin: 0; vertical-align: middle;', ontap: 'openHbChannel'}
@@ -258,7 +267,10 @@ module.exports = kind({
     this.$.autostart.set('content', iconLabel('power', I18n.t('autostart')));
     this.$.source.set('content', iconLabel('video', I18n.t('videoFormat')));
     this.$.playLowerQuality.set('content', iconLabel('uturn', I18n.t('fallbackSdr')));
-    if (!this.resultShown) { this.$.result.set('content', I18n.t('nothing')); }
+    if (!this.resultShown) {
+      this.$.result.set('content', I18n.t('nothing'));
+      this.$.result.applyStyle('opacity', 0.45);   // the empty state is quiet; a real message is full strength
+    }
     this.renderVersion();
     this.updateDisplayInfo();
     this.updateLangLink();
@@ -283,6 +295,7 @@ module.exports = kind({
   // the result box: once it shows a real message it is no longer replaced by the "nothing yet" text
   setResult: function (text) {
     this.resultShown = true;
+    this.$.result.applyStyle('opacity', null);
     this.$.result.set('content', text);
     this.refit();
   },
@@ -470,22 +483,29 @@ module.exports = kind({
     if (!this.version) { return; }
     if (this.latest) {
       info.set('content', I18n.t('updateAvailable', {version: this.version, latest: this.latest}));
-      info.applyStyle('color', this.versionFocus ? '#fff' : ACCENT);
       info.applyStyle('font-weight', 'bold');
     } else {
       info.set('content', I18n.t('version', {version: this.version}));
     }
+    this.paintVersion();
     this.refit();
+  },
+
+  // text, icon and chevron of the version line share one color: the accent while an update is available
+  // (the accent would vanish on the accent-colored focus background, so it is white while focused)
+  paintVersion: function () {
+    var color = this.latest ? (this.versionFocus ? '#fff' : ACCENT) : null;
+    ['versionInfo', 'versionIcon', 'versionChev'].forEach(function (n) { this.$[n].applyStyle('color', color); }, this);
   },
 
   versionFocused: function () {
     this.versionFocus = true;
-    if (this.latest) { this.$.versionInfo.applyStyle('color', '#fff'); }
+    this.paintVersion();
   },
 
   versionBlurred: function () {
     this.versionFocus = false;
-    if (this.latest) { this.$.versionInfo.applyStyle('color', ACCENT); }
+    this.paintVersion();
   },
 
   // Compares with the version listed in the webosbrew (Homebrew Channel) repository; the update is offered
