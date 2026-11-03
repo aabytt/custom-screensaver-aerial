@@ -75,8 +75,6 @@ def feat(v):
 lines = [
     "| TV model | webOS | Firmware | Aerial | Idle | Test | SDR | DV | UI | Status | Issue |",
     "|---|---|---|---|---|---|---|---|---|---|---|",
-    "**Idle**: screensaver starts on idle · **Test**: starts from the in-app test · **SDR / DV**: SDR / Dolby Vision playback · **UI**: UI and settings",
-    "✅ Works · ❌ Doesn't work · ➖ Not tested · 🚫 Not supported by TV",
 ]
 for r in ordered:
     webos = r.get("webos", "")
