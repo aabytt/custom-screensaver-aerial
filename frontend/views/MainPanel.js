@@ -14,6 +14,7 @@ var
   ToggleItem = require('moonstone/ToggleItem'),
   VideoSelectPanel = require('./VideoSelectPanel.js'),
   DisplayPanel = require('./DisplayPanel.js'),
+  ProtectionPanel = require('./ProtectionPanel.js'),
   LanguagePanel = require('./LanguagePanel.js'),
   SettingsStore = require('./SettingsStore.js'),
   QrCode = require('./QrCode.js'),
@@ -41,6 +42,7 @@ var ICONS = {
   power: '<path d="M12 3v8.5"/><path d="M6.4 6.6a8.5 8.5 0 1 0 11.2 0"/>',
   video: '<rect x="2.5" y="4.5" width="19" height="14" rx="2"/><path d="M10 8.5l5 3-5 3z"/>',
   chat: '<path d="M4 4.5h16a1 1 0 0 1 1 1V15a1 1 0 0 1-1 1H10l-5 4v-4H4a1 1 0 0 1-1-1V5.5a1 1 0 0 1 1-1z"/><path d="M7.5 9h9M7.5 12h5.5"/>',
+  shield: '<path d="M12 2.8l7.5 2.9v6c0 4.7-3.1 8.4-7.5 9.5-4.4-1.1-7.5-4.8-7.5-9.5v-6z"/><path d="M8.6 12.2l2.5 2.5 4.4-4.9"/>',
   chevron: '<path d="M9 5l7 7-7 7"/>',
   uturn: '<path d="M7 20.5V10a5 5 0 0 1 10 0v9"/><path d="M13.5 15.5L17 19l3.5-3.5"/>'
 };
@@ -168,6 +170,10 @@ module.exports = kind({
               titleRow('display', {kind: Marquee.Text, i18n: 'osd'}),
               {kind: BodyText, style: DESC_STYLE, name: 'displayInfo', content: ''}
             ], ontap: 'openDisplay'},
+            {kind: Item, components: [
+              titleRow('shield', {kind: Marquee.Text, name: 'protectionTitle'}),
+              {kind: BodyText, style: DESC_STYLE, name: 'protectionInfo', content: ''}
+            ], ontap: 'openProtection'},
             {style: 'margin: 28px 0 0', components: [
               {kind: Button, style: 'margin: 0', i18n: 'testRun', ontap: 'testRun'}
             ]}
@@ -267,6 +273,8 @@ module.exports = kind({
     this.$.autostart.set('content', iconLabel('power', I18n.t('autostart')));
     this.$.source.set('content', iconLabel('video', I18n.t('videoFormat')));
     this.$.playLowerQuality.set('content', iconLabel('uturn', I18n.t('fallbackSdr')));
+    this.$.protectionTitle.set('content', tr('protection', 'Panel protection'));
+    this.$.protectionInfo.set('content', tr('protectionInfo', 'Protects the screen from burn-in'));
     if (!this.resultShown) {
       this.$.result.set('content', I18n.t('nothing'));
       this.$.result.applyStyle('opacity', 0.45);   // the empty state is quiet; a real message is full strength
@@ -755,6 +763,23 @@ module.exports = kind({
         settings: settings,
         settingsPath: settingsPath,
         onChange: this.bindSafely('updateDisplayInfo')
+      }});
+    } catch (e) {
+      console.error(e);
+      this.setResult(I18n.t('openFail', {error: e.message}));
+    }
+  },
+
+  openProtection: function () {
+    if (!settings.sourceType) {
+      this.setResult(I18n.t('noSettings'));
+      return;
+    }
+    try {
+      this.doRequestPushPanel({panel: {
+        kind: ProtectionPanel,
+        settings: settings,
+        settingsPath: settingsPath
       }});
     } catch (e) {
       console.error(e);
