@@ -1,3 +1,2 @@
-issue,tv_model,webos,webos_full,firmware,aerial,status,details
-77,43UR81006LJ,webOS 25 (10),10.3.0,33.31.10,3.0.4,Partially works,Dolby Vision sources not playing
-76,OLED65CXRLA,webOS 5,5.3.0,04.30.58,3.0.4,Works,All is good
+issue,tv_model,webos,webos_full,firmware,aerial,idle_start,app_test,sdr,dolby_vision,ui_settings,status,details
+77,43UR81006LJ,webOS 25 (10),10.3.0,33.31.10,3.0.4,,,,,,Partially works,Dolby Vision sources not playing
