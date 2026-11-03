@@ -76,6 +76,18 @@ body:
         Select the result for each feature. Choose **Not tested** if you haven't tried it.
 
   - type: dropdown
+    id: ui_settings
+    attributes:
+      label: UI and settings work fine
+      description: Navigation, video selection panel and settings behave correctly
+      options:
+        - Works
+        - Doesn't work
+        - Not tested
+    validations:
+      required: true        
+
+  - type: dropdown
     id: idle_start
     attributes:
       label: Screensaver starts on idle (standard operation)
@@ -103,6 +115,7 @@ body:
     id: sdr
     attributes:
       label: SDR playback
+      description: SDR videos are playing with screensaver
       options:
         - Works
         - Doesn't work
@@ -114,15 +127,17 @@ body:
     id: dolby_vision
     attributes:
       label: Dolby Vision playback
+      description: Dolby Vision videos are playing with screensaver      
       options:
         - Works
         - Doesn't work
         - Not supported by this TV
         - Not tested
     validations:
-      required: true      
+      required: true
+      
   - type: textarea
     id: details
     attributes:
       label: Details
-      description: What exactly works or fails, error messages, steps to reproduce
+      description: What else works or fails, error messages, steps to reproduce
