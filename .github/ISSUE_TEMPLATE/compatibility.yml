@@ -6,7 +6,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        # Run the app and tap `version` to see TV model and firmware  - type: input
+        ## Run the app and tap `version` to see TV model and firmware
+  - type: input
     id: tv_model
     attributes:
       label: TV Model
@@ -38,7 +39,7 @@ body:
     attributes:
       label: webOS full version (webOS SDK)
       description: Filled in automatically if reported from the app
-      placeholder: "e.g. 10.3.0" 
+      placeholder: "e.g. 10.3.0"
     validations:
       required: true
   - type: input
