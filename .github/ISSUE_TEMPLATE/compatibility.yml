@@ -69,6 +69,58 @@ body:
         - Not working
     validations:
       required: true
+  - type: markdown
+    attributes:
+      value: |
+        ## Feature check
+        Select the result for each feature. Choose **Not tested** if you haven't tried it.
+
+  - type: dropdown
+    id: idle_start
+    attributes:
+      label: Screensaver starts on idle (standard operation)
+      description: The TV goes idle and the screensaver starts on its own
+      options:
+        - Works
+        - Doesn't work
+        - Not tested
+    validations:
+      required: true
+
+  - type: dropdown
+    id: app_test
+    attributes:
+      label: Screensaver starts from the in-app test
+      description: Launched via the test option inside the app
+      options:
+        - Works
+        - Doesn't work
+        - Not tested
+    validations:
+      required: true
+
+  - type: dropdown
+    id: sdr
+    attributes:
+      label: SDR playback
+      options:
+        - Works
+        - Doesn't work
+        - Not tested
+    validations:
+      required: true
+
+  - type: dropdown
+    id: dolby_vision
+    attributes:
+      label: Dolby Vision playback
+      options:
+        - Works
+        - Doesn't work
+        - Not supported by this TV
+        - Not tested
+    validations:
+      required: true      
   - type: textarea
     id: details
     attributes:
