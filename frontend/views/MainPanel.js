@@ -160,8 +160,7 @@ module.exports = kind({
               {kind: BodyText, style: DESC_STYLE, name: 'displayInfo', content: ''}
             ], ontap: 'openDisplay'},
             {style: 'margin: 28px 0 0', components: [
-              {kind: Button, style: 'margin: 0 16px 0 0', i18n: 'testRun', ontap: 'testRun'},
-              {kind: Button, name: 'updateButton', showing: false, style: 'margin: 0', i18n: 'update', ontap: 'openHbChannel'}
+              {kind: Button, style: 'margin: 0', i18n: 'testRun', ontap: 'testRun'}
             ]}
           ]}
         ]}
@@ -474,8 +473,8 @@ module.exports = kind({
     this.refit();
   },
 
-  // Compares with the version listed in the webosbrew (Homebrew Channel) repository; the Update button
-  // appears only if it is newer. Failures (no network, timeout, unexpected format) are silent.
+  // Compares with the version listed in the webosbrew (Homebrew Channel) repository; the update is offered
+  // in the report card (opened by tapping the version line) only if it is newer. Failures (no network, timeout, unexpected format) are silent.
   checkUpdate: function () {
     var self = this, xhr = new XMLHttpRequest();
     xhr.open('GET', repoApi);
@@ -498,7 +497,6 @@ module.exports = kind({
       if (latest && compareVersions(latest, self.version) > 0) {
         self.latest = String(latest).replace(/^v/i, '');
         self.renderVersion();
-        self.$.updateButton.set('showing', true);
         self.refit();
         if (self.$.reportPopup && self.$.reportPopup.showing) { self.refreshReport(); }
       }
