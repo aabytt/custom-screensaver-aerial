@@ -5,8 +5,7 @@ labels: ["compatibility"]
 body:
   - type: markdown
     attributes:
-      value: |
-        # Run the app and tap `version` to see TV model and firmware  - type: input
+      value: Run the app and tap `version` to see TV model and firmware  - type: input
     id: tv_model
     attributes:
       label: TV Model
