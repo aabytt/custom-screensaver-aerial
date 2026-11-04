@@ -71,7 +71,7 @@ var clockTimers = [];
 var PTXT = { mode: "", corners: [], idx: 0, pa: null, ca: null, age: 0, faded: false };
 var PROT = { elapsed: 0, orig: -1, base: -1, last: -1, panelOff: false, standbyDone: false };
 // luna method (under com.webos.service.tvpower/power/) that puts the TV in standby; "" = not known yet, nothing is called
-var STANDBY_METHOD = "";
+var STANDBY_METHOD = "powerOff";
 
 var video = document.getElementById("video");
 var osd = document.getElementById("osd");
@@ -617,7 +617,7 @@ function protStandby() {
     PROT.standbyDone = true;
     protRestore();
     if (!STANDBY_METHOD) { console.log("protection: standby command is not set"); return; }
-    luna("luna://com.webos.service.tvpower/power/" + STANDBY_METHOD);
+    luna("luna://com.webos.service.tvpower/power/" + STANDBY_METHOD, {reason: "remoteKey"});
 }
 function protDebug() {
     return "backlight " + PROT.last + " (was " + PROT.orig + (PROT.orig < 0 ? ", " + (watcherAlive ? "no value from the watcher" : "no watcher") : "") + "), " + Math.floor(PROT.elapsed / 60) + " min" +

@@ -97,7 +97,7 @@ WebOSWindow {
     onPoiIndexChanged : protPoiChanged()
     property bool protNoWatcher : false  // no recent watcher / no brightness from it: brightness is left alone
     // luna method (under com.webos.service.tvpower/power/) that puts the TV in standby; empty = not known yet, nothing is called
-    property string standbyMethod : ""
+    property string standbyMethod : "powerOff"
     property string basePath : "file:///media/developer/apps/usr/palm/applications/org.aabytt.webos.custom-screensaver-aerial/assets/"
     Component.onCompleted : {
         init()
@@ -774,7 +774,7 @@ WebOSWindow {
             console.log("protection: standby command is not set")
             return
         }
-        standbyService.callService({})
+        standbyService.callService({reason : "remoteKey"})   // same as: luna-send -n 1 luna://com.webos.service.tvpower/power/powerOff '{"reason":"remoteKey"}'
     }
     // ---- protection of the text ----
     // the chosen corners, clockwise
