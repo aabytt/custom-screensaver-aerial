@@ -14,10 +14,12 @@ var
   ToggleItem = require('moonstone/ToggleItem'),
   VideoSelectPanel = require('./VideoSelectPanel.js'),
   DisplayPanel = require('./DisplayPanel.js'),
+  ProtectionPanel = require('./ProtectionPanel.js'),
   LanguagePanel = require('./LanguagePanel.js'),
   SettingsStore = require('./SettingsStore.js'),
   QrCode = require('./QrCode.js'),
-  I18n = require('./I18n.js');
+  I18n = require('./I18n.js'),
+  Theme = require('./Theme.js');
 var basePath = SettingsStore.basePath;
 var applyPath = basePath + "/assets/apply.sh";
 var linkPath = "/var/lib/webosbrew/init.d/50-custom-screensaver-aerial";
@@ -39,8 +41,13 @@ var ICONS = {
   display: '<rect x="2.5" y="4.5" width="19" height="14" rx="2"/><path d="M6.5 9.5h11M6.5 13.5h6"/>',
   power: '<path d="M12 3v8.5"/><path d="M6.4 6.6a8.5 8.5 0 1 0 11.2 0"/>',
   video: '<rect x="2.5" y="4.5" width="19" height="14" rx="2"/><path d="M10 8.5l5 3-5 3z"/>',
+  chat: '<path d="M4 4.5h16a1 1 0 0 1 1 1V15a1 1 0 0 1-1 1H10l-5 4v-4H4a1 1 0 0 1-1-1V5.5a1 1 0 0 1 1-1z"/><path d="M7.5 9h9M7.5 12h5.5"/>',
+  shield: '<path d="M12 2.8l7.5 2.9v6c0 4.7-3.1 8.4-7.5 9.5-4.4-1.1-7.5-4.8-7.5-9.5v-6z"/><path d="M8.6 12.2l2.5 2.5 4.4-4.9"/>',
+  chevron: '<path d="M9 5l7 7-7 7"/>',
   uturn: '<path d="M7 20.5V10a5 5 0 0 1 10 0v9"/><path d="M13.5 15.5L17 19l3.5-3.5"/>'
 };
+// Moonstone highlight color (focused item background); the "update available" text uses it, and turns white on focus
+var ACCENT = Theme.ACCENT;
 var ICON_SIZE = 30, ICON_GAP = 14;   // px; text next to an icon starts ICON_SIZE + ICON_GAP further right
 function svgMarkup(name) {
   return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" ' +
@@ -84,15 +91,22 @@ function webosLabel(release) {
   return byMajor[major] || '';
 }
 // translated text, or the English fallback while the key is not in the translation files yet
+// "Version 3.0.3 · update available: 3.0.4"; the translations start it with a ▲ marker, which is dropped:
+// the accent color already says "update"
+function updateLabel(version, latest) {
+  return String(I18n.t('updateAvailable', {version: version, latest: latest}))
+    .replace(/^[\s\u25B2\u25B3\u25B4\u25B5\u2B06\u2191]+/, '');
+}
+
 function tr(key, fallback) {
   var s = I18n.t(key);
   return (typeof s === 'string' && s && s.indexOf(key) < 0) ? s : fallback;
 }
-// "label   value" row of the report card
+// "label   value" row of the report card: small gray label, large white value, thin separator
 function infoRow(name) {
-  return {style: 'display: flex; margin: 0 0 14px; font-size: 34px;', components: [
-    {tag: 'span', name: name + 'Label', style: 'flex: none; width: 270px; opacity: 0.6;'},
-    {tag: 'span', name: name, style: 'flex: 1 1 auto; min-width: 0; word-break: break-all;'}
+  return {style: 'display: flex; align-items: baseline; padding: 12px 0; border-bottom: 1px solid #2c2c2e;', components: [
+    {tag: 'span', name: name + 'Label', style: 'flex: none; width: 270px; font-size: 25px; color: ' + Theme.MUTED + ';'},
+    {tag: 'span', name: name, style: 'flex: 1 1 auto; min-width: 0; font-size: 34px; color: #fff; word-break: break-all;'}
   ]};
 }
 
@@ -121,7 +135,7 @@ module.exports = kind({
   components: [
     {kind: FittableRows, name: 'rows', style: 'height: 100%;', components: [
       {kind: Scroller, fit: true, components: [
-        {name: 'content', style: 'margin-left: 7%; width: 60%;', components: [
+        {name: 'content', style: 'margin-left: 7%; width: 78%;', components: [
           {components: [
             // one line (wraps if the screen is narrow): the language in use as an item that opens the
             // language list, then the version
@@ -132,8 +146,12 @@ module.exports = kind({
                 {tag: 'span', name: 'langText', style: 'flex: none;'}
               ]},
               // the version opens the compatibility report card (QR code)
-              {kind: Item, name: 'versionLink', style: 'flex: none;', ontap: 'openReport', components: [
-                {kind: BodyText, name: 'versionInfo', style: 'margin: 0;', content: ''}
+              // icon + text + chevron: it is a button (feedback card, update), and it looks like one
+              {kind: Item, name: 'versionLink', style: 'flex: none; ' + ICON_ITEM, ontap: 'openReport',
+                onSpotlightFocused: 'versionFocused', onSpotlightBlur: 'versionBlurred', components: [
+                {name: 'versionIcon', allowHtml: true, style: 'flex: none; width: ' + ICON_SIZE + 'px; height: ' + ICON_SIZE + 'px; margin-right: ' + ICON_GAP + 'px; line-height: 0;', content: svgMarkup('chat')},
+                {kind: BodyText, name: 'versionInfo', style: 'margin: 0;', content: ''},
+                {name: 'versionChev', allowHtml: true, style: 'flex: none; width: 22px; height: 22px; margin-left: 10px; line-height: 0; opacity: 0.7;', content: svgMarkup('chevron')}
               ]}
             ]},
             // texts with an `i18n` key are filled in by I18n.apply() (see refreshStrings)
@@ -159,9 +177,12 @@ module.exports = kind({
               titleRow('display', {kind: Marquee.Text, i18n: 'osd'}),
               {kind: BodyText, style: DESC_STYLE, name: 'displayInfo', content: ''}
             ], ontap: 'openDisplay'},
+            {kind: Item, components: [
+              titleRow('shield', {kind: Marquee.Text, name: 'protectionTitle'}),
+              {kind: BodyText, style: DESC_STYLE, name: 'protectionInfo', content: ''}
+            ], ontap: 'openProtection'},
             {style: 'margin: 28px 0 0', components: [
-              {kind: Button, style: 'margin: 0 16px 0 0', i18n: 'testRun', ontap: 'testRun'},
-              {kind: Button, name: 'updateButton', showing: false, style: 'margin: 0', i18n: 'update', ontap: 'openHbChannel'}
+              {kind: Button, style: 'margin: 0', i18n: 'testRun', ontap: 'testRun'}
             ]}
           ]}
         ]}
@@ -172,22 +193,31 @@ module.exports = kind({
         {kind: BodyText, name: 'result', content: ''}
       ]}
     ]},
-    // compatibility report card: not full screen, data on the left, QR code on the right
+    // compatibility report card: not full screen, data on the left, QR code on the right,
+    // footer with the Update button (only when a newer version exists) and Close
     {kind: Popup, name: 'reportPopup', centered: true, floating: true, modal: true, autoDismiss: true,
-      style: 'width: 1280px; max-width: 94%; padding: 8px 36px 20px; background: #1b1b1d; color: #f2f2f2; border-radius: 12px;', components: [
-      {kind: Divider, name: 'reportTitle', style: 'margin-top: 0; font-size: 30px; color: #f2f2f2;', content: ''},
-      {style: 'display: flex; align-items: flex-start; margin: 0;', components: [
-        {style: 'flex: 1 1 auto; min-width: 0; margin-right: 40px;', components: [
-          infoRow('rModel'), infoRow('rWebos'), infoRow('rFirmware'), infoRow('rApp'),
-          {kind: BodyText, name: 'reportHint', style: 'margin: 24px 0 0; font-size: 28px; color: #bdbdc2;', content: ''}
+      style: 'width: 1280px; max-width: 94%; padding: 30px 44px 28px; background: ' + Theme.MODAL_BG + '; color: ' + Theme.TEXT + '; border: ' + Theme.MODAL_BORDER_PX + 'px solid ' + Theme.MODAL_BORDER + '; border-radius: ' + Theme.MODAL_RADIUS + 'px;', components: [
+      {style: 'position: relative; padding-bottom: 16px; border-bottom: 2px solid ' + Theme.RULE + ';', components: [
+        {name: 'reportTitle', style: 'font-size: 36px; font-weight: bold; color: #fff;', content: ''},
+        {style: 'position: absolute; left: 0; bottom: -2px; width: 120px; height: 2px; background: ' + ACCENT + ';'}
+      ]},
+      {style: 'display: flex; align-items: stretch; margin: 14px 0 0;', components: [
+        // left: data rows on top, the hint card pinned to the bottom (level with the QR caption)
+        {style: 'flex: 1 1 auto; min-width: 0; margin-right: 52px; display: flex; flex-direction: column;', components: [
+          {style: 'margin: 0 0 22px;', components: [infoRow('rModel'), infoRow('rWebos'), infoRow('rFirmware'), infoRow('rApp')]},
+          {kind: BodyText, name: 'reportHint', style: 'margin: auto 0 0; padding: 16px 22px; background: ' + Theme.CARD + '; border-radius: 12px; font-size: 26px; line-height: 1.4; color: #b4b4b9;', content: ''}
         ]},
         {name: 'qrCol', style: 'flex: none; text-align: center;', components: [
-          {name: 'qr', allowHtml: true, style: 'line-height: 0;', content: ''},
-          {kind: BodyText, name: 'reportCaption', style: 'margin: 12px 0 0; font-size: 26px; color: #bdbdc2;', content: ''}
+          {name: 'qr', allowHtml: true, style: 'line-height: 0; border-radius: 14px; overflow: hidden;', content: ''},
+          {name: 'reportCaption', allowHtml: true, style: 'margin: 14px 0 0; font-size: 24px; line-height: 1.35; color: ' + Theme.MUTED + '; text-align: center;', content: ''}
         ]}
       ]},
-      {style: 'margin: 20px 0 0; text-align: right;', components: [
-        {kind: Button, name: 'reportClose', small: true, style: 'margin: 0', ontap: 'closeReport'}
+      {style: 'display: flex; align-items: center; margin: 26px 0 0; padding-top: 22px; border-top: 2px solid ' + Theme.RULE + ';', components: [
+        {name: 'reportUpdateBox', showing: false, style: 'flex: 1 1 auto; min-width: 0; margin-right: 24px;', components: [
+          {tag: 'span', name: 'reportUpdateText', style: 'font-size: 28px; font-weight: bold; color: ' + ACCENT + '; margin-right: 26px; vertical-align: middle;'},
+          {kind: Button, name: 'reportUpdate', small: true, style: 'margin: 0; vertical-align: middle;', ontap: 'openHbChannel'}
+        ]},
+        {kind: Button, name: 'reportClose', small: true, style: 'flex: none; margin: 0 0 0 auto;', ontap: 'closeReport'}
       ]}
     ]},
     {kind: LunaService, name: 'statusCheck', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onStatusCheck', onError: 'onStatusCheck'},
@@ -250,7 +280,12 @@ module.exports = kind({
     this.$.autostart.set('content', iconLabel('power', I18n.t('autostart')));
     this.$.source.set('content', iconLabel('video', I18n.t('videoFormat')));
     this.$.playLowerQuality.set('content', iconLabel('uturn', I18n.t('fallbackSdr')));
-    if (!this.resultShown) { this.$.result.set('content', I18n.t('nothing')); }
+    this.$.protectionTitle.set('content', tr('protection', 'Panel protection'));
+    this.updateProtectionInfo();
+    if (!this.resultShown) {
+      this.$.result.set('content', I18n.t('nothing'));
+      this.$.result.applyStyle('opacity', 0.45);   // the empty state is quiet; a real message is full strength
+    }
     this.renderVersion();
     this.updateDisplayInfo();
     this.updateLangLink();
@@ -275,6 +310,7 @@ module.exports = kind({
   // the result box: once it shows a real message it is no longer replaced by the "nothing yet" text
   setResult: function (text) {
     this.resultShown = true;
+    this.$.result.applyStyle('opacity', null);
     this.$.result.set('content', text);
     this.refit();
   },
@@ -455,22 +491,40 @@ module.exports = kind({
     xhr.send();
   },
 
-  // "Version 1.2.3", or the highlighted "update available" line (marker, green, bold) if a newer release exists
+  // "Version 1.2.3", or the highlighted "update available" line (marker, accent color, bold) if a newer release exists.
+  // The accent-colored text would vanish on the accent-colored focus background, so it is white while focused.
   renderVersion: function () {
     var info = this.$.versionInfo;
     if (!this.version) { return; }
     if (this.latest) {
-      info.set('content', I18n.t('updateAvailable', {version: this.version, latest: this.latest}));
-      info.applyStyle('color', '#4cd964');
+      info.set('content', updateLabel(this.version, this.latest));
       info.applyStyle('font-weight', 'bold');
     } else {
       info.set('content', I18n.t('version', {version: this.version}));
     }
+    this.paintVersion();
     this.refit();
   },
 
-  // Compares with the version listed in the webosbrew (Homebrew Channel) repository; the Update button
-  // appears only if it is newer. Failures (no network, timeout, unexpected format) are silent.
+  // text, icon and chevron of the version line share one color: the accent while an update is available
+  // (the accent would vanish on the accent-colored focus background, so it is white while focused)
+  paintVersion: function () {
+    var color = this.latest ? (this.versionFocus ? '#fff' : ACCENT) : null;
+    ['versionInfo', 'versionIcon', 'versionChev'].forEach(function (n) { this.$[n].applyStyle('color', color); }, this);
+  },
+
+  versionFocused: function () {
+    this.versionFocus = true;
+    this.paintVersion();
+  },
+
+  versionBlurred: function () {
+    this.versionFocus = false;
+    this.paintVersion();
+  },
+
+  // Compares with the version listed in the webosbrew (Homebrew Channel) repository; the update is offered
+  // in the report card (opened by tapping the version line) only if it is newer. Failures (no network, timeout, unexpected format) are silent.
   checkUpdate: function () {
     var self = this, xhr = new XMLHttpRequest();
     xhr.open('GET', repoApi);
@@ -493,8 +547,8 @@ module.exports = kind({
       if (latest && compareVersions(latest, self.version) > 0) {
         self.latest = String(latest).replace(/^v/i, '');
         self.renderVersion();
-        self.$.updateButton.set('showing', true);
         self.refit();
+        if (self.$.reportPopup && self.$.reportPopup.showing) { self.refreshReport(); }
       }
     };
     xhr.onerror = xhr.ontimeout = function () { console.info('Update check failed'); };
@@ -550,8 +604,14 @@ module.exports = kind({
       'Scan the QR code with your phone: the form opens with this data filled in. Choose the status and send it.'));
     this.$.reportCaption.set('allowHtml', true);
     this.$.reportCaption.set('content', tr('reportCaption', 'Feedback on compatibility (GitHub issue)') +
-      '<br />' + REPORT_SHORT);
+      '<br /><span style="color: #fff;">' + REPORT_SHORT + '</span>');
     this.$.reportClose.set('content', tr('reportClose', 'Close'));
+    // the same Update button as on the main screen, only while a newer version exists
+    this.$.reportUpdateBox.set('showing', !!this.latest);
+    if (this.latest) {
+      this.$.reportUpdateText.set('content', updateLabel(this.version, this.latest));
+      this.$.reportUpdate.set('content', tr('update', 'Update'));
+    }
     try {
       qr = QrCode.svg(this.reportUrl(), 'M', 360);
     } catch (e) {
@@ -710,6 +770,30 @@ module.exports = kind({
         settings: settings,
         settingsPath: settingsPath,
         onChange: this.bindSafely('updateDisplayInfo')
+      }});
+    } catch (e) {
+      console.error(e);
+      this.setResult(I18n.t('openFail', {error: e.message}));
+    }
+  },
+
+  // summary line under "Panel protection": what is switched on, or the general description
+  updateProtectionInfo: function () {
+    this.$.protectionInfo.set('content', ProtectionPanel.summary(settings) ||
+      tr('protectionInfo', 'Protects the screen from burn-in'));
+  },
+
+  openProtection: function () {
+    if (!settings.sourceType) {
+      this.setResult(I18n.t('noSettings'));
+      return;
+    }
+    try {
+      this.doRequestPushPanel({panel: {
+        kind: ProtectionPanel,
+        settings: settings,
+        settingsPath: settingsPath,
+        onChange: this.bindSafely('updateProtectionInfo')
       }});
     } catch (e) {
       console.error(e);

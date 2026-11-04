@@ -13,7 +13,9 @@ var
   FittableColumns = require('layout/FittableColumns'),
   LunaService = require('enyo-webos/LunaService'),
   SettingsStore = require('./SettingsStore.js'),
-  I18n = require('./I18n.js');
+  I18n = require('./I18n.js'),
+  ProtectionPanel = require('./ProtectionPanel.js'),
+  Theme = require('./Theme.js');
 
 // Language list lives here so MainPanel can reuse it for the summary line
 var LANGUAGES = [
@@ -138,7 +140,9 @@ var STR = {
   osdShow: 'Show', osdTitle: 'Title', osdPoi: 'Description', osdClock: 'Clock', osdDate: 'Date',
   osdPlaceBlock: 'Title and description', osdClockBlock: 'Clock and date',
   osdPosition: 'Position', osdSize: 'Size', osdFont: 'Font',
-  osdSeconds: 'Show seconds', osdClock24: '24-hour format'
+  osdSeconds: 'Show seconds', osdClock24: '24-hour format',
+  protOverridden: 'overridden by Panel protection',
+  protPreviewNote: 'Panel protection preview: time is sped up'
 };
 
 function T(key, fallback) {
@@ -186,7 +190,10 @@ function ensureStyles() {
 }
 
 var TEXT_STYLE = 'position: absolute; white-space: nowrap; color: #fff; line-height: 1.33; ' +
-  'text-shadow: 0 1px 0 #000;';
+  'text-shadow: 0 1px 0 #000; -webkit-transition: opacity 0.7s linear; transition: opacity 0.7s linear;';
+
+// The preview of Panel protection runs on a short cycle (seconds instead of minutes), same shapes as the screensaver
+var PV_CORNER_EVERY = 4, PV_DRIFT_PERIOD = 8, PV_FADE_CYCLE = 12, PV_DIM_CYCLE = 12, PV_DIM_RAMP = 10;
 
 // vertical gap above each section divider (Show / Title and description / Clock and date)
 var SECTION_STYLE = 'margin-top: 20px;';
@@ -213,7 +220,6 @@ var DisplayPanel = kind({
           {components: [
             {kind: ExpandablePicker, name: 'language', i18n: 'textLang', onChange: 'selectLang',
               components: LANGUAGES},
-            {kind: ToggleItem, name: 'debug', i18n: 'debugInfo', onchange: 'debugToggle'},
             {kind: ToggleItem, name: 'tgOpacitySplit', onchange: 'splitToggle'},
             {kind: Item, name: 'opacityDvItem', showing: false, components: [
               {kind: Marquee.Text, name: 'opacityDvLabel'},
@@ -261,6 +267,11 @@ var DisplayPanel = kind({
             ]},
             {kind: ToggleItem, name: 'tgSeconds', osdKey: 'seconds', onchange: 'toggleOpt'},
             {kind: ToggleItem, name: 'tgClock24', osdKey: 'clock24', onchange: 'toggleOpt'}
+          ]},
+
+          // rarely needed: at the very end, behind a thin line
+          {style: 'margin: 28px 0 0; border-top: 2px solid ' + Theme.RULE + ';', components: [
+            {kind: ToggleItem, name: 'debug', i18n: 'debugInfo', onchange: 'debugToggle'}
           ]}
         ]}
       ]},
@@ -268,19 +279,24 @@ var DisplayPanel = kind({
       // preview: a 1920x1080 stage scaled to 840x472
       {style: 'width: ' + PREVIEW_W + 'px; margin: 10px 30px 0 20px;', components: [
         {name: 'frame', style: 'position: relative; width: ' + PREVIEW_W + 'px; height: ' + PREVIEW_H + 'px; overflow: hidden; ' +
-          'border-radius: 6px; background: linear-gradient(160deg, #1d3557 0%, #457b9d 55%, #e9a66b 100%);', components: [
+          'border-radius: 6px; border: 2px solid ' + Theme.MODAL_BORDER + '; box-sizing: content-box; background: linear-gradient(160deg, #1d3557 0%, #457b9d 55%, #e9a66b 100%);', components: [
           {name: 'stage', style: 'position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; ' +
             'background: url(' + BACKDROP + ') center / cover no-repeat; ' +
             '-webkit-transform: scale(' + STAGE_SCALE + '); transform: scale(' + STAGE_SCALE + '); ' +
             '-webkit-transform-origin: 0 0; transform-origin: 0 0;', components: [
-            {name: 'osdBox', style: 'position: absolute; left: 65px; top: 65px; width: ' + OSD_W + 'px; height: ' + OSD_H + 'px;', components: [
+            {name: 'osdBox', style: 'position: absolute; left: 65px; top: 65px; width: ' + OSD_W + 'px; height: ' + OSD_H + 'px; ' +
+              '-webkit-transition: -webkit-transform 1s linear; transition: transform 1s linear;', components: [
               {name: 'pvTitle', style: TEXT_STYLE},
               {name: 'pvPoi', style: TEXT_STYLE},
               {name: 'pvTime', style: TEXT_STYLE},
               {name: 'pvDate', style: TEXT_STYLE}
             ]}
-          ]}
-        ]}
+          ]},
+          // brightness / dimming of Panel protection: a black layer over the picture
+          {name: 'pvDim', style: 'position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: #000; opacity: 0; ' +
+            'pointer-events: none; -webkit-transition: opacity 1s linear; transition: opacity 1s linear;'}
+        ]},
+        {kind: BodyText, name: 'pvNote', showing: false, style: 'margin: 8px 0 0; font-size: 22px; color: ' + Theme.MUTED + ';'}
       ]}
     ]},
     {kind: LunaService, name: 'save', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec'}
@@ -312,10 +328,12 @@ var DisplayPanel = kind({
     this.previewReady = true;
     this.applySample();
     this.loadSamples();
-    this.timer = setInterval(function () { self.tickPreview(); }, 1000);
+    this.timer = setInterval(function () { self.tickPreview(); self.stepProtection(); }, 1000);
+    this.applyProtection();
   },
 
   destroy: function () {
+    this.pvGone = true;
     if (this.timer) { clearInterval(this.timer); this.timer = null; }
     // flush a pending save so nothing is lost when going back
     if (this.dirty) {
@@ -377,7 +395,8 @@ var DisplayPanel = kind({
     this.$.fontLabel.set('content', tt('osdFont'));
     this.$.fontPicker.createComponents(FONTS.map(function (f, i) {
       if (f.id === self.osdGet('font')) { fontIndex = i; }
-      return {content: f.label, value: f.id};
+      return {content: f.label, value: f.id,
+        style: "font-family: 'OsdFont-" + f.id + "', 'Segoe UI', sans-serif; letter-spacing: " + f.spacing + 'px;'};
     }), {owner: this});
     this.$.fontPicker.set('selectedIndex', fontIndex);
   },
@@ -563,6 +582,108 @@ var DisplayPanel = kind({
     this.$.pvDate.set('content', date);
   },
 
+  // ---- Panel protection in the preview ----
+  // settings.protection, with the defaults of its panel
+  pget: function (key) {
+    var p = this.settings && this.settings.protection;
+    return (p && typeof p === 'object' && p[key] !== undefined) ? p[key] : ProtectionPanel.DEFAULTS[key];
+  },
+
+  // the chosen corners, clockwise (same list as the screensaver)
+  pvCorners: function () {
+    var order = [['cornerTl', 'tl'], ['cornerTr', 'tr'], ['cornerBr', 'br'], ['cornerBl', 'bl']], out = [];
+    order.forEach(function (o) { if (this.pget(o[0])) { out.push(o[1]); } }, this);
+    return out;
+  },
+
+  // 'corners' | 'drift' | 'fade' | '' : the one text protection that is on
+  textMode: function () {
+    if (this.pget('cornersOn')) { return this.pvCorners().length >= 2 ? 'corners' : ''; }
+    if (this.pget('driftOn')) { return 'drift'; }
+    if (this.pget('fadeOn')) { return 'fade'; }
+    return '';
+  },
+
+  // The moving corners replace the two positions of this panel: their pickers are locked and say so
+  lockPositions: function () {
+    var locked = this.textMode() === 'corners';
+    Object.keys(POS_KEYS).forEach(function (name) {
+      this.$[name].set('disabled', locked);
+      this.$[name + 'Label'].set('content', tt('osdPosition') + (locked ? ' (' + tt('protOverridden') + ')' : ''));
+    }, this);
+  },
+
+  // (re)starts the preview of the protection that is on: called when the panel opens
+  applyProtection: function () {
+    var mode = this.textMode(), corners = this.pvCorners(), i;
+    this.pvT = 0;
+    this.pvFade = 1;
+    this.pvPa = this.pvCa = null;
+    this.pvIdx = 0;
+    if (mode === 'corners') {
+      i = corners.indexOf(this.osdGet('placeAnchor'));
+      this.pvIdx = i >= 0 ? i : 0;
+      this.pvSetCorner(corners);
+    }
+    this.$.osdBox.applyStyle('-webkit-transform', null);
+    this.$.osdBox.applyStyle('transform', null);
+    this.lockPositions();
+    this.$.pvNote.set('content', tt('protPreviewNote'));
+    this.$.pvNote.set('showing', !!(mode || this.pget('brightnessOn') || this.pget('dimOn')));
+    this.renderPreview();
+    this.stepProtection();
+  },
+
+  // the title block in the corner, the clock block in the one opposite horizontally (like bl + br)
+  pvSetCorner: function (corners) {
+    this.pvPa = corners[this.pvIdx];
+    this.pvCa = this.pvPa.charAt(0) + (this.pvPa.charAt(1) === 'l' ? 'r' : 'l');
+  },
+
+  setPvFade: function (v) {
+    this.pvFade = v;
+    ['pvTitle', 'pvPoi', 'pvTime', 'pvDate'].forEach(function (n) {
+      this.$[n].applyStyle('opacity', (this.pvOpacity === undefined ? 1 : this.pvOpacity) * v);
+    }, this);
+  },
+
+  // every second: advances the sped-up protection preview
+  stepProtection: function () {
+    var self = this, mode = this.textMode(), t = this.pvT = (this.pvT || 0) + 1, amp, ph, corners, dim, base, k, a, tmp;
+    if (!this.previewReady || this.pvGone) { return; }
+    if (mode === 'drift') {
+      amp = this.pget('driftPx');
+      ph = 2 * Math.PI * t / PV_DRIFT_PERIOD;
+      // Lissajous curve 3:2 from the centre, closed once per cycle (the screensaver's curve, its cycle is driftPeriod minutes)
+      tmp = 'translate(' + Math.round(amp * Math.sin(3 * ph)) + 'px,' + Math.round(amp * Math.sin(2 * ph)) + 'px)';
+      this.$.osdBox.applyStyle('-webkit-transform', tmp);
+      this.$.osdBox.applyStyle('transform', tmp);
+    } else if (mode === 'corners' && t % PV_CORNER_EVERY === 0) {
+      corners = this.pvCorners();
+      this.setPvFade(0);
+      setTimeout(function () {
+        if (self.pvGone) { return; }
+        self.pvIdx = (self.pvIdx + 1) % corners.length;
+        self.pvSetCorner(corners);
+        self.renderPreview();
+        self.setPvFade(1);
+      }, 800);
+    } else if (mode === 'fade') {
+      k = t % PV_FADE_CYCLE;
+      if (k === 4) { this.setPvFade(0); }
+      if (k === 8 || k === 0) { this.setPvFade(1); }
+    }
+    // brightness and dimming: the layer is the part of the light that is taken away
+    base = this.pget('brightnessOn') ? this.pget('brightness') / 100 : 1;
+    dim = 1;
+    if (this.pget('dimOn')) {
+      k = t % PV_DIM_CYCLE;
+      dim = 1 + (this.pget('dimTo') / 100 - 1) * Math.min(k / PV_DIM_RAMP, 1);
+    }
+    a = Math.min(0.9, Math.max(0, 1 - base * dim));
+    this.$.pvDim.applyStyle('opacity', a);
+  },
+
   // one line of the OSD in its place: same numbers as the QML
   putLine: function (ctrl, on, anchor, y, px) {
     var col = anchor.charAt(1);
@@ -580,7 +701,7 @@ var DisplayPanel = kind({
     var g = this.osdGet.bind(this),
       titleOn = !!g('title'), poiOn = !!g('poi'), clockOn = !!g('clock'), dateOn = !!g('date'),
       ps = g('placeScale') / 100, cs = g('clockScale') / 100,
-      pa = g('placeAnchor'), ca = g('clockAnchor'),
+      pa = this.pvPa || g('placeAnchor'), ca = this.pvCa || g('clockAnchor'),
       pH = (titleOn && poiOn ? 106 : (titleOn ? 56 : (poiOn ? 40 : 0))) * ps,
       cH = (clockOn && dateOn ? 136 : (clockOn ? 79 : (dateOn ? 40 : 0))) * cs,
       py = blockY(pa, pH), cy = blockY(ca, cH),
@@ -590,8 +711,9 @@ var DisplayPanel = kind({
     this.putLine(this.$.pvPoi, poiOn, pa, py + (titleOn ? 66 * ps : 0), 40 * ps);
     this.putLine(this.$.pvTime, clockOn, ca, cy, 79 * cs);
     this.putLine(this.$.pvDate, dateOn, ca, cy + (clockOn ? 96 * cs : 0), 40 * cs);
+    this.pvOpacity = opacity;
     ['pvTitle', 'pvPoi', 'pvTime', 'pvDate'].forEach(function (n) {
-      this.$[n].applyStyle('opacity', opacity);
+      this.$[n].applyStyle('opacity', opacity * (this.pvFade === undefined ? 1 : this.pvFade));
       this.$[n].applyStyle('font-family', "'OsdFont-" + font.id + "', 'Segoe UI', sans-serif");
       this.$[n].applyStyle('letter-spacing', font.spacing + 'px');
     }, this);

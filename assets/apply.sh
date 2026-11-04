@@ -37,16 +37,6 @@ NOTIFY_PIDFILE="/tmp/aerial-notify.pid"
 NOTIFY_HEARTBEAT="/tmp/aerial-watcher.json"
 SAM_WAIT=60   # seconds to wait for SAM at boot
 
-if [[ -f "$MOUNT_TARGET" ]]; then
-    if ! findmnt "$MOUNT_TARGET"; then
-        mount --bind "$QML_PATH" "$MOUNT_TARGET"
-        echo "[+] Enabled succesfully" >&2
-    else
-        echo "[~] Enabled already" >&2
-    fi
-    exit 0
-fi
-
 # Calls a luna method and checks its reply against an extended regex (case-insensitive). The
 # reply is captured first so luna-send's own exit status doesn't matter under pipefail, and the
 # call gives up after 8 s so a busy service can't hang the app or the boot hooks. luna-send gets
@@ -307,6 +297,43 @@ mirror_videoads() {
         echo "[~] Could not also replace LG's video screensaver ($VA_ID)" >&2
     fi
 }
+
+# Boot hook: puts the screen brightness back if the TV rebooted in the middle of a screensaver
+# (Panel protection lowers it). Installed by every apply, so it also works with the autostart off;
+# it does nothing unless the watcher left a state file (see backlight-lib.sh).
+BL_HOOK="/var/lib/webosbrew/init.d/48-aerial-backlight-restore"
+install_backlight_hook() {
+    [[ -d "$(dirname "$BL_HOOK")" ]] || mkdir -p "$(dirname "$BL_HOOK")" || return 0
+    tmp="$BL_HOOK.new"
+    cat > "$tmp" <<HOOK
+#!/bin/sh
+# Installed by Aerial's apply.sh: puts the screen brightness back after a reboot during a screensaver
+STATE="/var/lib/webosbrew/custom-screensaver-aerial/backlight.state"
+R="$ASSETS_DIR/backlight-restore.sh"
+[ -s "\$STATE" ] && [ -f "\$R" ] && { sh "\$R" </dev/null >/dev/null 2>&1 & }
+exit 0
+HOOK
+    if cmp -s "$tmp" "$BL_HOOK"; then
+        rm -f "$tmp"
+    else
+        chmod 755 "$tmp" && mv "$tmp" "$BL_HOOK"
+    fi
+}
+install_backlight_hook || true
+
+if [[ -f "$MOUNT_TARGET" ]]; then
+    if ! findmnt "$MOUNT_TARGET"; then
+        mount --bind "$QML_PATH" "$MOUNT_TARGET"
+        echo "[+] Enabled succesfully" >&2
+    else
+        echo "[~] Enabled already" >&2
+    fi
+    # The watcher also serves the QML screensaver: it puts the screen brightness back (Panel
+    # protection) and writes the heartbeat the screensaver reads
+    mount_heartbeat "$ASSETS_DIR"
+    start_watcher
+    exit 0
+fi
 
 # One apply at a time (a double press, or Apply during the boot hooks), so mounts don't stack.
 # Aerial 3.0.2's restore hook takes the same lock at boot.

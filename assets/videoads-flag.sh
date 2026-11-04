@@ -21,6 +21,16 @@
 # pressing Apply) it leaves them alone. The file is written in place, as a bind mount would keep
 # pointing at a replaced file.
 #
+# Panel protection (brightness, see backlight-lib.sh). The screensaver lowers the screen
+# brightness (picture "backlight") and puts it back itself, but it can be cut off or the TV can
+# reboot first. So this watcher keeps the user's brightness (a value that stayed the same for
+# STABLE checks while no screensaver ran), publishes it as "orig" in the heartbeat file (the
+# screensaver changes the brightness only with it, i.e. only while this watcher runs), saves it
+# to a file when a screensaver starts, and puts it back once none runs: at every check, also
+# after a reboot (the file is read at start). Without a watcher the brightness is not touched.
+# The same watcher also serves the QML screensaver (older webOS): then it is its qml/main.qml that
+# is mounted instead of the app directory.
+#
 # Polling rather than subscriptions: nothing to go stale if a service restarts, and no long-lived
 # child process. The screensaver only starts after minutes without input, and an app switch is
 # input, so a few seconds is plenty.
@@ -46,8 +56,14 @@ else
 fi
 
 mounted() {
-    grep -qs " $APP_DIR " /proc/mounts
+    grep -qs " $APP_DIR " /proc/mounts || grep -qs " $APP_DIR/qml/main.qml " /proc/mounts
 }
+
+ASSETS_DIR="$(dirname "$(realpath "$0")")"
+SETTINGS="$ASSETS_DIR/settings.json"
+STABLE=6       # checks (POLL seconds each) the brightness must stay the same to count as the user's
+
+. "$ASSETS_DIR/backlight-lib.sh"
 
 # luna-send gets /dev/null as stdin: run from a script it was reported to return nothing
 # otherwise (#55)
@@ -76,9 +92,67 @@ maybe_on() {  # reason
 # In place (a bind mount would keep pointing at a replaced file); the page treats a half-written
 # file as no watcher for that second. Errors are dropped: this runs every check.
 heartbeat() {
-    { echo "{\"time\":$(date +%s)}" > "$HEARTBEAT"; } 2>/dev/null
+    extra=
+    [ -n "$orig" ] && extra=",\"orig\":$orig"
+    { echo "{\"time\":$(date +%s)$extra}" > "$HEARTBEAT"; } 2>/dev/null
 }
 
+# ---- brightness ----
+# Whether the app manager lists the screensaver app as running
+ss_listed() {
+    reply="$($TIMEOUT luna-send -n 1 "$SAM/running" '{}' </dev/null 2>/dev/null || true)"
+    echo "$reply" | grep -qE "\"id\" *: *\"$APP_IDS\""
+}
+
+# The brightness is only followed while the protection uses it (brightness or dimming switched on)
+prot_enabled() {
+    grep -qsE '"(brightnessOn|dimOn)" *: *true' "$SETTINGS"
+}
+
+# Screensaver not running: follow the brightness, $orig is the value that stayed the same
+prot_track() {
+    if ! prot_enabled; then
+        orig=; orig_mode=; cand=; cand_n=0
+        return 0
+    fi
+    read_picture || return 0
+    if [ "$cur_bl" = "$cand" ] && [ "$cur_mode" = "$cand_mode" ]; then
+        [ $cand_n -lt $STABLE ] && cand_n=$((cand_n + 1))
+    else
+        cand="$cur_bl"; cand_mode="$cur_mode"; cand_n=1
+    fi
+    if [ $cand_n -ge $STABLE ]; then
+        orig="$cand"; orig_mode="$cand_mode"
+    fi
+}
+
+# Screensaver running: keep $orig from now on. Without a stable one (watcher just started) nothing
+# is saved, and the screensaver, which gets no "orig", leaves the brightness alone.
+prot_freeze() {
+    [ $frozen = 1 ] && return 0
+    [ -n "$orig" ] || return 0
+    frozen=1
+    save_state
+}
+
+# Screensaver not running (and tvpowerd answered)
+prot_idle() {
+    if [ $frozen = 1 ]; then
+        # not while the app is still listed (it may be starting or closing), unless that goes on
+        if ss_listed; then
+            rl=$((rl + 1))
+            [ $rl -lt $STUCK ] && return 0
+        else
+            rl=0
+        fi
+        restore_backlight && frozen=0
+        return 0
+    fi
+    prot_track
+}
+
+orig=; orig_mode=; cand=; cand_mode=; cand_n=0; frozen=0; rl=0
+load_state || true   # a screensaver that left the brightness lowered (killed, or the TV rebooted)
 quiet=0     # 1 once notifications were switched on and the screensaver hasn't run since
 no_answer=0
 listed=0
@@ -94,15 +168,18 @@ while mounted; do
     # during its start. While it starts, the app manager check in maybe_on holds the enable back.
     if [ "$state" = "Screen Saver" ] || [ "$processing" = "Request Screen Saver" ]; then
         no_answer=0; quiet=0; listed=0
+        prot_freeze
     elif [ -n "$state" ]; then
         no_answer=0
         mounted && maybe_on "$state${processing:+, $processing}"
+        prot_idle
     else
         no_answer=$((no_answer + 1))
         [ $no_answer -ge $NO_ANSWER ] && mounted && maybe_on "tvpowerd not answering"
     fi
     sleep $POLL
 done
-# Unmounted (Aerial undone, or replaced): nothing else will switch them on
+# Unmounted (Aerial undone, or replaced): nothing else will switch them on, or put the brightness back
 [ $ran = 1 ] && quiet=0 && notify_on "screensaver unmounted"
+[ $frozen = 1 ] && { restore_backlight || true; }
 exit 0

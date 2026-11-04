@@ -28,6 +28,9 @@
          font-family: SegoeUILight, sans-serif; letter-spacing: -1px;
          opacity: 0; transition: opacity 3s ease; }
   #osd.fading { transition-duration: 5s; }
+  /* Panel protection, drift: the box moves 1 px at a time, smoothly */
+  body.drift #osd { transition-property: opacity, transform; transition-duration: 3s, 1s; transition-timing-function: ease, linear; }
+  body.drift #osd.fading { transition-duration: 5s, 1s; }
   #osd .ln { position: absolute; white-space: nowrap; line-height: 1.33; text-shadow: 0 1px 0 #000; }
   /* Clock mode: only the time and date, moved every minute against OLED burn-in */
   body.clock #osd { right: auto; bottom: auto; text-align: right; }
@@ -59,6 +62,16 @@ var sourceKey = "";   // the source type actually chosen for the current video (
 var stalledSeconds = 0;
 var clockMode = false;
 var clockTimers = [];
+
+// ---- Panel protection (settings.protection, written by the app's "Panel protection" panel) ----
+// Defaults must stay equal to DEFAULTS in ProtectionPanel.js. Brightness is the picture "backlight" (0-100).
+// Protection of the text: one of "corners" / "drift" / "fade" (they exclude each other, the app's panel keeps it
+// so). It takes priority over the position / opacity of the On-screen display panel. In clock mode the clock
+// has its own moving: only the drift applies there.
+var PTXT = { mode: "", corners: [], idx: 0, pa: null, ca: null, age: 0, faded: false };
+var PROT = { elapsed: 0, orig: -1, base: -1, last: -1, panelOff: false, standbyDone: false };
+// luna method (under com.webos.service.tvpower/power/) that puts the TV in standby; "" = not known yet, nothing is called
+var STANDBY_METHOD = "";
 
 var video = document.getElementById("video");
 var osd = document.getElementById("osd");
@@ -136,7 +149,7 @@ function putLine(el, on, anchor, y, px) {
 function layoutOSD() {
     var titleOn = !!osdGet("title"), poiOn = !!osdGet("poi"), clockOn = !!osdGet("clock"), dateOn = !!osdGet("date"),
         ps = osdGet("placeScale") / 100, cs = osdGet("clockScale") / 100,
-        pa = osdGet("placeAnchor"), ca = osdGet("clockAnchor"),
+        pa = PTXT.pa || osdGet("placeAnchor"), ca = PTXT.ca || osdGet("clockAnchor"),
         boxH = window.innerHeight - 130,
         pH = (titleOn && poiOn ? 106 : (titleOn ? 56 : (poiOn ? 40 : 0))) * ps,
         cH = (clockOn && dateOn ? 136 : (clockOn ? 79 : (dateOn ? 40 : 0))) * cs;
@@ -184,13 +197,17 @@ function fixUrl(url) {
 var notifyCtl = typeof PalmServiceBridge !== "undefined";
 var notifyOff = false;
 var watcherAlive = false;
+var watcherOrig = null;   // the user's brightness, kept by the watcher (Panel protection); null = unknown
 var WATCHER_STALE = 60; // seconds: a check can take a while when services are slow
 var closing = false;    // a key was pressed: no more disables or videos
 function checkWatcher() {
     if (!notifyCtl) return Promise.resolve();
     return loadJSONData(basePath + "watcher.json")
-        .then(function (w) { watcherAlive = Math.abs(Date.now() / 1000 - w.time) < WATCHER_STALE; })
-        .catch(function () { watcherAlive = false; });
+        .then(function (w) {
+            watcherAlive = Math.abs(Date.now() / 1000 - w.time) < WATCHER_STALE;
+            watcherOrig = (watcherAlive && typeof w.orig === "number") ? w.orig : null;
+        })
+        .catch(function () { watcherAlive = false; watcherOrig = null; });
 }
 // done (optional) runs once the call is answered (or after 3 s), or at once if nothing was sent.
 // force sends a disable even if one was sent already.
@@ -304,6 +321,7 @@ function candidatesFor(night, again) {
 
 // afterError: true when the video before failed to play
 function playRandomVideo(afterError) {
+    if (PROT.panelOff) return;
     if (closing) return;
     var assets = playList.assets;
     var again = afterError !== true;
@@ -335,6 +353,7 @@ video.addEventListener("playing", function () {
     if (video.currentTime <= 2) setNotifications(false, true);
     video.classList.add("on");
     osd.style.opacity = osdOpacityNow();
+    protOnPlaying();
 });
 video.addEventListener("ended", playRandomVideo);
 video.addEventListener("error", function () {
@@ -360,7 +379,13 @@ function checkStatus() {
         stalledSeconds = 0;
     }
     var poiKey = (asset.pointsOfInterest || {})[Math.floor(video.currentTime)];
-    if (poiKey && poi.strings[poiKey]) document.getElementById("poi").textContent = poi.strings[poiKey];
+    if (poiKey && poi.strings[poiKey]) {
+        var poiEl = document.getElementById("poi");
+        if (poiEl.textContent !== poi.strings[poiKey]) {
+            poiEl.textContent = poi.strings[poiKey];
+            protPoiChanged();
+        }
+    }
 }
 
 function updateOSD() {
@@ -459,6 +484,146 @@ function stopClock() {
     playRandomVideo();
 }
 
+function protGet(key, def) {
+    var p = settings.protection;
+    return (p && typeof p === "object" && p[key] !== undefined) ? p[key] : def;
+}
+function protNum(key, def) {
+    var v = Number(protGet(key, def));
+    return isNaN(v) ? def : v;
+}
+function setBacklight(v) {
+    v = Math.max(0, Math.min(100, Math.round(v)));
+    if (PROT.orig < 0 || v === PROT.last) return;
+    PROT.last = v;
+    luna("luna://com.webos.settingsservice/setSystemSettings",
+        { category: "picture", settings: { backlight: v }, notifySelf: false });
+}
+function protRestore() {
+    if (PROT.orig >= 0) setBacklight(PROT.orig);
+}
+// The brightness is changed only from the user's value that the watcher keeps (and puts back if this
+// page is cut off): without a recent watcher, or without that value, it is left alone.
+function textFade(v, secs) {
+    ["name", "poi", "time", "date"].forEach(function (id) {
+        var el = document.getElementById(id);
+        el.style.transition = "opacity " + secs + "s ease";
+        el.style.opacity = v;
+    });
+}
+function protApplyCorner() {
+    PTXT.pa = PTXT.corners[PTXT.idx];
+    PTXT.ca = PTXT.pa.charAt(0) + (PTXT.pa.charAt(1) === "l" ? "r" : "l");   // opposite horizontally, like bl + br
+    layoutOSD();
+}
+function protTextStart() {
+    var order = [["cornerTl", "tl"], ["cornerTr", "tr"], ["cornerBr", "br"], ["cornerBl", "bl"]], list = [], i;
+    PTXT.mode = "";
+    if (protGet("cornersOn", false)) {
+        for (i = 0; i < order.length; i++) if (protGet(order[i][0], true)) list.push(order[i][1]);
+        if (list.length >= 2) {
+            PTXT.mode = "corners";
+            PTXT.corners = list;
+            i = list.indexOf(osdGet("placeAnchor"));
+            PTXT.idx = i >= 0 ? i : 0;
+            protApplyCorner();
+        }
+    } else if (protGet("driftOn", false)) {
+        PTXT.mode = "drift";
+        document.body.classList.add("drift");
+    } else if (protGet("fadeOn", false)) {
+        PTXT.mode = "fade";
+    }
+}
+// every second
+function protTextTick() {
+    var amp, ph;
+    if (PTXT.mode === "drift") {
+        amp = protNum("driftPx", 8);
+        ph = 2 * Math.PI * PROT.elapsed / (Math.max(1, protNum("driftPeriod", 5)) * 60);
+        // Lissajous curve 3:2 from the centre, closed once per driftPeriod (same in the app's preview)
+        osd.style.transform = "translate(" + Math.round(amp * Math.sin(3 * ph)) + "px," + Math.round(amp * Math.sin(2 * ph)) + "px)";
+    } else if (PTXT.mode === "corners" && !clockMode) {
+        if (PROT.elapsed % Math.max(1, protNum("cornersEvery", 60)) === 0) {
+            textFade(0, 1.5);
+            setTimeout(function () {
+                if (closing) return;
+                PTXT.idx = (PTXT.idx + 1) % PTXT.corners.length;
+                protApplyCorner();
+                textFade(1, 1.5);
+            }, 1500);
+        }
+    } else if (PTXT.mode === "fade" && !clockMode && !PTXT.faded) {
+        if (++PTXT.age >= Math.max(1, protNum("fadeAfter", 30))) {
+            PTXT.faded = true;
+            textFade(0, 2.5);
+        }
+    }
+}
+// the description changed: the text is fresh, so the countdown starts again (and it appears, if it was faded out)
+function protPoiChanged() {
+    if (PTXT.mode !== "fade") return;
+    PTXT.age = 0;
+    if (PTXT.faded && protGet("fadeInPoi", true)) {
+        PTXT.faded = false;
+        textFade(1, 1.5);
+    }
+}
+// a new video: the text is back whatever the settings
+function protOnPlaying() {
+    if (PTXT.mode !== "fade") return;
+    PTXT.age = 0;
+    if (PTXT.faded) {
+        PTXT.faded = false;
+        textFade(1, 1.5);
+    }
+}
+function protStart() {
+    protTextStart();
+    var bright = protGet("brightnessOn", false), dim = protGet("dimOn", false);
+    if (!(bright || dim) || watcherOrig === null) return;
+    PROT.orig = PROT.last = watcherOrig;
+    if (bright) {
+        PROT.base = Math.max(0, Math.min(100, Math.round(protNum("brightness", 30))));
+        setBacklight(PROT.base);
+    } else {
+        PROT.base = PROT.orig;
+    }
+}
+// called every second
+function protTick() {
+    PROT.elapsed++;
+    protTextTick();
+    var min = PROT.elapsed / 60;
+    // gradual dimming: from base down to dimTo % of it, over dimDuration minutes after dimAfter
+    if (!PROT.panelOff && PROT.base >= 0 && protGet("dimOn", false)) {
+        var after = protNum("dimAfter", 10), dur = Math.max(protNum("dimDuration", 5), 0.1);
+        if (min >= after) {
+            var f = Math.min((min - after) / dur, 1);
+            setBacklight(PROT.base + (PROT.base * protNum("dimTo", 20) / 100 - PROT.base) * f);
+        }
+    }
+    if (!PROT.panelOff && protGet("offOn", false) && min >= protNum("offAfter", 60)) protPanelOff();
+    if (!PROT.standbyDone && protGet("standbyOn", false) && min >= protNum("standbyAfter", 120)) protStandby();
+}
+// The brightness is restored first: the panel is dark anyway, and it stays right even if the screensaver is cut off
+function protPanelOff() {
+    PROT.panelOff = true;
+    protRestore();
+    video.pause();
+    luna("luna://com.webos.service.tvpower/power/turnOffScreen");
+}
+function protStandby() {
+    PROT.standbyDone = true;
+    protRestore();
+    if (!STANDBY_METHOD) { console.log("protection: standby command is not set"); return; }
+    luna("luna://com.webos.service.tvpower/power/" + STANDBY_METHOD);
+}
+function protDebug() {
+    return "backlight " + PROT.last + " (was " + PROT.orig + (PROT.orig < 0 ? ", " + (watcherAlive ? "no value from the watcher" : "no watcher") : "") + "), " + Math.floor(PROT.elapsed / 60) + " min" +
+        (PROT.panelOff ? ", panel off" : "") + (PROT.standbyDone ? ", standby sent" : "") + (PTXT.mode ? ", text: " + PTXT.mode : "");
+}
+
 function updateDebug() {
     if (!settings.debug) return;
     var el = document.getElementById("debug");
@@ -468,6 +633,7 @@ function updateDebug() {
         "\n Source Type: " + settings.sourceType + sourceAlt +
         "\n Try Other Source: " + settings.playLowerQuality +
         "\n Locale: " + settings.localeLang +
+        "\n Protection: " + protDebug() +
         "\n OSD opacity: " + Math.round(osdOpacityNow() * 100) + "%" + (settings.osdOpacitySplit ? " (DV " + osdOpacityOf("dv") + " / SDR " + osdOpacityOf("sdr") + ")" : "") +
         "\n Timecode: " + Math.floor(video.currentTime) + " / " + Math.floor(video.duration || 0) +
         "\n Ready State: " + video.readyState +
@@ -488,12 +654,13 @@ function closeOnce() {
 document.addEventListener("keydown", function () {
     if (closing) return;
     closing = true;
+    protRestore();
     setTimeout(closeOnce, 500);
     setNotifications(true, false, closeOnce);
 });
 // Closed by the system (tvpowerd ending the screensaver): a call from here may not get out, which
 // is why videoads-flag.sh also switches notifications on
-window.addEventListener("pagehide", function () { setNotifications(true); });
+window.addEventListener("pagehide", function () { setNotifications(true); protRestore(); });
 
 loadJSONData(basePath + "settings.json")
     .then(function (s) { for (var key in s) settings[key] = s[key]; })
@@ -516,7 +683,8 @@ loadJSONData(basePath + "settings.json")
         applyOsdFont();
         layoutOSD();
         updateOSD();
-        setInterval(function () { checkStatus(); updateOSD(); updateDebug(); checkWatcher(); }, 1000);
+        protStart();
+        setInterval(function () { checkStatus(); updateOSD(); updateDebug(); checkWatcher(); protTick(); }, 1000);
         if (r[2]) startClock(); else playRandomVideo();
     })
     .catch(function (e) {

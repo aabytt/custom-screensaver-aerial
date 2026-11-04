@@ -67,11 +67,37 @@ WebOSWindow {
     // derived layout: title/description block and clock/date block
     // (in clock-only mode the clock block hops between the corners instead of using clockAnchor)
     property bool clockOn : (decoderHeld && !showClock && !showDate) ? true : showClock
-    property string clockAnchorEff : decoderHeld ? ["br", "tr", "tl", "bl"][appliedCorner] : clockAnchor
-    property string placeCol : placeAnchor.charAt(1)
+    // Panel protection "move the text between corners" replaces both anchors of the On-screen display panel
+    property string placeAnchorEff : protTextMode === "corners" ? protPlaceAnchor : placeAnchor
+    property string clockAnchorEff : decoderHeld ? ["br", "tr", "tl", "bl"][appliedCorner] : (protTextMode === "corners" ? protClockAnchor : clockAnchor)
+    property string placeCol : placeAnchorEff.charAt(1)
     property string clockCol : clockAnchorEff.charAt(1)
-    property real placeY : blockY(placeAnchor, placeBlockH())
+    property real placeY : blockY(placeAnchorEff, placeBlockH())
     property real clockY : blockY(clockAnchorEff, clockBlockH())
+    // Panel protection (settings.protection, written by the app's "Panel protection" panel).
+    // Defaults must stay equal to DEFAULTS in ProtectionPanel.js. Brightness is the picture "backlight" (0-100).
+    property int protElapsed : 0        // seconds since the screensaver started
+    property int protOrig : -1          // the user's backlight, from the watcher (-1 = unknown: brightness is left alone)
+    property int protBase : -1          // level the dimming starts from (custom brightness, or protOrig)
+    property int protLast : -1          // level last sent
+    property bool panelOff : false      // the panel was turned off by the timer: no video until the screensaver ends
+    property bool standbyDone : false
+    // Protection of the on-screen text: one of "corners" / "drift" / "fade" (they exclude each other, the panel
+    // keeps it so), "" = none. It takes priority over the position / opacity of the On-screen display panel.
+    property string protTextMode : ""
+    property var protCornerList : []    // chosen corners, clockwise
+    property int protCornerIdx : 0
+    property string protPlaceAnchor : "bl"
+    property string protClockAnchor : "br"
+    property real protFade : 1          // 0..1, multiplies the opacity of all the text
+    property int driftX : 0
+    property int driftY : 0
+    property int protFadeAge : 0        // seconds the text has been shown since the last (re)appearance
+    property bool protFaded : false
+    onPoiIndexChanged : protPoiChanged()
+    property bool protNoWatcher : false  // no recent watcher / no brightness from it: brightness is left alone
+    // luna method (under com.webos.service.tvpower/power/) that puts the TV in standby; empty = not known yet, nothing is called
+    property string standbyMethod : ""
     property string basePath : "file:///media/developer/apps/usr/palm/applications/org.aabytt.webos.custom-screensaver-aerial/assets/"
     Component.onCompleted : {
         init()
@@ -82,7 +108,10 @@ WebOSWindow {
     }
     // Notifications are disabled on start and re-enabled only after 2 s of video;
     // always re-enable on exit, otherwise Back loses the system "exit app?" popup (#52)
-    Component.onDestruction : notificationsService.set('enable')
+    Component.onDestruction : {
+        notificationsService.set('enable')
+        protRestore()
+    }
     I.ILib {
         id : ilib
     }
@@ -121,6 +150,7 @@ WebOSWindow {
             fadeOutVideo.running = false
         }
         onPlaying : {
+            protOnPlaying()
             updateOsdAlpha()
             punchThroughArea.visible = true
             fadeInVideo.running = true
@@ -166,7 +196,10 @@ WebOSWindow {
         visible : true
         color : "transparent"
         anchors.fill : parent
-        anchors.margins : 65
+        anchors.leftMargin : 65 + driftX
+        anchors.rightMargin : 65 - driftX
+        anchors.topMargin : 65 + driftY
+        anchors.bottomMargin : 65 - driftY
         OpacityAnimator {
             id : fadeInOsd
             target : osd
@@ -186,7 +219,7 @@ WebOSWindow {
         Text {
             id : name
             visible : showTitle && !decoderHeld
-            opacity : osdAlpha
+            opacity : osdAlpha * protFade
             text : poi.strings[playList.assets[randomIndex].localizedNameKey]
             font.family : segoeUILight.name
             font.letterSpacing : fontSpacing
@@ -203,7 +236,7 @@ WebOSWindow {
         Text {
             id : poiOSD
             visible : showPoi && !decoderHeld
-            opacity : osdAlpha
+            opacity : osdAlpha * protFade
             text : poi.strings[playList.assets[randomIndex].pointsOfInterest[poiIndex]]
             font.family : name.font.family
             font.letterSpacing : fontSpacing
@@ -220,7 +253,7 @@ WebOSWindow {
         Text {
             id : timeOSD
             visible : clockOn
-            opacity : osdAlpha * clockFade
+            opacity : osdAlpha * clockFade * protFade
             font.family : name.font.family
             font.letterSpacing : fontSpacing
             font.pixelSize : Math.round(79 * clockScale / 100)
@@ -236,7 +269,7 @@ WebOSWindow {
         Text {
             id : dateOSD
             visible : showDate
-            opacity : osdAlpha * clockFade
+            opacity : osdAlpha * clockFade * protFade
             font.family : name.font.family
             font.letterSpacing : fontSpacing
             font.pixelSize : Math.round(40 * clockScale / 100)
@@ -369,6 +402,7 @@ WebOSWindow {
     }
     function loadResources() {
         applyOsdSettings()
+        protStart()
         loadJSONData(basePath + 'videos.json', 'playList')
         loadJSONData(basePath + 'locales/' + settings.localeLang + '.json', 'poi', playRandomVideo)
     }
@@ -428,7 +462,7 @@ WebOSWindow {
     }
     function playRandomVideo() {
         // Wait for the decoder check; clock-only mode never starts a video
-        if (!decoderDecided || decoderHeld || !playList || !poi)
+        if (!decoderDecided || decoderHeld || panelOff || !playList || !poi)
             return
         stalledCounter = 0
         var allowed = allowedIndices()
@@ -528,6 +562,7 @@ WebOSWindow {
         "\n Source Type: " + settings.sourceType + sourceAlt +
         "\n Try Other Source: " + settings.playLowerQuality +
         "\n Locale: " + settings.localeLang +
+        "\n Protection: " + protDebug() +
         "\n OSD opacity: " + Math.round(osdAlpha * 100) + "%" +
         "\n Timecode: " + Math.floor(videoOutput.position / 1000) + " / " + Math.floor(videoOutput.duration / 1000) +
         "\n Media Status: " + status +
@@ -589,6 +624,43 @@ WebOSWindow {
         } else
             playRandomVideo()
     }
+    // ---- Panel protection ----
+    Service {
+        id : backlightSet
+        appId : window.appId
+        service : "com.webos.settingsservice"
+        method : "setSystemSettings"
+        onCallFailure : console.log("protection: setSystemSettings failed")
+    }
+    Service {
+        id : screenOffService
+        appId : window.appId
+        service : "com.webos.service.tvpower"
+        method : "power/turnOffScreen"
+    }
+    Service {
+        id : standbyService
+        appId : window.appId
+        service : "com.webos.service.tvpower"
+        method : "power/" + standbyMethod
+    }
+    SequentialAnimation {
+        id : protCornerHop
+        NumberAnimation { target : window; property : "protFade"; to : 0; duration : 1500 }
+        ScriptAction { script : protApplyCorner() }
+        NumberAnimation { target : window; property : "protFade"; to : 1; duration : 1500 }
+    }
+    NumberAnimation {
+        id : protFadeAnim
+        target : window
+        property : "protFade"
+    }
+    Timer {
+        id : protTimer
+        interval : 1000
+        repeat : true
+        onTriggered : protTick()
+    }
     Service {
         id : decoderCheck
         appId : window.appId
@@ -613,6 +685,176 @@ WebOSWindow {
         function set(param) {
             call("luna://com.webos.notification/", param)
         }
+    }
+    function protGet(key, def) {
+        var p = settings.protection
+        return (p && typeof p === "object" && p[key] !== undefined) ? p[key] : def
+    }
+    function protNum(key, def) {
+        var v = Number(protGet(key, def))
+        return isNaN(v) ? def : v
+    }
+    // The brightness is changed only from the user's value that the watcher keeps in watcher.json (and puts
+    // back if the screensaver is cut off): without a recent watcher, or without that value, it is left alone.
+    function protStart() {
+        protTextStart()
+        if (!(protGet("brightnessOn", false) || protGet("dimOn", false) || protGet("offOn", false) || protGet("standbyOn", false)
+              || protTextMode !== ""))
+            return
+        protTimer.start()
+        if (!(protGet("brightnessOn", false) || protGet("dimOn", false)))
+            return
+        var xhr = new XMLHttpRequest()
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState !== XMLHttpRequest.DONE)
+                return
+            try {
+                var w = JSON.parse(xhr.responseText)
+                if (xhr.status === 200 && Math.abs(Date.now() / 1000 - w.time) < 30 && typeof w.orig === "number") {
+                    protNoWatcher = false
+                    protOnOrig(w.orig)
+                    return
+                }
+            } catch (e) {}
+            protNoWatcher = true
+        }
+        xhr.open("GET", basePath + "watcher.json")
+        xhr.send()
+    }
+    function protOnOrig(orig) {
+        if (protOrig >= 0)
+            return
+        protOrig = orig
+        protLast = protOrig
+        if (protGet("brightnessOn", false)) {
+            protBase = Math.max(0, Math.min(100, Math.round(protNum("brightness", 30))))
+            setBacklight(protBase)
+        } else
+            protBase = protOrig
+    }
+    function setBacklight(v) {
+        v = Math.max(0, Math.min(100, Math.round(v)))
+        if (protOrig < 0 || v === protLast)
+            return
+        protLast = v
+        backlightSet.callService({category : "picture", settings : {backlight : v}, notifySelf : false})
+    }
+    function protRestore() {
+        if (protOrig >= 0)
+            setBacklight(protOrig)
+    }
+    function protTick() {
+        protElapsed++
+        protTextTick()
+        var min = protElapsed / 60
+        // gradual dimming: from protBase down to dimTo % of it, over dimDuration minutes after dimAfter
+        if (!panelOff && protBase >= 0 && protGet("dimOn", false)) {
+            var after = protNum("dimAfter", 10), dur = Math.max(protNum("dimDuration", 5), 0.1)
+            if (min >= after) {
+                var f = Math.min((min - after) / dur, 1)
+                setBacklight(protBase + (protBase * protNum("dimTo", 20) / 100 - protBase) * f)
+            }
+        }
+        if (!panelOff && protGet("offOn", false) && min >= protNum("offAfter", 60))
+            protPanelOff()
+        if (!standbyDone && protGet("standbyOn", false) && min >= protNum("standbyAfter", 120))
+            protStandby()
+    }
+    // The brightness is restored first: the panel is dark anyway, and it stays right even if the screensaver is cut off
+    function protPanelOff() {
+        panelOff = true
+        protRestore()
+        videoOutput.stop()
+        screenOffService.callService({})
+    }
+    function protStandby() {
+        standbyDone = true
+        protRestore()
+        if (standbyMethod === "") {
+            console.log("protection: standby command is not set")
+            return
+        }
+        standbyService.callService({})
+    }
+    // ---- protection of the text ----
+    // the chosen corners, clockwise
+    function protCorners() {
+        var order = [["cornerTl", "tl"], ["cornerTr", "tr"], ["cornerBr", "br"], ["cornerBl", "bl"]], out = []
+        for (var i = 0; i < order.length; i++) {
+            if (protGet(order[i][0], true))
+                out.push(order[i][1])
+        }
+        return out
+    }
+    // the title block sits in the corner, the clock block in the one opposite horizontally (like bl + br)
+    function protApplyCorner() {
+        protPlaceAnchor = protCornerList[protCornerIdx]
+        protClockAnchor = protPlaceAnchor.charAt(0) + (protPlaceAnchor.charAt(1) === "l" ? "r" : "l")
+    }
+    function protTextStart() {
+        protTextMode = ""
+        if (protGet("cornersOn", false)) {
+            protCornerList = protCorners()
+            if (protCornerList.length >= 2) {
+                protTextMode = "corners"
+                var i = protCornerList.indexOf(placeAnchor)
+                protCornerIdx = i >= 0 ? i : 0
+                protApplyCorner()
+            }
+        } else if (protGet("driftOn", false))
+            protTextMode = "drift"
+        else if (protGet("fadeOn", false))
+            protTextMode = "fade"
+    }
+    function protFadeTo(v, ms) {
+        protFadeAnim.stop()
+        protFadeAnim.to = v
+        protFadeAnim.duration = ms
+        protFadeAnim.start()
+    }
+    // every second. In clock-only mode the clock has its own corner hopping: only the drift applies there
+    function protTextTick() {
+        if (protTextMode === "drift") {
+            var amp = protNum("driftPx", 8), ph = 2 * Math.PI * protElapsed / (Math.max(1, protNum("driftPeriod", 5)) * 60)
+            // Lissajous curve 3:2 from the centre, closed once per driftPeriod (same in the app's preview)
+            driftX = Math.round(amp * Math.sin(3 * ph))
+            driftY = Math.round(amp * Math.sin(2 * ph))
+        } else if (protTextMode === "corners" && !decoderHeld) {
+            if (protElapsed % Math.max(1, protNum("cornersEvery", 60)) === 0) {
+                protCornerIdx = (protCornerIdx + 1) % protCornerList.length
+                protCornerHop.restart()
+            }
+        } else if (protTextMode === "fade" && !decoderHeld && !protFaded) {
+            protFadeAge++
+            if (protFadeAge >= Math.max(1, protNum("fadeAfter", 30))) {
+                protFaded = true
+                protFadeTo(0, 2500)
+            }
+        }
+    }
+    // the description changed: the text is fresh, so the countdown starts again (and it appears, if it was faded out)
+    function protPoiChanged() {
+        if (protTextMode !== "fade")
+            return
+        protFadeAge = 0
+        if (protFaded && protGet("fadeInPoi", true)) {
+            protFaded = false
+            protFadeTo(1, 1500)
+        }
+    }
+    // a new video: the text is back whatever the settings
+    function protOnPlaying() {
+        if (protTextMode !== "fade")
+            return
+        protFadeAge = 0
+        if (protFaded) {
+            protFaded = false
+            protFadeTo(1, 1500)
+        }
+    }
+    function protDebug() {
+        return "backlight " + protLast + " (was " + protOrig + (protOrig < 0 && protNoWatcher ? ", no watcher" : "") + "), " + Math.floor(protElapsed / 60) + " min" +
+            (panelOff ? ", panel off" : "") + (standbyDone ? ", standby sent" : "") + (protTextMode !== "" ? ", text: " + protTextMode : "")
     }
     function loadJSONData(url, targetVar, callback) {
         var xhr = new XMLHttpRequest()
