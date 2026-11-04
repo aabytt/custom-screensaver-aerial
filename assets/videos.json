@@ -334,7 +334,7 @@
     {
       "source": "Apple Aerials",
       "id": "F5804DD6-5963-40DA-9FA0-39C0C6E6DEF9",
-      "timeOfDay": "day",
+      "timeOfDay": "night",
       "localizedNameKey": "LA_A011_C003_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -551,7 +551,7 @@
     {
       "source": "Apple Aerials",
       "id": "737E9E24-49BE-4104-9B72-F352DE1AD2BF",
-      "timeOfDay": "sunrise",
+      "timeOfDay": "night",
       "localizedNameKey": "GMT314_139M_170NC_NORTH_AMERICA_AURORA_NAME",
       "categories": [
         "AerialCategorySpace"
@@ -735,7 +735,7 @@
     {
       "source": "Apple Aerials",
       "id": "3D729CFC-9000-48D3-A052-C5BD5B7A6842",
-      "timeOfDay": "day",
+      "timeOfDay": "sunset",
       "localizedNameKey": "H012_C009_0_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -757,7 +757,7 @@
     {
       "source": "Apple Aerials",
       "id": "EE01F02D-1413-436C-AB05-410F224A5B7B",
-      "timeOfDay": "day",
+      "timeOfDay": "sunset",
       "localizedNameKey": "GL_G010_C006_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -831,7 +831,7 @@
     {
       "source": "Apple Aerials",
       "id": "89B1643B-06DD-4DEC-B1B0-774493B0F7B7",
-      "timeOfDay": "day",
+      "timeOfDay": "sunset",
       "localizedNameKey": "LA_A009_C009_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -853,7 +853,7 @@
     {
       "source": "Apple Aerials",
       "id": "F604AF56-EA77-4960-AEF7-82533CC1A8B3",
-      "timeOfDay": "day",
+      "timeOfDay": "sunrise",
       "localizedNameKey": "L012_C002_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -932,7 +932,7 @@
     {
       "source": "Apple Aerials",
       "id": "7C643A39-C0B2-4BA0-8BC2-2EAA47CC580E",
-      "timeOfDay": "sunrise",
+      "timeOfDay": "night",
       "localizedNameKey": "GMT329_117NC_401C_1037_IRELAND_TO_ASIA_NAME",
       "categories": [
         "AerialCategorySpace"
@@ -1006,7 +1006,7 @@
     {
       "source": "Apple Aerials",
       "id": "EC3DC957-D4C2-4732-AACE-7D0C0F390EC8",
-      "timeOfDay": "night",
+      "timeOfDay": "day",
       "localizedNameKey": "PA_A010_C007_NAME",
       "categories": [
         "AerialCategoryUnderwater"
@@ -1072,7 +1072,7 @@
     {
       "source": "Apple Aerials",
       "id": "6324F6EB-E0F1-468F-AC2E-A983EBDDD53B",
-      "timeOfDay": "day",
+      "timeOfDay": "night",
       "localizedNameKey": "GMT329_2_113NC_396B_1105_NAME",
       "categories": [
         "AerialCategorySpace"
@@ -1152,7 +1152,7 @@
     {
       "source": "Apple Aerials",
       "id": "00BA71CD-2C54-415A-A68A-8358E677D750",
-      "timeOfDay": "night",
+      "timeOfDay": "sunset",
       "localizedNameKey": "DB_D002_C003_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -1175,7 +1175,7 @@
     {
       "source": "Apple Aerials",
       "id": "B876B645-3955-420E-99DF-60139E451CF3",
-      "timeOfDay": "night",
+      "timeOfDay": "day",
       "localizedNameKey": "CH_C007_C011_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -1244,7 +1244,7 @@
     {
       "source": "Apple Aerials",
       "id": "AFA22C08-A486-4CE8-9A13-E355B6C38559",
-      "timeOfDay": "sunset",
+      "timeOfDay": "day",
       "localizedNameKey": "LW_L001_C003_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -1396,7 +1396,7 @@
     {
       "source": "Apple Aerials",
       "id": "E991AC0C-F272-44D8-88F3-05F44EDFE3AE",
-      "timeOfDay": "night",
+      "timeOfDay": "day",
       "localizedNameKey": "DB_D001_C001_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -1440,7 +1440,7 @@
     {
       "source": "Apple Aerials",
       "id": "640DFB00-FBB9-45DA-9444-9F663859F4BC",
-      "timeOfDay": "day",
+      "timeOfDay": "sunset",
       "localizedNameKey": "N008_C003_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -1666,7 +1666,7 @@
     {
       "source": "Apple Aerials",
       "id": "7F4C26C2-67C2-4C3A-8F07-8A7BF6148C97",
-      "timeOfDay": "day",
+      "timeOfDay": "night",
       "localizedNameKey": "L004_C011_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -1828,7 +1828,7 @@
     {
       "source": "Apple Aerials",
       "id": "29BDF297-EB43-403A-8719-A78DA11A2948",
-      "timeOfDay": "day",
+      "timeOfDay": "sunset",
       "localizedNameKey": "A007_C017_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -2165,7 +2165,7 @@
     {
       "source": "Apple Aerials",
       "id": "E334A6D2-7145-47C8-9B00-C20DED08B2D5",
-      "timeOfDay": "day",
+      "timeOfDay": "sunrise",
       "localizedNameKey": "G007_C004_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2209,7 +2209,7 @@
     {
       "source": "Apple Aerials",
       "id": "F9F918CD-E15F-4F01-A326-84A44650C5C9",
-      "timeOfDay": "day",
+      "timeOfDay": "sunrise",
       "localizedNameKey": "G009_C003_010678_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2319,7 +2319,7 @@
     {
       "source": "Apple Aerials",
       "id": "25A6CFB2-3570-4448-B114-244A4E454B7A",
-      "timeOfDay": "day",
+      "timeOfDay": "sunset",
       "localizedNameKey": "P006_C002_11106T_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2749,6 +2749,7 @@
     {
       "source": "Apple Aerials",
       "id": "D7950C0A-27B9-4034-AB5B-EDB89D41341A",
+      "timeOfDay": "day",
       "localizedNameKey": "I003_C005_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2766,6 +2767,7 @@
     {
       "source": "Apple Aerials",
       "id": "FE876489-CBD5-479B-A8F0-1B67F0741CEA",
+      "timeOfDay": "day",
       "localizedNameKey": "W010_C003_F01_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2783,6 +2785,7 @@
     {
       "source": "Apple Aerials",
       "id": "94DAB450-A650-4DFC-99B2-A0F0D8AD6649",
+      "timeOfDay": "sunset",
       "localizedNameKey": "S013_C001_F01_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2800,6 +2803,7 @@
     {
       "source": "Apple Aerials",
       "id": "097CA871-A1C2-40F7-97F0-EFAABF555BBC",
+      "timeOfDay": "sunset",
       "localizedNameKey": "S011_C003_F01_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2817,6 +2821,7 @@
     {
       "source": "Apple Aerials",
       "id": "C3C48B18-E4AE-4A62-877D-0B0D74CDC9E0",
+      "timeOfDay": "day",
       "localizedNameKey": "S009_C018_F01_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -2834,6 +2839,7 @@
     {
       "source": "Apple Aerials",
       "id": "12718607-0FE6-4B8C-B571-A320CDD67897",
+      "timeOfDay": "sunset",
       "localizedNameKey": "S005_C013_F01_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3166,6 +3172,7 @@
     {
       "source": "Apple Aerials",
       "id": "6D6834A4-2F0F-479A-B053-7D4DC5CB8EB7",
+      "timeOfDay": "sunrise",
       "localizedNameKey": "A007_C0001_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3183,6 +3190,7 @@
     {
       "source": "Apple Aerials",
       "id": "F88CDF4A-9681-4D1F-88FE-34F1A3C6A62B",
+      "timeOfDay": "day",
       "localizedNameKey": "A010_C0005_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3200,6 +3208,7 @@
     {
       "source": "Apple Aerials",
       "id": "97C3047F-ED39-472C-9778-CABF25D8682D",
+      "timeOfDay": "night",
       "localizedNameKey": "A018_C0002_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3460,6 +3469,7 @@
     {
       "source": "Apple Aerials",
       "id": "4C108785-A7BA-422E-9C79-B0129F1D5550",
+      "timeOfDay": "day",
       "localizedNameKey": "TA_L_002_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3477,6 +3487,7 @@
     {
       "source": "Apple Aerials",
       "id": "B2FC91ED-6891-4DEB-85A1-268B2B4160B6",
+      "timeOfDay": "sunrise",
       "localizedNameKey": "TA_L_001_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3494,6 +3505,7 @@
     {
       "source": "Apple Aerials",
       "id": "52ACB9B8-75FC-4516-BC60-4550CFF3B661",
+      "timeOfDay": "sunset",
       "localizedNameKey": "TA_D_001_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3511,6 +3523,7 @@
     {
       "source": "Apple Aerials",
       "id": "CF6347E2-4F81-4410-8892-4830991B6C5A",
+      "timeOfDay": "night",
       "localizedNameKey": "TA_D_002_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3528,6 +3541,7 @@
     {
       "source": "Apple Aerials",
       "id": "4207734D-74FE-4F92-B5E1-6EC8DEE24A15",
+      "timeOfDay": "sunset",
       "localizedNameKey": "GG_A_SUNSET_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -3545,6 +3559,7 @@
     {
       "source": "Apple Aerials",
       "id": "6511D2B5-E185-4886-9505-B4004E920D27",
+      "timeOfDay": "day",
       "localizedNameKey": "GG_A_DAY_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -3562,6 +3577,7 @@
     {
       "source": "Apple Aerials",
       "id": "3FD9FD5C-6DC5-4362-9932-4087C942F1C5",
+      "timeOfDay": "sunset",
       "localizedNameKey": "GG_A_EVENING_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -3579,6 +3595,7 @@
     {
       "source": "Apple Aerials",
       "id": "86E89C23-C39B-44C8-A985-E56EEA6456FE",
+      "timeOfDay": "night",
       "localizedNameKey": "GG_A_NIGHT_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -3596,6 +3613,7 @@
     {
       "source": "Apple Aerials",
       "id": "D8C8FC8B-9D11-4803-944F-DF284B35FE58",
+      "timeOfDay": "day",
       "localizedNameKey": "MAC_WP_PPL_NAME",
       "categories": [
         "AerialCategoryPatterns"
@@ -3613,6 +3631,7 @@
     {
       "source": "Apple Aerials",
       "id": "94383DC9-59D3-43EC-9E8E-A783DA633E06",
+      "timeOfDay": "day",
       "localizedNameKey": "MAC_WP_BLU_NAME",
       "categories": [
         "AerialCategoryPatterns"
@@ -3630,6 +3649,7 @@
     {
       "source": "Apple Aerials",
       "id": "C42AADA1-9110-472A-BF86-B1EF306DA846",
+      "timeOfDay": "day",
       "localizedNameKey": "MAC_WP_PNK_NAME",
       "categories": [
         "AerialCategoryPatterns"
@@ -3647,6 +3667,7 @@
     {
       "source": "Apple Aerials",
       "id": "DD7690D7-1B94-4FAA-910C-993C182B6874",
+      "timeOfDay": "day",
       "localizedNameKey": "MAC_WP_YLW_NAME",
       "categories": [
         "AerialCategoryPatterns"
@@ -3664,6 +3685,7 @@
     {
       "source": "Apple Aerials",
       "id": "2F11E857-4F77-4476-8033-4A1E4610AFCC",
+      "timeOfDay": "night",
       "localizedNameKey": "DB_D011_C009_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -3681,6 +3703,7 @@
     {
       "source": "Apple Aerials",
       "id": "b1-3",
+      "timeOfDay": "day",
       "localizedNameKey": "N006_C003_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -3700,6 +3723,7 @@
     {
       "source": "Apple Aerials",
       "id": "b2-2",
+      "timeOfDay": "day",
       "localizedNameKey": "H010_C006_NAME",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3718,6 +3742,7 @@
     {
       "source": "Apple Aerials",
       "id": "b2-4",
+      "timeOfDay": "sunrise",
       "localizedNameKey": "A018_C014_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -3737,6 +3762,7 @@
     {
       "source": "Apple Aerials",
       "id": "b4-3",
+      "timeOfDay": "day",
       "localizedNameKey": "A013_C005_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -3755,6 +3781,7 @@
     {
       "source": "Apple Aerials",
       "id": "b5-3",
+      "timeOfDay": "sunset",
       "localizedNameKey": "A015_C014_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -3773,6 +3800,7 @@
     {
       "source": "Apple Aerials",
       "id": "b6-4",
+      "timeOfDay": "sunset",
       "localizedNameKey": "b6-4_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -3790,6 +3818,7 @@
     {
       "source": "Apple Aerials",
       "id": "b8-2",
+      "timeOfDay": "day",
       "localizedNameKey": "A012_C004_NAME",
       "categories": [
         "AerialCategoryCities"
@@ -3808,6 +3837,7 @@
     {
       "source": "Apple Aerials",
       "id": "b8-3",
+      "timeOfDay": "day",
       "localizedNameKey": "b8-3",
       "categories": [
         "AerialCategoryCities"
@@ -3825,6 +3855,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_inspire_florida_miami_brickell_sunset_00036",
+      "timeOfDay": "sunset",
       "localizedNameKey": "video_inspire_florida_miami_brickell_sunset_00036",
       "categories": [
         "AerialCategoryCities"
@@ -3844,6 +3875,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_inspire_nevada_lasvegas_northstrip_021",
+      "timeOfDay": "sunset",
       "localizedNameKey": "video_inspire_nevada_lasvegas_northstrip_021",
       "categories": [
         "AerialCategoryCities"
@@ -3863,6 +3895,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_inspire_oregon_lone-ranch-beach_00015",
+      "timeOfDay": "day",
       "localizedNameKey": "video_inspire_oregon_lone-ranch-beach_00015",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3882,6 +3915,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_inspire_oregon_lone-ranch-beach_00001",
+      "timeOfDay": "day",
       "localizedNameKey": "video_inspire_oregon_lone-ranch-beach_00001",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3901,6 +3935,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_inspire_california_vineyard_sierra-mar_sunrise_110",
+      "timeOfDay": "sunrise",
       "localizedNameKey": "video_inspire_california_vineyard_sierra-mar_sunrise_110",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3920,6 +3955,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_inspire_italy_como_cerano-dintelvi_006",
+      "timeOfDay": "day",
       "localizedNameKey": "video_inspire_italy_como_cerano-dintelvi_006",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3939,6 +3975,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_inspire_oregon_portland_00064",
+      "timeOfDay": "sunset",
       "localizedNameKey": "video_inspire_oregon_portland_00064",
       "categories": [
         "AerialCategoryCities"
@@ -3957,6 +3994,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_inspire_california_big-sur_2020_00001",
+      "timeOfDay": "day",
       "localizedNameKey": "video_inspire_california_big-sur_2020_00001",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3976,6 +4014,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_inspire_california_catalina_avalon_00053",
+      "timeOfDay": "day",
       "localizedNameKey": "video_inspire_california_catalina_avalon_00053",
       "categories": [
         "AerialCategoryLandscapes"
@@ -3995,6 +4034,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_inspire_uk_london_hampstead-heath_003",
+      "timeOfDay": "day",
       "localizedNameKey": "video_inspire_uk_london_hampstead-heath_003",
       "categories": [
         "AerialCategoryCities"
@@ -4014,6 +4054,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_inspire_texas_pecos_foggy-landscape_00018",
+      "timeOfDay": "day",
       "localizedNameKey": "video_inspire_texas_pecos_foggy-landscape_00018",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4033,6 +4074,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_inspire_sanfrancisco_castro_005",
+      "timeOfDay": "day",
       "localizedNameKey": "video_inspire_sanfrancisco_castro_005",
       "categories": [
         "AerialCategoryCities"
@@ -4052,6 +4094,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_inspire_california_big-sur_landscape_054",
+      "timeOfDay": "day",
       "localizedNameKey": "video_inspire_california_big-sur_landscape_054",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4071,6 +4114,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_inspire_alabama_montgomery_countryside_00007",
+      "timeOfDay": "sunrise",
       "localizedNameKey": "video_inspire_alabama_montgomery_countryside_00007",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4090,6 +4134,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_inspire_california_big-sur_bixby_005",
+      "timeOfDay": "day",
       "localizedNameKey": "video_inspire_california_big-sur_bixby_005",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4109,6 +4154,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_inspire_california_santa-barbara_050",
+      "timeOfDay": "sunset",
       "localizedNameKey": "video_inspire_california_santa-barbara_050",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4128,6 +4174,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_inspire_oregon_lone-ranch-beach_00021",
+      "timeOfDay": "day",
       "localizedNameKey": "video_inspire_oregon_lone-ranch-beach_00021",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4147,6 +4194,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_inspire_uk_edinburgh_arthursseat_010",
+      "timeOfDay": "day",
       "localizedNameKey": "video_inspire_uk_edinburgh_arthursseat_010",
       "categories": [
         "AerialCategoryCities"
@@ -4166,6 +4214,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_inspire_texas_austin_oct2019_evening_00085",
+      "timeOfDay": "night",
       "localizedNameKey": "video_inspire_texas_austin_oct2019_evening_00085",
       "categories": [
         "AerialCategoryCities"
@@ -4185,6 +4234,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_inspire_california_catalina_00005",
+      "timeOfDay": "day",
       "localizedNameKey": "video_inspire_california_catalina_00005",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4204,6 +4254,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_i3_ca_los-angeles_dtla_20251216_003",
+      "timeOfDay": "sunrise",
       "localizedNameKey": "video_i3_ca_los-angeles_dtla_20251216_003",
       "categories": [
         "AerialCategoryCities"
@@ -4221,6 +4272,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_i3_ca_tiburon_20250502_030",
+      "timeOfDay": "day",
       "localizedNameKey": "video_i3_ca_tiburon_20250502_030",
       "categories": [
         "AerialCategoryCities"
@@ -4238,6 +4290,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_i3_fr_poussay_03_03",
+      "timeOfDay": "day",
       "localizedNameKey": "video_i3_fr_poussay_03_03",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4255,6 +4308,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_i3_in_jodhpur_gulabsagar_jaswantthada_20241128_010_013",
+      "timeOfDay": "day",
       "localizedNameKey": "video_i3_in_jodhpur_gulabsagar_jaswantthada_20241128_010_013",
       "categories": [
         "AerialCategoryCities"
@@ -4272,6 +4326,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_i3_is_westfjords_20240616_004",
+      "timeOfDay": "day",
       "localizedNameKey": "video_i3_is_westfjords_20240616_004",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4289,6 +4344,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_i3_la_lake-martin_20251019_029",
+      "timeOfDay": "sunset",
       "localizedNameKey": "video_i3_la_lake-martin_20251019_029",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4306,6 +4362,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_i3_nm_shiprock_20251025_010",
+      "timeOfDay": "day",
       "localizedNameKey": "video_i3_nm_shiprock_20251025_010",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4323,6 +4380,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_i3_nyc_brooklyn_bed-stuy_20250919_086",
+      "timeOfDay": "sunset",
       "localizedNameKey": "video_i3_nyc_brooklyn_bed-stuy_20250919_086",
       "categories": [
         "AerialCategoryCities"
@@ -4340,6 +4398,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_i3_nyc_manhattan_20250918_067",
+      "timeOfDay": "night",
       "localizedNameKey": "video_i3_nyc_manhattan_20250918_067",
       "categories": [
         "AerialCategoryCities"
@@ -4357,6 +4416,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_i3_or_gardiner_20250430_011",
+      "timeOfDay": "sunrise",
       "localizedNameKey": "video_i3_or_gardiner_20250430_011",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4374,6 +4434,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_i3_or_oregon-dunes_20250429_004",
+      "timeOfDay": "day",
       "localizedNameKey": "video_i3_or_oregon-dunes_20250429_004",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4391,6 +4452,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_i3_tx_houston_johnson-space-center_20251020_003",
+      "timeOfDay": "day",
       "localizedNameKey": "video_i3_tx_houston_johnson-space-center_20251020_003",
       "categories": [
         "AerialCategoryCities"
@@ -4408,6 +4470,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_i3_uk_staithes_20240628_003",
+      "timeOfDay": "day",
       "localizedNameKey": "video_i3_uk_staithes_20240628_003",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4425,6 +4488,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_i3_uk_whitby_20240628_005",
+      "timeOfDay": "day",
       "localizedNameKey": "video_i3_uk_whitby_20240628_005",
       "categories": [
         "AerialCategoryCities"
@@ -4442,6 +4506,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_i3_uk_yorkshire_20240623_021",
+      "timeOfDay": "day",
       "localizedNameKey": "video_i3_uk_yorkshire_20240623_021",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4459,6 +4524,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_i3_wa_elwaha-river_20250427_001",
+      "timeOfDay": "day",
       "localizedNameKey": "video_i3_wa_elwaha-river_20250427_001",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4476,6 +4542,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_m3_ch_davos_20250712_009",
+      "timeOfDay": "day",
       "localizedNameKey": "video_m3_ch_davos_20250712_009",
       "categories": [
         "AerialCategoryCities"
@@ -4493,6 +4560,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_m3_ch_quarten_20250712_003",
+      "timeOfDay": "day",
       "localizedNameKey": "video_m3_ch_quarten_20250712_003",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4510,6 +4578,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_m3_ch_zurich_20250712_013",
+      "timeOfDay": "day",
       "localizedNameKey": "video_m3_ch_zurich_20250712_013",
       "categories": [
         "AerialCategoryCities"
@@ -4527,6 +4596,7 @@
     {
       "source": "Jetson Creative",
       "id": "video_m3_it_bolzano_20250717_013",
+      "timeOfDay": "day",
       "localizedNameKey": "video_m3_it_bolzano_20250717_013",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4544,6 +4614,7 @@
     {
       "source": "Robin Fourcade",
       "id": "robinfrcd_capmechant_202304",
+      "timeOfDay": "day",
       "localizedNameKey": "robinfrcd_capmechant_202304",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4562,6 +4633,7 @@
     {
       "source": "Robin Fourcade",
       "id": "robinfrcd_capmechant2_202304",
+      "timeOfDay": "sunset",
       "localizedNameKey": "robinfrcd_capmechant2_202304",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4580,6 +4652,7 @@
     {
       "source": "Robin Fourcade",
       "id": "robinfrcd_grandcoude_202304",
+      "timeOfDay": "day",
       "localizedNameKey": "robinfrcd_grandcoude_202304",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4598,6 +4671,7 @@
     {
       "source": "Robin Fourcade",
       "id": "robinfrcd_grandetang_202304",
+      "timeOfDay": "day",
       "localizedNameKey": "robinfrcd_grandetang_202304",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4616,6 +4690,7 @@
     {
       "source": "Robin Fourcade",
       "id": "robinfrcd_lagon_202304",
+      "timeOfDay": "day",
       "localizedNameKey": "robinfrcd_lagon_202304",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4634,6 +4709,7 @@
     {
       "source": "Robin Fourcade",
       "id": "robinfrcd_mafate_202304",
+      "timeOfDay": "day",
       "localizedNameKey": "robinfrcd_mafate_202304",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4652,6 +4728,7 @@
     {
       "source": "Robin Fourcade",
       "id": "robinfrcd_pitondesneiges_202304",
+      "timeOfDay": "day",
       "localizedNameKey": "robinfrcd_pitondesneiges_202304",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4670,6 +4747,7 @@
     {
       "source": "Robin Fourcade",
       "id": "robinfrcd_pitonfournaise_202304",
+      "timeOfDay": "day",
       "localizedNameKey": "robinfrcd_pitonfournaise_202304",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4688,6 +4766,7 @@
     {
       "source": "Robin Fourcade",
       "id": "robinfrcd_trestastar_202304",
+      "timeOfDay": "day",
       "localizedNameKey": "robinfrcd_trestastar_202304",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4706,6 +4785,7 @@
     {
       "source": "Robin Fourcade",
       "id": "robinfrcd_troudefer_202304",
+      "timeOfDay": "day",
       "localizedNameKey": "robinfrcd_troudefer_202304",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4724,6 +4804,7 @@
     {
       "source": "Robin Fourcade",
       "id": "french_alps_mont_blanc_202202",
+      "timeOfDay": "day",
       "localizedNameKey": "french_alps_mont_blanc_202202",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4742,6 +4823,7 @@
     {
       "source": "Robin Fourcade",
       "id": "french_alps_sea_of_clouds_202202",
+      "timeOfDay": "day",
       "localizedNameKey": "french_alps_sea_of_clouds_202202",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4760,6 +4842,7 @@
     {
       "source": "Robin Fourcade",
       "id": "french_alps_sea_of_clouds_2_202202",
+      "timeOfDay": "day",
       "localizedNameKey": "french_alps_sea_of_clouds_2_202202",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4778,6 +4861,7 @@
     {
       "source": "Robin Fourcade",
       "id": "video_aurland_202109",
+      "timeOfDay": "day",
       "localizedNameKey": "video_aurland_202109",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4796,6 +4880,7 @@
     {
       "source": "Robin Fourcade",
       "id": "video_henningsvaer_202109",
+      "timeOfDay": "sunset",
       "localizedNameKey": "video_henningsvaer_202109",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4814,6 +4899,7 @@
     {
       "source": "Robin Fourcade",
       "id": "video_nusfjord_202109",
+      "timeOfDay": "day",
       "localizedNameKey": "video_nusfjord_202109",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4832,6 +4918,7 @@
     {
       "source": "Robin Fourcade",
       "id": "video_reine_202109",
+      "timeOfDay": "day",
       "localizedNameKey": "video_reine_202109",
       "categories": [
         "AerialCategoryLandscapes"
@@ -4850,6 +4937,7 @@
     {
       "source": "Robin Fourcade",
       "id": "video_vettisfossen_202109",
+      "timeOfDay": "day",
       "localizedNameKey": "video_vettisfossen_202109",
       "categories": [
         "AerialCategoryLandscapes"
@@ -6495,7 +6583,7 @@
       ],
       "source": "Amazon Fire OS",
       "id": "content-c0055cd6-1b36-459d-8d79-b6ac7a892fcf",
-      "timeOfDay": "day",
+      "timeOfDay": "sunset",
       "url-4K-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/UHD/content-c0055cd6-1b36-459d-8d79-b6ac7a892fcf.mp4",
       "url-1080-SDR": "https://aebcs-cdn-prod-na.services.firetv.amazon.dev/content/FHD/content-c0055cd6-1b36-459d-8d79-b6ac7a892fcf.mp4",
       "pointsOfInterest": {
