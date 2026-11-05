@@ -68,8 +68,8 @@ WebOSWindow {
     // (in clock-only mode the clock block hops between the corners instead of using clockAnchor)
     property bool clockOn : (decoderHeld && !showClock && !showDate) ? true : showClock
     // Panel protection "move the text between corners" replaces both anchors of the On-screen display panel
-    property string placeAnchorEff : protTextMode === "corners" ? protPlaceAnchor : placeAnchor
-    property string clockAnchorEff : decoderHeld ? ["br", "tr", "tl", "bl"][appliedCorner] : (protTextMode === "corners" ? protClockAnchor : clockAnchor)
+    property string placeAnchorEff : protModeHas("corners") ? protPlaceAnchor : placeAnchor
+    property string clockAnchorEff : decoderHeld ? ["br", "tr", "tl", "bl"][appliedCorner] : (protModeHas("corners") ? protClockAnchor : clockAnchor)
     property string placeCol : placeAnchorEff.charAt(1)
     property string clockCol : clockAnchorEff.charAt(1)
     property real placeY : blockY(placeAnchorEff, placeBlockH())
@@ -82,18 +82,19 @@ WebOSWindow {
     property int protLast : -1          // level last sent
     property bool panelOff : false      // the panel was turned off by the timer: no video until the screensaver ends
     property bool standbyDone : false
-    // Protection of the on-screen text: one of "corners" / "drift" / "fade" (they exclude each other, the panel
-    // keeps it so), "" = none. It takes priority over the position / opacity of the On-screen display panel.
+    // Protection of the on-screen text: any of "corners", "drift", "fade" joined with "+" (they work together), "" = none. It takes priority over the position / opacity of the On-screen display panel.
     property string protTextMode : ""
     property var protCornerList : []    // chosen corners, clockwise
     property int protCornerIdx : 0
     property string protPlaceAnchor : "bl"
     property string protClockAnchor : "br"
-    property real protFade : 1          // 0..1, multiplies the opacity of all the text
+    property real protFade : 1          // 0..1, multiplies the opacity of all the text (corner hop)
+    property real protFadeText : 1      // 0..1, auto fade out of the name and the description
+    property real protFadeClock : 1     // 0..1, auto fade out of the clock and the date
     property int driftX : 0
     property int driftY : 0
-    property int protFadeAge : 0        // seconds the text has been shown since the last (re)appearance
-    property bool protFaded : false
+    // auto fade out, per group (0 = name + description, 1 = clock + date): faded, seconds shown, seconds hidden
+    property var protG : [{faded: false, age: 0, hid: 0}, {faded: false, age: 0, hid: 0}]
     onPoiIndexChanged : protPoiChanged()
     property bool protNoWatcher : false  // no recent watcher / no brightness from it: brightness is left alone
     // luna method (under com.webos.service.tvpower/power/) that puts the TV in standby; empty = not known yet, nothing is called
@@ -219,7 +220,7 @@ WebOSWindow {
         Text {
             id : name
             visible : showTitle && !decoderHeld
-            opacity : osdAlpha * protFade
+            opacity : osdAlpha * protFade * protFadeText
             text : poi.strings[playList.assets[randomIndex].localizedNameKey]
             font.family : segoeUILight.name
             font.letterSpacing : fontSpacing
@@ -236,7 +237,7 @@ WebOSWindow {
         Text {
             id : poiOSD
             visible : showPoi && !decoderHeld
-            opacity : osdAlpha * protFade
+            opacity : osdAlpha * protFade * protFadeText
             text : poi.strings[playList.assets[randomIndex].pointsOfInterest[poiIndex]]
             font.family : name.font.family
             font.letterSpacing : fontSpacing
@@ -253,7 +254,7 @@ WebOSWindow {
         Text {
             id : timeOSD
             visible : clockOn
-            opacity : osdAlpha * clockFade * protFade
+            opacity : osdAlpha * clockFade * protFade * protFadeClock
             font.family : name.font.family
             font.letterSpacing : fontSpacing
             font.pixelSize : Math.round(79 * clockScale / 100)
@@ -269,7 +270,7 @@ WebOSWindow {
         Text {
             id : dateOSD
             visible : showDate
-            opacity : osdAlpha * clockFade * protFade
+            opacity : osdAlpha * clockFade * protFade * protFadeClock
             font.family : name.font.family
             font.letterSpacing : fontSpacing
             font.pixelSize : Math.round(40 * clockScale / 100)
@@ -651,9 +652,14 @@ WebOSWindow {
         NumberAnimation { target : window; property : "protFade"; to : 1; duration : 1500 }
     }
     NumberAnimation {
-        id : protFadeAnim
+        id : protFadeTextAnim
         target : window
-        property : "protFade"
+        property : "protFadeText"
+    }
+    NumberAnimation {
+        id : protFadeClockAnim
+        target : window
+        property : "protFadeClock"
     }
     Timer {
         id : protTimer
@@ -791,66 +797,94 @@ WebOSWindow {
         protPlaceAnchor = protCornerList[protCornerIdx]
         protClockAnchor = protPlaceAnchor.charAt(0) + (protPlaceAnchor.charAt(1) === "l" ? "r" : "l")
     }
+    function protModeHas(m) {
+        return protTextMode.split("+").indexOf(m) >= 0
+    }
+    function protGroupOn(i) {
+        return protGet(i ? "fadeClockOn" : "fadeTextOn", true) ? true : false
+    }
     function protTextStart() {
-        protTextMode = ""
+        var m = []
         if (protGet("cornersOn", false)) {
             protCornerList = protCorners()
             if (protCornerList.length >= 2) {
-                protTextMode = "corners"
+                m.push("corners")
                 var i = protCornerList.indexOf(placeAnchor)
                 protCornerIdx = i >= 0 ? i : 0
                 protApplyCorner()
             }
-        } else if (protGet("driftOn", false))
-            protTextMode = "drift"
-        else if (protGet("fadeOn", false))
-            protTextMode = "fade"
+        }
+        if (protGet("driftOn", false))
+            m.push("drift")
+        if (protGet("fadeOn", false) && (protGroupOn(0) || protGroupOn(1)))
+            m.push("fade")
+        protTextMode = m.join("+")
     }
-    function protFadeTo(v, ms) {
-        protFadeAnim.stop()
-        protFadeAnim.to = v
-        protFadeAnim.duration = ms
-        protFadeAnim.start()
+    function protGroupTo(i, v, ms) {
+        var a = i ? protFadeClockAnim : protFadeTextAnim
+        a.stop()
+        a.to = v
+        a.duration = ms
+        a.start()
+    }
+    // group i appears (if it was faded out) and its countdown starts again
+    function protShow(i) {
+        var g = protG[i]
+        g.age = 0
+        g.hid = 0
+        if (g.faded) {
+            g.faded = false
+            protGroupTo(i, 1, 1500)
+        }
+    }
+    // every second, for the name + description (0) and the clock + date (1) separately:
+    // shown for fadeAfter seconds, hidden, back after fadeTextBack / fadeClockBack minutes (0 = not on a timer)
+    function protFadeTick() {
+        for (var i = 0; i < 2; i++) {
+            var g = protG[i]
+            if (!protGroupOn(i))
+                continue
+            if (g.faded) {
+                var back = Math.round(protNum(i ? "fadeClockBack" : "fadeTextBack", i ? 5 : 0) * 60)
+                g.hid++
+                if (back > 0 && g.hid >= back)
+                    protShow(i)
+            } else if (++g.age >= Math.max(1, protNum("fadeAfter", 30))) {
+                g.faded = true
+                g.hid = 0
+                protGroupTo(i, 0, 2500)
+            }
+        }
     }
     // every second. In clock-only mode the clock has its own corner hopping: only the drift applies there
     function protTextTick() {
-        if (protTextMode === "drift") {
+        if (protModeHas("corners") && !decoderHeld && protElapsed % Math.max(1, protNum("cornersEvery", 60)) === 0) {
+            protCornerIdx = (protCornerIdx + 1) % protCornerList.length
+            protCornerHop.restart()
+        }
+        if (protModeHas("drift")) {
             var amp = protNum("driftPx", 8), ph = 2 * Math.PI * protElapsed / (Math.max(1, protNum("driftPeriod", 5)) * 60)
             // Lissajous curve 3:2 from the centre, closed once per driftPeriod (same in the app's preview)
             driftX = Math.round(amp * Math.sin(3 * ph))
             driftY = Math.round(amp * Math.sin(2 * ph))
-        } else if (protTextMode === "corners" && !decoderHeld) {
-            if (protElapsed % Math.max(1, protNum("cornersEvery", 60)) === 0) {
-                protCornerIdx = (protCornerIdx + 1) % protCornerList.length
-                protCornerHop.restart()
-            }
-        } else if (protTextMode === "fade" && !decoderHeld && !protFaded) {
-            protFadeAge++
-            if (protFadeAge >= Math.max(1, protNum("fadeAfter", 30))) {
-                protFaded = true
-                protFadeTo(0, 2500)
-            }
         }
+        if (protModeHas("fade") && !decoderHeld)
+            protFadeTick()
     }
-    // the description changed: the text is fresh, so the countdown starts again (and it appears, if it was faded out)
+    // the description changed: its countdown starts again (and it appears, if it was faded out)
     function protPoiChanged() {
-        if (protTextMode !== "fade")
+        if (!protModeHas("fade"))
             return
-        protFadeAge = 0
-        if (protFaded && protGet("fadeInPoi", true)) {
-            protFaded = false
-            protFadeTo(1, 1500)
-        }
+        protG[0].age = 0
+        if (protG[0].faded && protGet("fadeInPoi", true))
+            protShow(0)
     }
-    // a new video: the text is back whatever the settings
+    // a new video: everything is back whatever the settings
     function protOnPlaying() {
-        if (protTextMode !== "fade")
+        if (!protModeHas("fade"))
             return
-        protFadeAge = 0
-        if (protFaded) {
-            protFaded = false
-            protFadeTo(1, 1500)
-        }
+        protShow(0)
+        protShow(1)
     }
     function protDebug() {
         return "backlight " + protLast + " (was " + protOrig + (protOrig < 0 && protNoWatcher ? ", no watcher" : "") + "), " + Math.floor(protElapsed / 60) + " min" +

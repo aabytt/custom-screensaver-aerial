@@ -90,14 +90,8 @@ function webosLabel(release) {
   if (major === 3 || major === 4) { return 'webOS ' + major + (minor >= 5 ? '.5' : ''); }
   return byMajor[major] || '';
 }
-// translated text, or the English fallback while the key is not in the translation files yet
-// "Version 3.0.3 · update available: 3.0.4"; the translations start it with a ▲ marker, which is dropped:
-// the accent color already says "update"
-function updateLabel(version, latest) {
-  return String(I18n.t('updateAvailable', {version: version, latest: latest}))
-    .replace(/^[\s\u25B2\u25B3\u25B4\u25B5\u2B06\u2191]+/, '');
-}
 
+// translated text, or the English fallback while the key is not in the translation files yet
 function tr(key, fallback) {
   var s = I18n.t(key);
   return (typeof s === 'string' && s && s.indexOf(key) < 0) ? s : fallback;
@@ -491,13 +485,13 @@ module.exports = kind({
     xhr.send();
   },
 
-  // "Version 1.2.3", or the highlighted "update available" line (marker, accent color, bold) if a newer release exists.
+  // "Version 1.2.3", or the highlighted "update available" line (accent color, bold) if a newer release exists.
   // The accent-colored text would vanish on the accent-colored focus background, so it is white while focused.
   renderVersion: function () {
     var info = this.$.versionInfo;
     if (!this.version) { return; }
     if (this.latest) {
-      info.set('content', updateLabel(this.version, this.latest));
+      info.set('content', I18n.t('updateAvailable', {version: this.version, latest: this.latest}));
       info.applyStyle('font-weight', 'bold');
     } else {
       info.set('content', I18n.t('version', {version: this.version}));
@@ -609,7 +603,7 @@ module.exports = kind({
     // the same Update button as on the main screen, only while a newer version exists
     this.$.reportUpdateBox.set('showing', !!this.latest);
     if (this.latest) {
-      this.$.reportUpdateText.set('content', updateLabel(this.version, this.latest));
+      this.$.reportUpdateText.set('content', I18n.t('updateAvailable', {version: this.version, latest: this.latest}));
       this.$.reportUpdate.set('content', tr('update', 'Update'));
     }
     try {

@@ -31,7 +31,8 @@
   /* Panel protection, drift: the box moves 1 px at a time, smoothly */
   body.drift #osd { transition-property: opacity, transform; transition-duration: 3s, 1s; transition-timing-function: ease, linear; }
   body.drift #osd.fading { transition-duration: 5s, 1s; }
-  #osd .ln { position: absolute; white-space: nowrap; line-height: 1.33; text-shadow: 0 1px 0 #000; }
+  #osd .ln { position: absolute; white-space: nowrap; line-height: 1.33; text-shadow: 0 1px 0 #000;
+             transition: opacity var(--od, 1.5s) ease, filter 1.5s ease; }   /* opacity: auto fade out; filter: corner hop */
   /* Clock mode: only the time and date, moved every minute against OLED burn-in */
   body.clock #osd { right: auto; bottom: auto; text-align: right; }
   body.clock #osd .ln { position: static; }
@@ -65,10 +66,9 @@ var clockTimers = [];
 
 // ---- Panel protection (settings.protection, written by the app's "Panel protection" panel) ----
 // Defaults must stay equal to DEFAULTS in ProtectionPanel.js. Brightness is the picture "backlight" (0-100).
-// Protection of the text: one of "corners" / "drift" / "fade" (they exclude each other, the app's panel keeps it
-// so). It takes priority over the position / opacity of the On-screen display panel. In clock mode the clock
+// Protection of the text: any of "corners", "drift", "fade" joined with "+" (they work together). It takes priority over the position / opacity of the On-screen display panel. In clock mode the clock
 // has its own moving: only the drift applies there.
-var PTXT = { mode: "", corners: [], idx: 0, pa: null, ca: null, age: 0, faded: false };
+var PTXT = { mode: "", corners: [], idx: 0, pa: null, ca: null, g: null };   // g: auto fade out state of [name + description, clock + date]
 var PROT = { elapsed: 0, orig: -1, base: -1, last: -1, panelOff: false, standbyDone: false };
 // luna method (under com.webos.service.tvpower/power/) that puts the TV in standby; "" = not known yet, nothing is called
 var STANDBY_METHOD = "powerOff";
@@ -504,11 +504,10 @@ function protRestore() {
 }
 // The brightness is changed only from the user's value that the watcher keeps (and puts back if this
 // page is cut off): without a recent watcher, or without that value, it is left alone.
+// corner hop: all the lines fade through filter, so it does not fight with the auto fade out (opacity)
 function textFade(v, secs) {
     ["name", "poi", "time", "date"].forEach(function (id) {
-        var el = document.getElementById(id);
-        el.style.transition = "opacity " + secs + "s ease";
-        el.style.opacity = v;
+        document.getElementById(id).style.filter = "opacity(" + v + ")";
     });
 }
 function protApplyCorner() {
@@ -516,67 +515,91 @@ function protApplyCorner() {
     PTXT.ca = PTXT.pa.charAt(0) + (PTXT.pa.charAt(1) === "l" ? "r" : "l");   // opposite horizontally, like bl + br
     layoutOSD();
 }
+function protModeHas(m) { return PTXT.mode.split("+").indexOf(m) >= 0; }
+function protGroupOn(i) { return !!protGet(i ? "fadeClockOn" : "fadeTextOn", true); }
+function groupFade(i, v, secs) {
+    (i ? ["time", "date"] : ["name", "poi"]).forEach(function (id) {
+        var el = document.getElementById(id);
+        el.style.setProperty("--od", secs + "s");
+        el.style.opacity = v;
+    });
+}
 function protTextStart() {
-    var order = [["cornerTl", "tl"], ["cornerTr", "tr"], ["cornerBr", "br"], ["cornerBl", "bl"]], list = [], i;
+    var order = [["cornerTl", "tl"], ["cornerTr", "tr"], ["cornerBr", "br"], ["cornerBl", "bl"]], list = [], m = [], i;
     PTXT.mode = "";
+    PTXT.g = [{ faded: false, age: 0, hid: 0 }, { faded: false, age: 0, hid: 0 }];
     if (protGet("cornersOn", false)) {
         for (i = 0; i < order.length; i++) if (protGet(order[i][0], true)) list.push(order[i][1]);
         if (list.length >= 2) {
-            PTXT.mode = "corners";
+            m.push("corners");
             PTXT.corners = list;
             i = list.indexOf(osdGet("placeAnchor"));
             PTXT.idx = i >= 0 ? i : 0;
             protApplyCorner();
         }
-    } else if (protGet("driftOn", false)) {
-        PTXT.mode = "drift";
+    }
+    if (protGet("driftOn", false)) {
+        m.push("drift");
         document.body.classList.add("drift");
-    } else if (protGet("fadeOn", false)) {
-        PTXT.mode = "fade";
+    }
+    if (protGet("fadeOn", false) && (protGroupOn(0) || protGroupOn(1))) m.push("fade");
+    PTXT.mode = m.join("+");
+}
+// group i appears (if it was faded out) and its countdown starts again
+function protShow(i) {
+    var g = PTXT.g[i];
+    g.age = g.hid = 0;
+    if (g.faded) { g.faded = false; groupFade(i, 1, 1.5); }
+}
+// every second, for the name + description (0) and the clock + date (1) separately:
+// shown for fadeAfter seconds, hidden, back after fadeTextBack / fadeClockBack minutes (0 = not on a timer)
+function protFadeTick() {
+    var i, g, back;
+    for (i = 0; i < 2; i++) {
+        g = PTXT.g[i];
+        if (!protGroupOn(i)) continue;
+        if (g.faded) {
+            back = Math.round(protNum(i ? "fadeClockBack" : "fadeTextBack", i ? 5 : 0) * 60);
+            g.hid++;
+            if (back > 0 && g.hid >= back) protShow(i);
+        } else if (++g.age >= Math.max(1, protNum("fadeAfter", 30))) {
+            g.faded = true;
+            g.hid = 0;
+            groupFade(i, 0, 2.5);
+        }
     }
 }
 // every second
 function protTextTick() {
     var amp, ph;
-    if (PTXT.mode === "drift") {
+    if (protModeHas("corners") && !clockMode && PROT.elapsed % Math.max(1, protNum("cornersEvery", 60)) === 0) {
+        textFade(0, 1.5);
+        setTimeout(function () {
+            if (closing) return;
+            PTXT.idx = (PTXT.idx + 1) % PTXT.corners.length;
+            protApplyCorner();
+            textFade(1, 1.5);
+        }, 1500);
+    }
+    if (protModeHas("drift")) {
         amp = protNum("driftPx", 8);
         ph = 2 * Math.PI * PROT.elapsed / (Math.max(1, protNum("driftPeriod", 5)) * 60);
         // Lissajous curve 3:2 from the centre, closed once per driftPeriod (same in the app's preview)
         osd.style.transform = "translate(" + Math.round(amp * Math.sin(3 * ph)) + "px," + Math.round(amp * Math.sin(2 * ph)) + "px)";
-    } else if (PTXT.mode === "corners" && !clockMode) {
-        if (PROT.elapsed % Math.max(1, protNum("cornersEvery", 60)) === 0) {
-            textFade(0, 1.5);
-            setTimeout(function () {
-                if (closing) return;
-                PTXT.idx = (PTXT.idx + 1) % PTXT.corners.length;
-                protApplyCorner();
-                textFade(1, 1.5);
-            }, 1500);
-        }
-    } else if (PTXT.mode === "fade" && !clockMode && !PTXT.faded) {
-        if (++PTXT.age >= Math.max(1, protNum("fadeAfter", 30))) {
-            PTXT.faded = true;
-            textFade(0, 2.5);
-        }
     }
+    if (protModeHas("fade") && !clockMode) protFadeTick();
 }
-// the description changed: the text is fresh, so the countdown starts again (and it appears, if it was faded out)
+// the description changed: its countdown starts again (and it appears, if it was faded out)
 function protPoiChanged() {
-    if (PTXT.mode !== "fade") return;
-    PTXT.age = 0;
-    if (PTXT.faded && protGet("fadeInPoi", true)) {
-        PTXT.faded = false;
-        textFade(1, 1.5);
-    }
+    if (!protModeHas("fade")) return;
+    PTXT.g[0].age = 0;
+    if (PTXT.g[0].faded && protGet("fadeInPoi", true)) protShow(0);
 }
-// a new video: the text is back whatever the settings
+// a new video: everything is back whatever the settings
 function protOnPlaying() {
-    if (PTXT.mode !== "fade") return;
-    PTXT.age = 0;
-    if (PTXT.faded) {
-        PTXT.faded = false;
-        textFade(1, 1.5);
-    }
+    if (!protModeHas("fade")) return;
+    protShow(0);
+    protShow(1);
 }
 function protStart() {
     protTextStart();

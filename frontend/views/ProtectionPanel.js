@@ -23,13 +23,15 @@ var DEFAULTS = {
   cornersOn: false, cornersEvery: 60,                        // OSD moves between the chosen corners (seconds)
   cornerTl: true, cornerTr: true, cornerBl: true, cornerBr: true,
   driftOn: false, driftPx: 8, driftPeriod: 5,                // smooth drift around the set position (pixels, minutes)
-  fadeOn: false, fadeAfter: 30, fadeInPoi: true              // auto fade out (seconds), fade in when the description changes
+  fadeOn: false, fadeAfter: 30, fadeInPoi: true,             // auto fade out (seconds), fade in when the description changes
+  fadeTextOn: true, fadeTextBack: 0,                         // name + description: fades, shown again on a timer (minutes, 0 = never)
+  fadeClockOn: true, fadeClockBack: 5                        // clock + date: the same
 };
 
 // Texts: looked up in I18n under their key first (prot + the setting name); the English text is used until the key exists.
 var STR = {
   protSecBrightness: 'Brightness', protSecTimers: 'Timers', protSecText: 'On-screen text',
-  protTextNote: 'Only one of these can be on. It overrides the text position and opacity settings from the On-screen display panel.',
+  protTextNote: 'All three can be on together. They override the text position and opacity settings from the On-screen display panel.',
   protIntro: 'Options that protect the screen from burn-in.',
   protBrightnessOn: 'Custom screen brightness', protBrightness: 'Brightness, %',
   protBrightnessNote: 'The previous brightness is restored when the screensaver stops.',
@@ -39,6 +41,8 @@ var STR = {
   protCornersOn: 'Move the text between corners', protCornersEvery: 'Move every, sec', protCornersWhich: 'Corners to use (at least two)',
   protDriftOn: 'Smooth text drift', protDriftPx: 'Drift range, px', protDriftPeriod: 'Drift cycle, min',
   protFadeOn: 'Auto fade out the text', protFadeAfter: 'Fade out after, sec', protFadeInPoi: 'Fade in when the description changes',
+  protFadeTextOn: 'Fade out the name and description', protFadeTextBack: 'Show the name and description again after, min (0 = never)',
+  protFadeClockOn: 'Fade out the clock and date', protFadeClockBack: 'Show the clock and date again after, min (0 = never)',
   protShBrightness: 'Brightness', protShDim: 'Dimming', protShOff: 'Panel off', protShStandby: 'Standby',
   protShMove: 'OSD move', protShDrift: 'OSD drift', protShFade: 'OSD fade out'
 };
@@ -80,12 +84,13 @@ var SECTION_STYLE = 'margin-top: 20px;';
 var HEAD_INDENT = 'padding-left: 12px;';
 var NOTE_STYLE = 'margin: 4px 0 8px; font-size: 24px; line-height: 1.35; color: ' + Theme.MUTED + ';';
 
-// The three ways to protect the on-screen text exclude each other: switching one on switches the others off.
-// The order is also the priority if an old settings file has several of them on.
+// The three ways to protect the on-screen text (corners, drift, fade out) do not exclude each other: any combination works.
 var TEXT_MODES = ['cornersOn', 'driftOn', 'fadeOn'];
+// the two groups of the text that can fade out: at least one stays on
+var FADE_GROUPS = ['fadeTextOn', 'fadeClockOn'];
 
 var NUMBERS = ['brightness', 'dimAfter', 'dimDuration', 'dimTo', 'offAfter', 'standbyAfter', 'cornersEvery',
-  'driftPx', 'driftPeriod', 'fadeAfter'];
+  'driftPx', 'driftPeriod', 'fadeAfter', 'fadeTextBack', 'fadeClockBack'];
 var SWITCHES = ['brightnessOn', 'dimOn', 'offOn', 'standbyOn', 'cornersOn', 'driftOn', 'fadeOn'];
 
 var ProtectionPanel = kind({
@@ -131,7 +136,11 @@ var ProtectionPanel = kind({
         toggle('driftOn'),
         group('driftOn', [picker('driftPx', 1, 20, 1), picker('driftPeriod', 1, 10, 1)]),
         toggle('fadeOn'),
-        group('fadeOn', [picker('fadeAfter', 5, 300, 5), toggle('fadeInPoi')])
+        group('fadeOn', [
+          picker('fadeAfter', 5, 300, 5),
+          toggle('fadeTextOn'), picker('fadeTextBack', 0, 60, 1), toggle('fadeInPoi'),
+          toggle('fadeClockOn'), picker('fadeClockBack', 0, 60, 1)
+        ])
       ]}
     ]},
     {kind: LunaService, name: 'save', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec'}
@@ -172,9 +181,8 @@ var ProtectionPanel = kind({
     this.$.dvText.set('content', tt('protSecText'));
     this.$.brightnessNote.set('content', tt('protBrightnessNote'));
     this.$.textNote.set('content', tt('protTextNote'));
-    this.fixTextModes();
     this.$.cornersWhichLabel.set('content', tt('protCornersWhich'));
-    SWITCHES.concat(['fadeInPoi']).forEach(function (key) {
+    SWITCHES.concat(['fadeInPoi', 'fadeTextOn', 'fadeClockOn']).forEach(function (key) {
       self.$[key].set('content', tt(lk(key)));
       self.$[key].set('checked', !!self.value(key));
     });
@@ -217,36 +225,17 @@ var ProtectionPanel = kind({
         return;
       }
     }
+    // fading needs at least one of the two groups
+    if (FADE_GROUPS.indexOf(key) >= 0 && !on && !this.value(FADE_GROUPS[1 - FADE_GROUPS.indexOf(key)])) {
+      this.quiet();
+      sender.set('checked', true);
+      return;
+    }
     this.setValue(key, on);
     if (box) {
       box.set('showing', on);
       if (on) { this.startJob('relayout', 'relayout', 0); }
     }
-    if (on && TEXT_MODES.indexOf(key) >= 0) { this.switchOthersOff(key); }
-  },
-
-  // key was switched on: the other text modes go off (the handler of their switch sees the stored
-  // value is already false and does nothing more)
-  switchOthersOff: function (key) {
-    TEXT_MODES.forEach(function (other) {
-      if (other === key || !this.value(other)) { return; }
-      this.setValue(other, false);
-      this.$[other].set('checked', false);
-      this.$[other + 'Box'].set('showing', false);
-    }, this);
-  },
-
-  // an older settings file may have several text modes on: keep the first one in TEXT_MODES order
-  fixTextModes: function () {
-    var keep = null, changed = false;
-    TEXT_MODES.forEach(function (key) {
-      if (!this.value(key)) { return; }
-      if (keep === null) { keep = key; return; }
-      if (!this.settings.protection || typeof this.settings.protection !== 'object') { this.settings.protection = {}; }
-      this.settings.protection[key] = false;
-      changed = true;
-    }, this);
-    if (changed) { this.markDirty(); }
   },
 
   picked: function (sender) {
@@ -274,10 +263,10 @@ ProtectionPanel.summary = function (settings) {
   if (get(settings, 'dimOn')) { parts.push(tt('protShDim')); }
   if (get(settings, 'offOn')) { parts.push(tt('protShOff')); }
   if (get(settings, 'standbyOn')) { parts.push(tt('protShStandby')); }
-  // the three text modes exclude each other; the first one on (TEXT_MODES order, same priority as the screensaver) is shown
+  // all three can be on together
   if (get(settings, 'cornersOn')) { parts.push(tt('protShMove')); }
-  else if (get(settings, 'driftOn')) { parts.push(tt('protShDrift')); }
-  else if (get(settings, 'fadeOn')) { parts.push(tt('protShFade')); }
+  if (get(settings, 'driftOn')) { parts.push(tt('protShDrift')); }
+  if (get(settings, 'fadeOn')) { parts.push(tt('protShFade')); }
   return parts.length ? parts.join(' \u00b7 ') : null;
 };
 ProtectionPanel.DEFAULTS = DEFAULTS;

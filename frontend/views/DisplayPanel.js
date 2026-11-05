@@ -596,17 +596,19 @@ var DisplayPanel = kind({
     return out;
   },
 
-  // 'corners' | 'drift' | 'fade' | '' : the one text protection that is on
+  // the text protections that are on, joined with '+': any of 'corners', 'drift', 'fade' ('' = none)
   textMode: function () {
-    if (this.pget('cornersOn')) { return this.pvCorners().length >= 2 ? 'corners' : ''; }
-    if (this.pget('driftOn')) { return 'drift'; }
-    if (this.pget('fadeOn')) { return 'fade'; }
-    return '';
+    var m = [];
+    if (this.pget('cornersOn') && this.pvCorners().length >= 2) { m.push('corners'); }
+    if (this.pget('driftOn')) { m.push('drift'); }
+    if (this.pget('fadeOn') && (this.pget('fadeTextOn') || this.pget('fadeClockOn'))) { m.push('fade'); }
+    return m.join('+');
   },
+  hasMode: function (m) { return this.textMode().split('+').indexOf(m) >= 0; },
 
   // The moving corners replace the two positions of this panel: their pickers are locked and say so
   lockPositions: function () {
-    var locked = this.textMode() === 'corners';
+    var locked = this.hasMode('corners');
     Object.keys(POS_KEYS).forEach(function (name) {
       this.$[name].set('disabled', locked);
       this.$[name + 'Label'].set('content', tt('osdPosition') + (locked ? ' (' + tt('protOverridden') + ')' : ''));
@@ -617,10 +619,10 @@ var DisplayPanel = kind({
   applyProtection: function () {
     var mode = this.textMode(), corners = this.pvCorners(), i;
     this.pvT = 0;
-    this.pvFade = 1;
+    this.pvFade = this.pvFt = this.pvFc = 1;   // corner hop, auto fade out of the name + description, of the clock + date
     this.pvPa = this.pvCa = null;
     this.pvIdx = 0;
-    if (mode === 'corners') {
+    if (this.hasMode('corners')) {
       i = corners.indexOf(this.osdGet('placeAnchor'));
       this.pvIdx = i >= 0 ? i : 0;
       this.pvSetCorner(corners);
@@ -642,23 +644,33 @@ var DisplayPanel = kind({
 
   setPvFade: function (v) {
     this.pvFade = v;
-    ['pvTitle', 'pvPoi', 'pvTime', 'pvDate'].forEach(function (n) {
-      this.$[n].applyStyle('opacity', (this.pvOpacity === undefined ? 1 : this.pvOpacity) * v);
-    }, this);
+    this.applyPvOpacity();
+  },
+  // auto fade out of one group: 0 = title + description, 1 = clock + date
+  setPvGroup: function (i, v) {
+    if (i) { this.pvFc = v; } else { this.pvFt = v; }
+    this.applyPvOpacity();
+  },
+  applyPvOpacity: function () {
+    var base = this.pvOpacity === undefined ? 1 : this.pvOpacity, hop = this.pvFade === undefined ? 1 : this.pvFade,
+      ft = this.pvFt === undefined ? 1 : this.pvFt, fc = this.pvFc === undefined ? 1 : this.pvFc;
+    ['pvTitle', 'pvPoi'].forEach(function (n) { this.$[n].applyStyle('opacity', base * hop * ft); }, this);
+    ['pvTime', 'pvDate'].forEach(function (n) { this.$[n].applyStyle('opacity', base * hop * fc); }, this);
   },
 
   // every second: advances the sped-up protection preview
   stepProtection: function () {
-    var self = this, mode = this.textMode(), t = this.pvT = (this.pvT || 0) + 1, amp, ph, corners, dim, base, k, a, tmp;
+    var self = this, t = this.pvT = (this.pvT || 0) + 1, amp, ph, corners, dim, base, k, a, tmp;
     if (!this.previewReady || this.pvGone) { return; }
-    if (mode === 'drift') {
+    if (this.hasMode('drift')) {
       amp = this.pget('driftPx');
       ph = 2 * Math.PI * t / PV_DRIFT_PERIOD;
       // Lissajous curve 3:2 from the centre, closed once per cycle (the screensaver's curve, its cycle is driftPeriod minutes)
       tmp = 'translate(' + Math.round(amp * Math.sin(3 * ph)) + 'px,' + Math.round(amp * Math.sin(2 * ph)) + 'px)';
       this.$.osdBox.applyStyle('-webkit-transform', tmp);
       this.$.osdBox.applyStyle('transform', tmp);
-    } else if (mode === 'corners' && t % PV_CORNER_EVERY === 0) {
+    }
+    if (this.hasMode('corners') && t % PV_CORNER_EVERY === 0) {
       corners = this.pvCorners();
       this.setPvFade(0);
       setTimeout(function () {
@@ -668,10 +680,18 @@ var DisplayPanel = kind({
         self.renderPreview();
         self.setPvFade(1);
       }, 800);
-    } else if (mode === 'fade') {
+    }
+    if (this.hasMode('fade')) {
+      // sped-up cycle: both groups fade at 4 s; the title + description come back at 8 s if they have a timer or fade in
+      // on a description change, the clock at 8 s if it has a timer, otherwise everything is back at the cycle start
       k = t % PV_FADE_CYCLE;
-      if (k === 4) { this.setPvFade(0); }
-      if (k === 8 || k === 0) { this.setPvFade(1); }
+      if (k === 4) {
+        if (this.pget('fadeTextOn')) { this.setPvGroup(0, 0); }
+        if (this.pget('fadeClockOn')) { this.setPvGroup(1, 0); }
+      }
+      if (k === 8 && (this.pget('fadeTextBack') > 0 || this.pget('fadeInPoi'))) { this.setPvGroup(0, 1); }
+      if (k === 8 && this.pget('fadeClockBack') > 0) { this.setPvGroup(1, 1); }
+      if (k === 0) { this.setPvGroup(0, 1); this.setPvGroup(1, 1); }
     }
     // brightness and dimming: the layer is the part of the light that is taken away
     base = this.pget('brightnessOn') ? this.pget('brightness') / 100 : 1;
@@ -712,8 +732,8 @@ var DisplayPanel = kind({
     this.putLine(this.$.pvTime, clockOn, ca, cy, 79 * cs);
     this.putLine(this.$.pvDate, dateOn, ca, cy + (clockOn ? 96 * cs : 0), 40 * cs);
     this.pvOpacity = opacity;
+    this.applyPvOpacity();
     ['pvTitle', 'pvPoi', 'pvTime', 'pvDate'].forEach(function (n) {
-      this.$[n].applyStyle('opacity', opacity * (this.pvFade === undefined ? 1 : this.pvFade));
       this.$[n].applyStyle('font-family', "'OsdFont-" + font.id + "', 'Segoe UI', sans-serif");
       this.$[n].applyStyle('letter-spacing', font.spacing + 'px');
     }, this);
