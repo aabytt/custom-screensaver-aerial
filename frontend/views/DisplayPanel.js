@@ -196,7 +196,7 @@ var TEXT_STYLE = 'position: absolute; white-space: nowrap; color: #fff; line-hei
 var PV_CORNER_EVERY = 4, PV_DRIFT_PERIOD = 8, PV_FADE_CYCLE = 12, PV_DIM_CYCLE = 12, PV_DIM_RAMP = 10;
 
 // vertical gap above each section divider (Show / Title and description / Clock and date)
-var SECTION_STYLE = 'margin-top: 20px; ' + Theme.HEAD_CASE;
+var SECTION_STYLE = 'margin-top: 20px;';
 
 var DisplayPanel = kind({
   name: 'DisplayPanel',

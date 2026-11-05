@@ -79,7 +79,7 @@ function group(key, components) {
   return {name: key + 'Box', showing: false,
     style: 'margin: 0 0 8px 26px; padding-left: 20px; border-left: 2px solid ' + Theme.RULE + ';', components: components};
 }
-var SECTION_STYLE = 'margin-top: 20px; ' + Theme.HEAD_CASE;
+var SECTION_STYLE = 'margin-top: 20px;';
 // BodyText sits a few pixels left of the Divider heading text; this shifts the section notes to the heading's left edge
 // (tune this one number if it is still off on the TV)
 var HEAD_INDENT = 'padding-left: 12px;';
@@ -109,7 +109,7 @@ var ProtectionPanel = kind({
       {style: 'margin-left: 7%; width: 88%;', components: [
         {kind: BodyText, name: 'intro', style: 'margin: 10px 0 20px; ' + HEAD_INDENT},
 
-        {kind: Divider, name: 'dvBrightness', style: 'margin-top: 0; ' + Theme.HEAD_CASE},
+        {kind: Divider, name: 'dvBrightness', style: 'margin-top: 0;'},
         toggle('brightnessOn'),
         group('brightnessOn', [
           picker('brightness', 0, 100, 5),

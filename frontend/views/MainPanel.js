@@ -184,7 +184,7 @@ module.exports = kind({
       ]},
       // bottom block: its height changes with the text, so every text change calls refit()
       {components: [
-        {kind: Divider, i18n: 'result', style: Theme.HEAD_CASE},
+        {kind: Divider, i18n: 'result'},
         {kind: BodyText, name: 'result', content: ''}
       ]}
     ]},

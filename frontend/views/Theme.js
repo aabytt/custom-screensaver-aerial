@@ -10,8 +10,5 @@ module.exports = {
   CARD: '#141416',            // a quiet card (hint box) on the dialog background
   MUTED: '#8e8e93',           // secondary text
   TEXT: '#f2f2f2',
-  DESC_FONT: '22px',          // second line of a list item (description / current value): one size in every panel
-  // Moonstone capitalizes every word of a Divider heading ("Title And Description"): fine in English, wrong in
-  // Russian and most other languages. The headings are shown exactly as written in the translation.
-  HEAD_CASE: 'text-transform: none;'
+  DESC_FONT: '22px'           // second line of a list item (description / current value): one size in every panel
 };
