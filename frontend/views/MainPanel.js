@@ -7,7 +7,7 @@ var
   ExpandablePicker = require('moonstone/ExpandablePicker'),
   Button = require('moonstone/Button'),
   LunaService = require('enyo-webos/LunaService'),
-  Divider = require('moonstone/Divider'),
+  Divider = require('./Heading.js'),
   Scroller = require('moonstone/Scroller'),
   Item = require('moonstone/Item'),
   Popup = require('moonstone/Popup'),

@@ -4,7 +4,7 @@ var
   Scroller = require('moonstone/Scroller'),
   Item = require('moonstone/Item'),
   BodyText = require('moonstone/BodyText'),
-  Divider = require('moonstone/Divider'),
+  Divider = require('./Heading.js'),
   Marquee = require('moonstone/Marquee'),
   ToggleItem = require('moonstone/ToggleItem'),
   SimpleIntegerPicker = require('moonstone/SimpleIntegerPicker'),
