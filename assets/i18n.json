@@ -132,7 +132,9 @@
   "protFadeTextOn": "إخفاء الاسم والوصف",
   "protFadeTextBack": "إظهار الاسم والوصف مجددًا بعد، دقيقة (0 = أبدًا)",
   "protFadeClockOn": "إخفاء الساعة والتاريخ",
-  "protFadeClockBack": "إظهار الساعة والتاريخ مجددًا بعد، دقيقة (0 = أبدًا)"
+  "protFadeClockBack": "إظهار الساعة والتاريخ مجددًا بعد، دقيقة (0 = أبدًا)",
+  "protUnitMin": "دقيقة",
+  "protUnitSec": "ثانية"
  },
  "be-BY": {
   "uiLanguage": "Мова інтэрфейсу",
@@ -244,8 +246,8 @@
   "protDimTo": "Зацямніць да, %",
   "protOffOn": "Таймер выключэння панэлі",
   "protOffAfter": "Выключыць панэль праз, хв",
-  "protStandbyOn": "Таймер рэжыму чакання",
-  "protStandbyAfter": "Перайсці ў рэжым чакання праз, хв",
+  "protStandbyOn": "Таймер выключэння тэлевізара",
+  "protStandbyAfter": "Выключыць тэлевізар праз, хв",
   "protCornersOn": "Перамяшчаць тэкст па кутах",
   "protCornersEvery": "Перамяшчаць кожныя, с",
   "protCornersWhich": "Куты для выкарыстання (не менш за два)",
@@ -258,7 +260,7 @@
   "protShBrightness": "Яркасць",
   "protShDim": "Зацямненне",
   "protShOff": "Выкл. панэлі",
-  "protShStandby": "Чаканне",
+  "protShStandby": "Выкл. ТВ",
   "protShMove": "OSD: перамяшчэнне",
   "protShDrift": "OSD: дрэйф",
   "protShFade": "OSD: згасанне",
@@ -267,7 +269,9 @@
   "protFadeTextOn": "Хаваць назву і апісанне",
   "protFadeTextBack": "Паказаць назву і апісанне зноў праз, хв (0 = не паказваць)",
   "protFadeClockOn": "Хаваць гадзіннік і дату",
-  "protFadeClockBack": "Паказаць гадзіннік і дату зноў праз, хв (0 = не паказваць)"
+  "protFadeClockBack": "Паказаць гадзіннік і дату зноў праз, хв (0 = не паказваць)",
+  "protUnitMin": "хв",
+  "protUnitSec": "с"
  },
  "ca-ES": {
   "uiLanguage": "Idioma de la interfície",
@@ -402,7 +406,9 @@
   "protFadeTextOn": "Esvaeix el nom i la descripció",
   "protFadeTextBack": "Mostra de nou el nom i la descripció després de, min (0 = mai)",
   "protFadeClockOn": "Esvaeix el rellotge i la data",
-  "protFadeClockBack": "Mostra de nou el rellotge i la data després de, min (0 = mai)"
+  "protFadeClockBack": "Mostra de nou el rellotge i la data després de, min (0 = mai)",
+  "protUnitMin": "min",
+  "protUnitSec": "s"
  },
  "cs-CZ": {
   "uiLanguage": "Jazyk rozhraní",
@@ -537,7 +543,9 @@
   "protFadeTextOn": "Zeslabit název a popis",
   "protFadeTextBack": "Znovu zobrazit název a popis po, min (0 = nikdy)",
   "protFadeClockOn": "Zeslabit hodiny a datum",
-  "protFadeClockBack": "Znovu zobrazit hodiny a datum po, min (0 = nikdy)"
+  "protFadeClockBack": "Znovu zobrazit hodiny a datum po, min (0 = nikdy)",
+  "protUnitMin": "min",
+  "protUnitSec": "s"
  },
  "da-DK": {
   "uiLanguage": "Grænsefladesprog",
@@ -672,7 +680,9 @@
   "protFadeTextOn": "Tone navn og beskrivelse ud",
   "protFadeTextBack": "Vis navn og beskrivelse igen efter, min (0 = aldrig)",
   "protFadeClockOn": "Tone ur og dato ud",
-  "protFadeClockBack": "Vis ur og dato igen efter, min (0 = aldrig)"
+  "protFadeClockBack": "Vis ur og dato igen efter, min (0 = aldrig)",
+  "protUnitMin": "min",
+  "protUnitSec": "sek"
  },
  "de-DE": {
   "uiLanguage": "Sprache der Oberfläche",
@@ -807,7 +817,9 @@
   "protFadeTextOn": "Name und Beschreibung ausblenden",
   "protFadeTextBack": "Name und Beschreibung wieder zeigen nach, Min. (0 = nie)",
   "protFadeClockOn": "Uhr und Datum ausblenden",
-  "protFadeClockBack": "Uhr und Datum wieder zeigen nach, Min. (0 = nie)"
+  "protFadeClockBack": "Uhr und Datum wieder zeigen nach, Min. (0 = nie)",
+  "protUnitMin": "Min.",
+  "protUnitSec": "Sek."
  },
  "el-GR": {
   "uiLanguage": "Γλώσσα διεπαφής",
@@ -942,7 +954,9 @@
   "protFadeTextOn": "Εξασθένιση ονόματος και περιγραφής",
   "protFadeTextBack": "Επανεμφάνιση ονόματος και περιγραφής μετά από, λεπτά (0 = ποτέ)",
   "protFadeClockOn": "Εξασθένιση ρολογιού και ημερομηνίας",
-  "protFadeClockBack": "Επανεμφάνιση ρολογιού και ημερομηνίας μετά από, λεπτά (0 = ποτέ)"
+  "protFadeClockBack": "Επανεμφάνιση ρολογιού και ημερομηνίας μετά από, λεπτά (0 = ποτέ)",
+  "protUnitMin": "λεπτά",
+  "protUnitSec": "δευτ."
  },
  "en-AU": "en-US",
  "en-GB": "en-US",
@@ -1079,7 +1093,9 @@
   "protFadeTextOn": "Fade out the name and description",
   "protFadeTextBack": "Show the name and description again after, min (0 = never)",
   "protFadeClockOn": "Fade out the clock and date",
-  "protFadeClockBack": "Show the clock and date again after, min (0 = never)"
+  "protFadeClockBack": "Show the clock and date again after, min (0 = never)",
+  "protUnitMin": "min",
+  "protUnitSec": "sec"
  },
  "es-ES": {
   "uiLanguage": "Idioma de la interfaz",
@@ -1214,7 +1230,9 @@
   "protFadeTextOn": "Desvanecer nombre y descripción",
   "protFadeTextBack": "Mostrar nombre y descripción de nuevo tras, min (0 = nunca)",
   "protFadeClockOn": "Desvanecer reloj y fecha",
-  "protFadeClockBack": "Mostrar reloj y fecha de nuevo tras, min (0 = nunca)"
+  "protFadeClockBack": "Mostrar reloj y fecha de nuevo tras, min (0 = nunca)",
+  "protUnitMin": "min",
+  "protUnitSec": "s"
  },
  "es-419": "es-ES",
  "fi-FI": {
@@ -1350,7 +1368,9 @@
   "protFadeTextOn": "Häivytä nimi ja kuvaus",
   "protFadeTextBack": "Näytä nimi ja kuvaus uudelleen, min kuluttua (0 = ei koskaan)",
   "protFadeClockOn": "Häivytä kello ja päivämäärä",
-  "protFadeClockBack": "Näytä kello ja päivämäärä uudelleen, min kuluttua (0 = ei koskaan)"
+  "protFadeClockBack": "Näytä kello ja päivämäärä uudelleen, min kuluttua (0 = ei koskaan)",
+  "protUnitMin": "min",
+  "protUnitSec": "s"
  },
  "fr-CA": "fr-FR",
  "fr-FR": {
@@ -1486,7 +1506,9 @@
   "protFadeTextOn": "Estomper le nom et la description",
   "protFadeTextBack": "Réafficher le nom et la description après, min (0 = jamais)",
   "protFadeClockOn": "Estomper l'horloge et la date",
-  "protFadeClockBack": "Réafficher l'horloge et la date après, min (0 = jamais)"
+  "protFadeClockBack": "Réafficher l'horloge et la date après, min (0 = jamais)",
+  "protUnitMin": "min",
+  "protUnitSec": "s"
  },
  "he-IL": {
   "uiLanguage": "שפת הממשק",
@@ -1621,7 +1643,9 @@
   "protFadeTextOn": "עמעם את השם והתיאור",
   "protFadeTextBack": "הצג שוב את השם והתיאור אחרי, דק׳ (0 = לעולם לא)",
   "protFadeClockOn": "עמעם את השעון והתאריך",
-  "protFadeClockBack": "הצג שוב את השעון והתאריך אחרי, דק׳ (0 = לעולם לא)"
+  "protFadeClockBack": "הצג שוב את השעון והתאריך אחרי, דק׳ (0 = לעולם לא)",
+  "protUnitMin": "דק׳",
+  "protUnitSec": "שנ׳"
  },
  "hi-IN": {
   "uiLanguage": "इंटरफ़ेस की भाषा",
@@ -1756,7 +1780,9 @@
   "protFadeTextOn": "नाम और विवरण फीका करें",
   "protFadeTextBack": "नाम और विवरण फिर दिखाएँ, इतनी देर बाद, मिनट (0 = कभी नहीं)",
   "protFadeClockOn": "घड़ी और तारीख फीका करें",
-  "protFadeClockBack": "घड़ी और तारीख फिर दिखाएँ, इतनी देर बाद, मिनट (0 = कभी नहीं)"
+  "protFadeClockBack": "घड़ी और तारीख फिर दिखाएँ, इतनी देर बाद, मिनट (0 = कभी नहीं)",
+  "protUnitMin": "मिनट",
+  "protUnitSec": "सेकंड"
  },
  "hr-HR": {
   "uiLanguage": "Jezik sučelja",
@@ -1891,7 +1917,9 @@
   "protFadeTextOn": "Izblijedi naziv i opis",
   "protFadeTextBack": "Prikaži naziv i opis ponovno nakon, min (0 = nikad)",
   "protFadeClockOn": "Izblijedi sat i datum",
-  "protFadeClockBack": "Prikaži sat i datum ponovno nakon, min (0 = nikad)"
+  "protFadeClockBack": "Prikaži sat i datum ponovno nakon, min (0 = nikad)",
+  "protUnitMin": "min",
+  "protUnitSec": "s"
  },
  "hu-HU": {
   "uiLanguage": "A felület nyelve",
@@ -2026,7 +2054,9 @@
   "protFadeTextOn": "Név és leírás elhalványítása",
   "protFadeTextBack": "Név és leírás újra megjelenítése ennyi után, perc (0 = soha)",
   "protFadeClockOn": "Óra és dátum elhalványítása",
-  "protFadeClockBack": "Óra és dátum újra megjelenítése ennyi után, perc (0 = soha)"
+  "protFadeClockBack": "Óra és dátum újra megjelenítése ennyi után, perc (0 = soha)",
+  "protUnitMin": "perc",
+  "protUnitSec": "mp"
  },
  "id-ID": {
   "uiLanguage": "Bahasa antarmuka",
@@ -2161,7 +2191,9 @@
   "protFadeTextOn": "Pudarkan nama dan deskripsi",
   "protFadeTextBack": "Tampilkan lagi nama dan deskripsi setelah, mnt (0 = tidak pernah)",
   "protFadeClockOn": "Pudarkan jam dan tanggal",
-  "protFadeClockBack": "Tampilkan lagi jam dan tanggal setelah, mnt (0 = tidak pernah)"
+  "protFadeClockBack": "Tampilkan lagi jam dan tanggal setelah, mnt (0 = tidak pernah)",
+  "protUnitMin": "mnt",
+  "protUnitSec": "dtk"
  },
  "it-IT": {
   "uiLanguage": "Lingua dell'interfaccia",
@@ -2296,7 +2328,9 @@
   "protFadeTextOn": "Dissolvi nome e descrizione",
   "protFadeTextBack": "Mostra di nuovo nome e descrizione dopo, min (0 = mai)",
   "protFadeClockOn": "Dissolvi orologio e data",
-  "protFadeClockBack": "Mostra di nuovo orologio e data dopo, min (0 = mai)"
+  "protFadeClockBack": "Mostra di nuovo orologio e data dopo, min (0 = mai)",
+  "protUnitMin": "min",
+  "protUnitSec": "s"
  },
  "ja-JP": {
   "uiLanguage": "インターフェースの言語",
@@ -2431,7 +2465,9 @@
   "protFadeTextOn": "名前と説明をフェードアウト",
   "protFadeTextBack": "名前と説明を再表示するまでの時間（分、0＝再表示しない）",
   "protFadeClockOn": "時計と日付をフェードアウト",
-  "protFadeClockBack": "時計と日付を再表示するまでの時間（分、0＝再表示しない）"
+  "protFadeClockBack": "時計と日付を再表示するまでの時間（分、0＝再表示しない）",
+  "protUnitMin": "分",
+  "protUnitSec": "秒"
  },
  "ko-KR": {
   "uiLanguage": "인터페이스 언어",
@@ -2566,7 +2602,9 @@
   "protFadeTextOn": "이름과 설명 페이드아웃",
   "protFadeTextBack": "이름과 설명을 다시 표시할 시간, 분 (0 = 표시 안 함)",
   "protFadeClockOn": "시계와 날짜 페이드아웃",
-  "protFadeClockBack": "시계와 날짜를 다시 표시할 시간, 분 (0 = 표시 안 함)"
+  "protFadeClockBack": "시계와 날짜를 다시 표시할 시간, 분 (0 = 표시 안 함)",
+  "protUnitMin": "분",
+  "protUnitSec": "초"
  },
  "mk-MK": {
   "uiLanguage": "Јазик на интерфејсот",
@@ -2678,8 +2716,8 @@
   "protDimTo": "Затемни до, %",
   "protOffOn": "Тајмер за исклучување на панелот",
   "protOffAfter": "Исклучи го панелот по, мин",
-  "protStandbyOn": "Тајмер за мирување",
-  "protStandbyAfter": "Премини во мирување по, мин",
+  "protStandbyOn": "Тајмер за исклучување на телевизорот",
+  "protStandbyAfter": "Исклучи го телевизорот по, мин",
   "protCornersOn": "Префрлај го текстот меѓу аглите",
   "protCornersEvery": "Префрлај на секои, сек",
   "protCornersWhich": "Агли што се користат (најмалку два)",
@@ -2692,7 +2730,7 @@
   "protShBrightness": "Осветленост",
   "protShDim": "Затемнување",
   "protShOff": "Панел исклучен",
-  "protShStandby": "Мирување",
+  "protShStandby": "ТВ исклучен",
   "protShMove": "OSD: преместување",
   "protShDrift": "OSD: лебдење",
   "protShFade": "OSD: бледнеење",
@@ -2701,7 +2739,9 @@
   "protFadeTextOn": "Избледи ги називот и описот",
   "protFadeTextBack": "Прикажи ги називот и описот повторно по, мин (0 = никогаш)",
   "protFadeClockOn": "Избледи ги часовникот и датумот",
-  "protFadeClockBack": "Прикажи ги часовникот и датумот повторно по, мин (0 = никогаш)"
+  "protFadeClockBack": "Прикажи ги часовникот и датумот повторно по, мин (0 = никогаш)",
+  "protUnitMin": "мин",
+  "protUnitSec": "сек"
  },
  "ms-MY": {
   "uiLanguage": "Bahasa antara muka",
@@ -2836,7 +2876,9 @@
   "protFadeTextOn": "Pudarkan nama dan penerangan",
   "protFadeTextBack": "Papar semula nama dan penerangan selepas, min (0 = tidak pernah)",
   "protFadeClockOn": "Pudarkan jam dan tarikh",
-  "protFadeClockBack": "Papar semula jam dan tarikh selepas, min (0 = tidak pernah)"
+  "protFadeClockBack": "Papar semula jam dan tarikh selepas, min (0 = tidak pernah)",
+  "protUnitMin": "min",
+  "protUnitSec": "saat"
  },
  "nl-NL": {
   "uiLanguage": "Interfacetaal",
@@ -2971,7 +3013,9 @@
   "protFadeTextOn": "Naam en beschrijving uitfaden",
   "protFadeTextBack": "Naam en beschrijving weer tonen na, min (0 = nooit)",
   "protFadeClockOn": "Klok en datum uitfaden",
-  "protFadeClockBack": "Klok en datum weer tonen na, min (0 = nooit)"
+  "protFadeClockBack": "Klok en datum weer tonen na, min (0 = nooit)",
+  "protUnitMin": "min",
+  "protUnitSec": "sec"
  },
  "nb-NO": {
   "uiLanguage": "Grensesnittspråk",
@@ -3106,7 +3150,9 @@
   "protFadeTextOn": "Tone ut navn og beskrivelse",
   "protFadeTextBack": "Vis navn og beskrivelse igjen etter, min (0 = aldri)",
   "protFadeClockOn": "Tone ut klokke og dato",
-  "protFadeClockBack": "Vis klokke og dato igjen etter, min (0 = aldri)"
+  "protFadeClockBack": "Vis klokke og dato igjen etter, min (0 = aldri)",
+  "protUnitMin": "min",
+  "protUnitSec": "sek"
  },
  "pl-PL": {
   "uiLanguage": "Język interfejsu",
@@ -3241,7 +3287,9 @@
   "protFadeTextOn": "Wygaszaj nazwę i opis",
   "protFadeTextBack": "Pokaż nazwę i opis ponownie po, min (0 = nigdy)",
   "protFadeClockOn": "Wygaszaj zegar i datę",
-  "protFadeClockBack": "Pokaż zegar i datę ponownie po, min (0 = nigdy)"
+  "protFadeClockBack": "Pokaż zegar i datę ponownie po, min (0 = nigdy)",
+  "protUnitMin": "min",
+  "protUnitSec": "s"
  },
  "pt-BR": {
   "uiLanguage": "Idioma da interface",
@@ -3376,7 +3424,9 @@
   "protFadeTextOn": "Esmaecer nome e descrição",
   "protFadeTextBack": "Reexibir nome e descrição após, min (0 = nunca)",
   "protFadeClockOn": "Esmaecer relógio e data",
-  "protFadeClockBack": "Reexibir relógio e data após, min (0 = nunca)"
+  "protFadeClockBack": "Reexibir relógio e data após, min (0 = nunca)",
+  "protUnitMin": "min",
+  "protUnitSec": "s"
  },
  "pt-PT": {
   "uiLanguage": "Idioma da interface",
@@ -3511,7 +3561,9 @@
   "protFadeTextOn": "Desvanecer nome e descrição",
   "protFadeTextBack": "Mostrar nome e descrição novamente após, min (0 = nunca)",
   "protFadeClockOn": "Desvanecer relógio e data",
-  "protFadeClockBack": "Mostrar relógio e data novamente após, min (0 = nunca)"
+  "protFadeClockBack": "Mostrar relógio e data novamente após, min (0 = nunca)",
+  "protUnitMin": "min",
+  "protUnitSec": "s"
  },
  "ro-RO": {
   "uiLanguage": "Limba interfeței",
@@ -3646,7 +3698,9 @@
   "protFadeTextOn": "Estompează numele și descrierea",
   "protFadeTextBack": "Reafișează numele și descrierea după, min (0 = niciodată)",
   "protFadeClockOn": "Estompează ceasul și data",
-  "protFadeClockBack": "Reafișează ceasul și data după, min (0 = niciodată)"
+  "protFadeClockBack": "Reafișează ceasul și data după, min (0 = niciodată)",
+  "protUnitMin": "min",
+  "protUnitSec": "s"
  },
  "ru-RU": {
   "uiLanguage": "Язык интерфейса",
@@ -3758,8 +3812,8 @@
   "protDimTo": "Затемнить до, %",
   "protOffOn": "Таймер выключения панели",
   "protOffAfter": "Выключить панель через, мин",
-  "protStandbyOn": "Таймер ожидания",
-  "protStandbyAfter": "Перейти в режим ожидания через, мин",
+  "protStandbyOn": "Таймер выключения телевизора",
+  "protStandbyAfter": "Выключить телевизор через, мин",
   "protCornersOn": "Перемещать текст по углам",
   "protCornersEvery": "Перемещать каждые, сек",
   "protCornersWhich": "Используемые углы (не меньше двух)",
@@ -3772,7 +3826,7 @@
   "protShBrightness": "Яркость",
   "protShDim": "Затемнение",
   "protShOff": "Выкл. панели",
-  "protShStandby": "Ожидание",
+  "protShStandby": "Выкл. ТВ",
   "protShMove": "OSD: перемещение",
   "protShDrift": "OSD: дрейф",
   "protShFade": "OSD: затухание",
@@ -3781,7 +3835,9 @@
   "protFadeTextOn": "Скрывать название и описание",
   "protFadeTextBack": "Показать название и описание снова через, мин (0 = не показывать)",
   "protFadeClockOn": "Скрывать часы и дату",
-  "protFadeClockBack": "Показать часы и дату снова через, мин (0 = не показывать)"
+  "protFadeClockBack": "Показать часы и дату снова через, мин (0 = не показывать)",
+  "protUnitMin": "мин",
+  "protUnitSec": "сек"
  },
  "sk-SK": {
   "uiLanguage": "Jazyk rozhrania",
@@ -3916,7 +3972,9 @@
   "protFadeTextOn": "Stlmiť názov a popis",
   "protFadeTextBack": "Znova zobraziť názov a popis po, min (0 = nikdy)",
   "protFadeClockOn": "Stlmiť hodiny a dátum",
-  "protFadeClockBack": "Znova zobraziť hodiny a dátum po, min (0 = nikdy)"
+  "protFadeClockBack": "Znova zobraziť hodiny a dátum po, min (0 = nikdy)",
+  "protUnitMin": "min",
+  "protUnitSec": "s"
  },
  "sl-SI": {
   "uiLanguage": "Jezik vmesnika",
@@ -4051,7 +4109,9 @@
   "protFadeTextOn": "Zbledi naslov in opis",
   "protFadeTextBack": "Znova prikaži naslov in opis čez, min (0 = nikoli)",
   "protFadeClockOn": "Zbledi uro in datum",
-  "protFadeClockBack": "Znova prikaži uro in datum čez, min (0 = nikoli)"
+  "protFadeClockBack": "Znova prikaži uro in datum čez, min (0 = nikoli)",
+  "protUnitMin": "min",
+  "protUnitSec": "s"
  },
  "sv-SE": {
   "uiLanguage": "Gränssnittsspråk",
@@ -4186,7 +4246,9 @@
   "protFadeTextOn": "Tona ut namn och beskrivning",
   "protFadeTextBack": "Visa namn och beskrivning igen efter, min (0 = aldrig)",
   "protFadeClockOn": "Tona ut klocka och datum",
-  "protFadeClockBack": "Visa klocka och datum igen efter, min (0 = aldrig)"
+  "protFadeClockBack": "Visa klocka och datum igen efter, min (0 = aldrig)",
+  "protUnitMin": "min",
+  "protUnitSec": "sek"
  },
  "th-TH": {
   "uiLanguage": "ภาษาของอินเทอร์เฟซ",
@@ -4321,7 +4383,9 @@
   "protFadeTextOn": "ทำให้ชื่อและคำอธิบายจางลง",
   "protFadeTextBack": "แสดงชื่อและคำอธิบายอีกครั้งหลังจาก, นาที (0 = ไม่แสดง)",
   "protFadeClockOn": "ทำให้นาฬิกาและวันที่จางลง",
-  "protFadeClockBack": "แสดงนาฬิกาและวันที่อีกครั้งหลังจาก, นาที (0 = ไม่แสดง)"
+  "protFadeClockBack": "แสดงนาฬิกาและวันที่อีกครั้งหลังจาก, นาที (0 = ไม่แสดง)",
+  "protUnitMin": "นาที",
+  "protUnitSec": "วินาที"
  },
  "tr-TR": {
   "uiLanguage": "Arayüz dili",
@@ -4456,7 +4520,9 @@
   "protFadeTextOn": "Adı ve açıklamayı soldur",
   "protFadeTextBack": "Adı ve açıklamayı yeniden gösterme süresi, dk (0 = asla)",
   "protFadeClockOn": "Saati ve tarihi soldur",
-  "protFadeClockBack": "Saati ve tarihi yeniden gösterme süresi, dk (0 = asla)"
+  "protFadeClockBack": "Saati ve tarihi yeniden gösterme süresi, dk (0 = asla)",
+  "protUnitMin": "dk",
+  "protUnitSec": "sn"
  },
  "uk-UA": {
   "uiLanguage": "Мова інтерфейсу",
@@ -4568,8 +4634,8 @@
   "protDimTo": "Затемнити до, %",
   "protOffOn": "Таймер вимкнення панелі",
   "protOffAfter": "Вимкнути панель через, хв",
-  "protStandbyOn": "Таймер режиму очікування",
-  "protStandbyAfter": "Перейти в режим очікування через, хв",
+  "protStandbyOn": "Таймер вимкнення телевізора",
+  "protStandbyAfter": "Вимкнути телевізор через, хв",
   "protCornersOn": "Переміщувати текст між кутами",
   "protCornersEvery": "Переміщувати кожні, с",
   "protCornersWhich": "Кути для використання (не менше двох)",
@@ -4582,7 +4648,7 @@
   "protShBrightness": "Яскравість",
   "protShDim": "Затемнення",
   "protShOff": "Вимкн. панелі",
-  "protShStandby": "Очікування",
+  "protShStandby": "Вимкн. ТВ",
   "protShMove": "OSD: переміщення",
   "protShDrift": "OSD: дрейф",
   "protShFade": "OSD: згасання",
@@ -4591,7 +4657,9 @@
   "protFadeTextOn": "Приховувати назву й опис",
   "protFadeTextBack": "Показати назву й опис знову через, хв (0 = не показувати)",
   "protFadeClockOn": "Приховувати годинник і дату",
-  "protFadeClockBack": "Показати годинник і дату знову через, хв (0 = не показувати)"
+  "protFadeClockBack": "Показати годинник і дату знову через, хв (0 = не показувати)",
+  "protUnitMin": "хв",
+  "protUnitSec": "с"
  },
  "vi-VN": {
   "uiLanguage": "Ngôn ngữ giao diện",
@@ -4726,7 +4794,9 @@
   "protFadeTextOn": "Làm mờ tên và mô tả",
   "protFadeTextBack": "Hiện lại tên và mô tả sau, phút (0 = không bao giờ)",
   "protFadeClockOn": "Làm mờ đồng hồ và ngày",
-  "protFadeClockBack": "Hiện lại đồng hồ và ngày sau, phút (0 = không bao giờ)"
+  "protFadeClockBack": "Hiện lại đồng hồ và ngày sau, phút (0 = không bao giờ)",
+  "protUnitMin": "phút",
+  "protUnitSec": "giây"
  },
  "zh-CN": {
   "uiLanguage": "界面语言",
@@ -4861,7 +4931,9 @@
   "protFadeTextOn": "淡出名称和描述",
   "protFadeTextBack": "多久后重新显示名称和描述，分钟（0 = 不再显示）",
   "protFadeClockOn": "淡出时钟和日期",
-  "protFadeClockBack": "多久后重新显示时钟和日期，分钟（0 = 不再显示）"
+  "protFadeClockBack": "多久后重新显示时钟和日期，分钟（0 = 不再显示）",
+  "protUnitMin": "分钟",
+  "protUnitSec": "秒"
  },
  "zh-HK": "zh-TW",
  "zh-TW": {
@@ -4997,6 +5069,8 @@
   "protFadeTextOn": "淡出名稱和描述",
   "protFadeTextBack": "多久後重新顯示名稱和描述，分鐘（0 = 不再顯示）",
   "protFadeClockOn": "淡出時鐘和日期",
-  "protFadeClockBack": "多久後重新顯示時鐘和日期，分鐘（0 = 不再顯示）"
+  "protFadeClockBack": "多久後重新顯示時鐘和日期，分鐘（0 = 不再顯示）",
+  "protUnitMin": "分鐘",
+  "protUnitSec": "秒"
  }
 }

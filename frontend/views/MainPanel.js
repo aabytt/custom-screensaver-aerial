@@ -173,7 +173,7 @@ module.exports = kind({
             ], ontap: 'openDisplay'},
             {kind: Item, components: [
               titleRow('shield', {kind: Marquee.Text, name: 'protectionTitle'}),
-              {kind: BodyText, style: DESC_STYLE, name: 'protectionInfo', content: ''}
+              {kind: BodyText, style: DESC_STYLE + ' white-space: nowrap; overflow: hidden; text-overflow: ellipsis;', name: 'protectionInfo', content: ''}
             ], ontap: 'openProtection'},
             {style: 'margin: 28px 0 0', components: [
               {kind: Button, style: 'margin: 0', i18n: 'testRun', ontap: 'testRun'}
@@ -771,10 +771,25 @@ module.exports = kind({
     }
   },
 
-  // summary line under "Panel protection": what is switched on, or the general description
+  // summary line under "Panel protection": what is switched on with its values ("Brightness 30% · Dimming 10 min ↓20%"),
+  // or the general description. It is always one line: if the detailed text is wider than the line, it is replaced by
+  // the short one (names only, brightness still with its %); if even that does not fit, the CSS ellipsis cuts it.
   updateProtectionInfo: function () {
-    this.$.protectionInfo.set('content', ProtectionPanel.summary(settings) ||
-      tr('protectionInfo', 'Protects the screen from burn-in'));
+    var text = ProtectionPanel.summary(settings, true);
+    this.$.protectionInfo.set('content', text || tr('protectionInfo', 'Protects the screen from burn-in'));
+    if (text) { this.fitProtectionInfo(true); }
+  },
+
+  fitProtectionInfo: function (retry) {
+    var info = this.$.protectionInfo, node = info.hasNode();
+    if (!node) { return; }
+    if (!node.clientWidth) {   // not laid out yet (hidden): measure once more a bit later
+      if (retry) { this.startJob('protFit', function () { this.fitProtectionInfo(false); }, 500); }
+      return;
+    }
+    if (node.scrollWidth > node.clientWidth) {
+      info.set('content', ProtectionPanel.summary(settings, false));
+    }
   },
 
   openProtection: function () {

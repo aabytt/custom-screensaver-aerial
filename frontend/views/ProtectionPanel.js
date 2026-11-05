@@ -44,7 +44,8 @@ var STR = {
   protFadeTextOn: 'Fade out the name and description', protFadeTextBack: 'Show the name and description again after, min (0 = never)',
   protFadeClockOn: 'Fade out the clock and date', protFadeClockBack: 'Show the clock and date again after, min (0 = never)',
   protShBrightness: 'Brightness', protShDim: 'Dimming', protShOff: 'Panel off', protShStandby: 'Standby',
-  protShMove: 'OSD move', protShDrift: 'OSD drift', protShFade: 'OSD fade out'
+  protShMove: 'OSD move', protShDrift: 'OSD drift', protShFade: 'OSD fade out',
+  protUnitMin: 'min', protUnitSec: 'sec'
 };
 // corners reuse the position names of the OSD panel
 var CORNERS = [['cornerTl', 'osdPosTl', 'Top left'], ['cornerTr', 'osdPosTr', 'Top right'],
@@ -256,17 +257,28 @@ var ProtectionPanel = kind({
   }
 });
 
-// One line for the main panel: which protections are on ("Brightness · Dimming · OSD drift"), or null if none is.
-ProtectionPanel.summary = function (settings) {
-  var parts = [];
-  if (get(settings, 'brightnessOn')) { parts.push(tt('protShBrightness')); }
-  if (get(settings, 'dimOn')) { parts.push(tt('protShDim')); }
-  if (get(settings, 'offOn')) { parts.push(tt('protShOff')); }
-  if (get(settings, 'standbyOn')) { parts.push(tt('protShStandby')); }
+// number + unit ("30 min"); no space before a CJK unit ("30分")
+function withUnit(value, unitKey) {
+  var unit = tt(unitKey);
+  return value + (/^[\u3000-\u9fff\uac00-\ud7af]/.test(unit) ? '' : ' ') + unit;
+}
+
+// One line for the main panel: which protections are on, "Brightness 30% · Dimming 10 min ↓20% · Panel off 60 min",
+// or null if none is. The brightness always carries its percentage.
+//  detailed = true:  the value of every protection (delay, target, period)
+//  detailed = false: names only (brightness still with its %); MainPanel falls back to it when the detailed line
+//                    does not fit on one line.
+ProtectionPanel.summary = function (settings, detailed) {
+  var parts = [], v = function (key) { return get(settings, key); };
+  function add(name, detail) { parts.push(detailed && detail ? name + ' ' + detail : name); }
+  if (v('brightnessOn')) { parts.push(tt('protShBrightness') + ' ' + v('brightness') + '%'); }
+  if (v('dimOn')) { add(tt('protShDim'), withUnit(v('dimAfter'), 'protUnitMin') + ' \u2193' + v('dimTo') + '%'); }
+  if (v('offOn')) { add(tt('protShOff'), withUnit(v('offAfter'), 'protUnitMin')); }
+  if (v('standbyOn')) { add(tt('protShStandby'), withUnit(v('standbyAfter'), 'protUnitMin')); }
   // all three can be on together
-  if (get(settings, 'cornersOn')) { parts.push(tt('protShMove')); }
-  if (get(settings, 'driftOn')) { parts.push(tt('protShDrift')); }
-  if (get(settings, 'fadeOn')) { parts.push(tt('protShFade')); }
+  if (v('cornersOn')) { add(tt('protShMove'), withUnit(v('cornersEvery'), 'protUnitSec')); }
+  if (v('driftOn')) { add(tt('protShDrift'), v('driftPx') + ' px'); }
+  if (v('fadeOn')) { add(tt('protShFade'), withUnit(v('fadeAfter'), 'protUnitSec')); }
   return parts.length ? parts.join(' \u00b7 ') : null;
 };
 ProtectionPanel.DEFAULTS = DEFAULTS;
