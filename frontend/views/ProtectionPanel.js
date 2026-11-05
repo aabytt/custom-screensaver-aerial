@@ -269,16 +269,19 @@ function withUnit(value, unitKey) {
 //  detailed = false: names only (brightness still with its %); MainPanel falls back to it when the detailed line
 //                    does not fit on one line.
 ProtectionPanel.summary = function (settings, detailed) {
-  var parts = [], v = function (key) { return get(settings, key); };
+  var parts = [], osd = [], v = function (key) { return get(settings, key); };
+  function osdName(key) { var n = tt(key); return n.replace(/^OSD\s*:?\s*/, '') || n; }
   function add(name, detail) { parts.push(detailed && detail ? name + ' ' + detail : name); }
   if (v('brightnessOn')) { parts.push(tt('protShBrightness') + ' ' + v('brightness') + '%'); }
   if (v('dimOn')) { add(tt('protShDim'), withUnit(v('dimAfter'), 'protUnitMin') + ' \u2193' + v('dimTo') + '%'); }
   if (v('offOn')) { add(tt('protShOff'), withUnit(v('offAfter'), 'protUnitMin')); }
   if (v('standbyOn')) { add(tt('protShStandby'), withUnit(v('standbyAfter'), 'protUnitMin')); }
-  // all three can be on together
-  if (v('cornersOn')) { add(tt('protShMove'), withUnit(v('cornersEvery'), 'protUnitSec')); }
-  if (v('driftOn')) { add(tt('protShDrift'), v('driftPx') + ' px'); }
-  if (v('fadeOn')) { add(tt('protShFade'), withUnit(v('fadeAfter'), 'protUnitSec')); }
+  // the three OSD protections share one "OSD:" prefix: "OSD: move 60 sec, drift 8 px, fade out 30 sec"
+  // (every translated name starts with "OSD", with or without a colon: "OSD move", "OSD: перемещение", "OSD : déplacement")
+  if (v('cornersOn')) { osd.push(osdName('protShMove') + (detailed ? ' ' + withUnit(v('cornersEvery'), 'protUnitSec') : '')); }
+  if (v('driftOn')) { osd.push(osdName('protShDrift') + (detailed ? ' ' + v('driftPx') + ' px' : '')); }
+  if (v('fadeOn')) { osd.push(osdName('protShFade') + (detailed ? ' ' + withUnit(v('fadeAfter'), 'protUnitSec') : '')); }
+  if (osd.length) { parts.push('OSD: ' + osd.join(', ')); }
   return parts.length ? parts.join(' \u00b7 ') : null;
 };
 ProtectionPanel.DEFAULTS = DEFAULTS;

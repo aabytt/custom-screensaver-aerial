@@ -173,7 +173,7 @@ module.exports = kind({
             ], ontap: 'openDisplay'},
             {kind: Item, components: [
               titleRow('shield', {kind: Marquee.Text, name: 'protectionTitle'}),
-              {kind: BodyText, style: DESC_STYLE + ' white-space: nowrap; overflow: hidden; text-overflow: ellipsis;', name: 'protectionInfo', content: ''}
+              {kind: BodyText, style: DESC_STYLE + ' font-size: 22px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;', name: 'protectionInfo', content: ''}
             ], ontap: 'openProtection'},
             {style: 'margin: 28px 0 0', components: [
               {kind: Button, style: 'margin: 0', i18n: 'testRun', ontap: 'testRun'}
