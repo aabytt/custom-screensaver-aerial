@@ -1,0 +1,32 @@
+name: Manual Build & Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - run: npm ci
+    - run: npm run build -- --production
+    - run: npm run package
+    - name: 'Upload Artifact'
+      uses: actions/upload-artifact@v4
+      with:
+        name: ipk
+        path: ${{github.workspace}}/*.ipk
