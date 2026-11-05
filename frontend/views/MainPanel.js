@@ -73,7 +73,8 @@ function titleRow(icon, titleProps) {
   titleProps.style = 'flex: 1 1 auto; min-width: 0;';
   return {style: ICON_ITEM, components: [iconComponent(icon), titleProps]};
 }
-var DESC_STYLE = 'margin: 0 0 0 ' + (ICON_SIZE + ICON_GAP) + 'px;';
+var DESC_FONT = Theme.DESC_FONT;   // one size for every second line (description / current value)
+var DESC_STYLE = 'margin: 0 0 0 ' + (ICON_SIZE + ICON_GAP) + 'px; font-size: ' + DESC_FONT + ';';
 
 // Compatibility report: a QR code with a link to the GitHub issue form, already filled in with this TV's data.
 // The query parameters are the ids of the fields of .github/ISSUE_TEMPLATE/compatibility.yml.
@@ -173,7 +174,7 @@ module.exports = kind({
             ], ontap: 'openDisplay'},
             {kind: Item, components: [
               titleRow('shield', {kind: Marquee.Text, name: 'protectionTitle'}),
-              {kind: BodyText, style: DESC_STYLE + ' font-size: 22px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;', name: 'protectionInfo', content: ''}
+              {kind: BodyText, style: DESC_STYLE + ' white-space: nowrap; overflow: hidden; text-overflow: ellipsis;', name: 'protectionInfo', content: ''}
             ], ontap: 'openProtection'},
             {style: 'margin: 28px 0 0', components: [
               {kind: Button, style: 'margin: 0', i18n: 'testRun', ontap: 'testRun'}
@@ -183,7 +184,7 @@ module.exports = kind({
       ]},
       // bottom block: its height changes with the text, so every text change calls refit()
       {components: [
-        {kind: Divider, i18n: 'result'},
+        {kind: Divider, i18n: 'result', style: Theme.HEAD_CASE},
         {kind: BodyText, name: 'result', content: ''}
       ]}
     ]},
@@ -247,6 +248,7 @@ module.exports = kind({
     var header = this.$.source.$.header;   // ExpandableListItemHeader: label ($.header) and current value ($.text)
     header.$.header.set('allowHtml', true);   // the label carries the icon
     header.$.text.applyStyle('margin-left', (ICON_SIZE + ICON_GAP) + 'px');   // value under the label text, not the icon
+    header.$.text.applyStyle('font-size', DESC_FONT);   // same size as the descriptions of the other items
     I18n.setLang(this.guessLang);
     this.refreshStrings();
     // Two sources, merged when both have answered:

@@ -196,7 +196,7 @@ var TEXT_STYLE = 'position: absolute; white-space: nowrap; color: #fff; line-hei
 var PV_CORNER_EVERY = 4, PV_DRIFT_PERIOD = 8, PV_FADE_CYCLE = 12, PV_DIM_CYCLE = 12, PV_DIM_RAMP = 10;
 
 // vertical gap above each section divider (Show / Title and description / Clock and date)
-var SECTION_STYLE = 'margin-top: 20px;';
+var SECTION_STYLE = 'margin-top: 20px; ' + Theme.HEAD_CASE;
 
 var DisplayPanel = kind({
   name: 'DisplayPanel',
@@ -296,7 +296,7 @@ var DisplayPanel = kind({
           {name: 'pvDim', style: 'position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: #000; opacity: 0; ' +
             'pointer-events: none; -webkit-transition: opacity 1s linear; transition: opacity 1s linear;'}
         ]},
-        {kind: BodyText, name: 'pvNote', showing: false, style: 'margin: 8px 0 0; font-size: 22px; color: ' + Theme.MUTED + ';'}
+        {kind: BodyText, name: 'pvNote', showing: false, style: 'margin: 8px 0 0; font-size: ' + Theme.DESC_FONT + '; color: ' + Theme.MUTED + ';'}
       ]}
     ]},
     {kind: LunaService, name: 'save', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec'}

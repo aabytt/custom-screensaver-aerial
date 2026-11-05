@@ -79,11 +79,11 @@ function group(key, components) {
   return {name: key + 'Box', showing: false,
     style: 'margin: 0 0 8px 26px; padding-left: 20px; border-left: 2px solid ' + Theme.RULE + ';', components: components};
 }
-var SECTION_STYLE = 'margin-top: 20px;';
+var SECTION_STYLE = 'margin-top: 20px; ' + Theme.HEAD_CASE;
 // BodyText sits a few pixels left of the Divider heading text; this shifts the section notes to the heading's left edge
 // (tune this one number if it is still off on the TV)
 var HEAD_INDENT = 'padding-left: 12px;';
-var NOTE_STYLE = 'margin: 4px 0 8px; font-size: 24px; line-height: 1.35; color: ' + Theme.MUTED + ';';
+var NOTE_STYLE = 'margin: 4px 0 8px; font-size: ' + Theme.DESC_FONT + '; line-height: 1.35; color: ' + Theme.MUTED + ';';
 
 // The three ways to protect the on-screen text (corners, drift, fade out) do not exclude each other: any combination works.
 var TEXT_MODES = ['cornersOn', 'driftOn', 'fadeOn'];
@@ -109,7 +109,7 @@ var ProtectionPanel = kind({
       {style: 'margin-left: 7%; width: 88%;', components: [
         {kind: BodyText, name: 'intro', style: 'margin: 10px 0 20px; ' + HEAD_INDENT},
 
-        {kind: Divider, name: 'dvBrightness', style: 'margin-top: 0;'},
+        {kind: Divider, name: 'dvBrightness', style: 'margin-top: 0; ' + Theme.HEAD_CASE},
         toggle('brightnessOn'),
         group('brightnessOn', [
           picker('brightness', 0, 100, 5),

@@ -14,7 +14,8 @@ var
   Spotlight = require('spotlight'),
   LunaService = require('enyo-webos/LunaService'),
   SettingsStore = require('./SettingsStore.js'),
-  I18n = require('./I18n.js');
+  I18n = require('./I18n.js'),
+  Theme = require('./Theme.js');
 
 // Toast: bottom center. It is a plain DOM node in the floating layer, NOT an Enyo control inside the
 // panel: a control next to the fit:true scroller makes the Fittable layout resize the scroller every
@@ -642,7 +643,7 @@ var VideoSelectPanel = kind({
             ]},
             {kind: Item, name: 'nightOpen', ontap: 'openNight', components: [
               {kind: Marquee.Text, i18n: 'nightPlaylist'},
-              {kind: BodyText, name: 'nightInfo', style: 'margin: 0; font-size: 24px; opacity: 0.8;'}
+              {kind: BodyText, name: 'nightInfo', style: 'margin: 0; font-size: ' + Theme.DESC_FONT + '; opacity: 0.8;'}
             ]}
           ]}
         ]}
