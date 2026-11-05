@@ -87,8 +87,6 @@ var NOTE_STYLE = 'margin: 4px 0 8px; font-size: 24px; line-height: 1.35; color: 
 
 // The three ways to protect the on-screen text (corners, drift, fade out) do not exclude each other: any combination works.
 var TEXT_MODES = ['cornersOn', 'driftOn', 'fadeOn'];
-// the two groups of the text that can fade out: at least one stays on
-var FADE_GROUPS = ['fadeTextOn', 'fadeClockOn'];
 
 var NUMBERS = ['brightness', 'dimAfter', 'dimDuration', 'dimTo', 'offAfter', 'standbyAfter', 'cornersEvery',
   'driftPx', 'driftPeriod', 'fadeAfter', 'fadeTextBack', 'fadeClockBack'];
@@ -217,20 +215,14 @@ var ProtectionPanel = kind({
   toggled: function (sender) {
     var key = sender.protKey, on = !!sender.active, box = this.$[key + 'Box'], left;
     if (this.initializing || this.value(key) === on) { return; }
-    // moving between corners needs at least two of them
+    // moving between corners needs at least two of them: the switch jumps back (the stored value is still true, so the
+    // change event of that jump is ignored by the check above, no extra "deaf" time is needed)
     if (/^corner[A-Z]/.test(key) && !on) {
       left = CORNERS.filter(function (c) { return c[0] !== key && this.value(c[0]); }, this).length;
       if (left < 2) {
-        this.quiet();
         sender.set('checked', true);
         return;
       }
-    }
-    // fading needs at least one of the two groups
-    if (FADE_GROUPS.indexOf(key) >= 0 && !on && !this.value(FADE_GROUPS[1 - FADE_GROUPS.indexOf(key)])) {
-      this.quiet();
-      sender.set('checked', true);
-      return;
     }
     this.setValue(key, on);
     if (box) {
@@ -280,7 +272,8 @@ ProtectionPanel.summary = function (settings, detailed) {
   // (every translated name starts with "OSD", with or without a colon: "OSD move", "OSD: перемещение", "OSD : déplacement")
   if (v('cornersOn')) { osd.push(osdName('protShMove') + (detailed ? ' ' + withUnit(v('cornersEvery'), 'protUnitSec') : '')); }
   if (v('driftOn')) { osd.push(osdName('protShDrift') + (detailed ? ' ' + v('driftPx') + ' px' : '')); }
-  if (v('fadeOn')) { osd.push(osdName('protShFade') + (detailed ? ' ' + withUnit(v('fadeAfter'), 'protUnitSec') : '')); }
+  // fade out with both groups (name + description, clock + date) switched off fades nothing
+  if (v('fadeOn') && (v('fadeTextOn') || v('fadeClockOn'))) { osd.push(osdName('protShFade') + (detailed ? ' ' + withUnit(v('fadeAfter'), 'protUnitSec') : '')); }
   if (osd.length) { parts.push('OSD: ' + osd.join(', ')); }
   return parts.length ? parts.join(' \u00b7 ') : null;
 };
