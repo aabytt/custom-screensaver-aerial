@@ -50,18 +50,20 @@ WebOSWindow {
     property real clockScale : 100
     property bool useSeconds : true
     property bool use24h : true
-    property string fontFile : "SegoeUI-Light.ttf"
+    property string fontFile : "fonts/SegoeUI-Light.ttf"
     property real fontSpacing : -1
+    property bool osdBold : false   // settings.osd.bold (no shadow setting here: the text shadow is a web-screensaver feature)
+    property bool fauxBold : false  // bold wanted, but the font has no bold file: white outline instead
     property real osdAlpha : 1
     // fonts: id -> file in assets/ and letter spacing in px (same list as FONTS in DisplayPanel.js)
     property var osdFonts : ({
-        "segoe": {file: "SegoeUI-Light.ttf", spacing: -1},
-        "roboto": {file: "fonts/Roboto-Light.ttf", spacing: 0},
-        "opensans": {file: "fonts/OpenSans-Light.ttf", spacing: 0},
-        "montserrat": {file: "fonts/Montserrat-Light.ttf", spacing: 0},
-        "oswald": {file: "fonts/Oswald-Light.ttf", spacing: 0},
-        "comfortaa": {file: "fonts/Comfortaa-Light.ttf", spacing: 0},
-        "lora": {file: "fonts/Lora-Regular.ttf", spacing: 0},
+        "segoe": {file: "fonts/SegoeUI-Light.ttf", boldFile: "fonts/SegoeUI-Bold.ttf", spacing: -1},
+        "roboto": {file: "fonts/Roboto-Light.ttf", boldFile: "fonts/Roboto-Bold.ttf", spacing: 0},
+        "opensans": {file: "fonts/OpenSans-Light.ttf", boldFile: "fonts/OpenSans-Bold.ttf", spacing: 0},
+        "montserrat": {file: "fonts/Montserrat-Light.ttf", boldFile: "fonts/Montserrat-Bold.ttf", spacing: 0},
+        "oswald": {file: "fonts/Oswald-Light.ttf", boldFile: "fonts/Oswald-Bold.ttf", spacing: 0},
+        "comfortaa": {file: "fonts/Comfortaa-Light.ttf", boldFile: "fonts/Comfortaa-Bold.ttf", spacing: 0},
+        "lora": {file: "fonts/Lora-Regular.ttf", boldFile: "fonts/Lora-Bold.ttf", spacing: 0},
         "satisfy": {file: "fonts/Satisfy-Regular.ttf", spacing: 0}
     })
     // derived layout: title/description block and clock/date block
@@ -223,6 +225,7 @@ WebOSWindow {
             opacity : osdAlpha * protFade * protFadeText
             text : poi.strings[playList.assets[randomIndex].localizedNameKey]
             font.family : segoeUILight.name
+            font.bold : osdBold && !fauxBold
             font.letterSpacing : fontSpacing
             fontSizeMode : Text.Fit
             font.pixelSize : Math.round(56 * placeScale / 100)
@@ -231,8 +234,8 @@ WebOSWindow {
             anchors.right : placeCol === "r" ? parent.right : undefined
             anchors.horizontalCenter : placeCol === "c" ? parent.horizontalCenter : undefined
             color : "white"
-            style : Text.Raised
-            styleColor : "black"
+            style : fauxBold ? Text.Outline : Text.Raised
+            styleColor : fauxBold ? "white" : "black"
         }
         Text {
             id : poiOSD
@@ -240,6 +243,7 @@ WebOSWindow {
             opacity : osdAlpha * protFade * protFadeText
             text : poi.strings[playList.assets[randomIndex].pointsOfInterest[poiIndex]]
             font.family : name.font.family
+            font.bold : name.font.bold
             font.letterSpacing : fontSpacing
             fontSizeMode : name.fontSizeMode
             font.pixelSize : Math.round(40 * placeScale / 100)
@@ -256,6 +260,7 @@ WebOSWindow {
             visible : clockOn
             opacity : osdAlpha * clockFade * protFade * protFadeClock
             font.family : name.font.family
+            font.bold : name.font.bold
             font.letterSpacing : fontSpacing
             font.pixelSize : Math.round(79 * clockScale / 100)
             y : clockY
@@ -272,6 +277,7 @@ WebOSWindow {
             visible : showDate
             opacity : osdAlpha * clockFade * protFade * protFadeClock
             font.family : name.font.family
+            font.bold : name.font.bold
             font.letterSpacing : fontSpacing
             font.pixelSize : Math.round(40 * clockScale / 100)
             y : clockY + (clockOn ? Math.round(96 * clockScale / 100) : 0)
@@ -375,7 +381,9 @@ WebOSWindow {
         clockScale = osdScale("clockScale")
         useSeconds = !!osdGet("seconds", true)
         use24h = !!osdGet("clock24", true)
-        fontFile = f.file
+        osdBold = !!osdGet("bold", false)   // before fontFile: it picks the bold face
+        fauxBold = osdBold && !f.boldFile
+        fontFile = (osdBold && f.boldFile) ? f.boldFile : f.file   // the real bold face if there is one
         fontSpacing = f.spacing
         updateOsdAlpha()
     }

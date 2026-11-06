@@ -1,6 +1,6 @@
 {
     "name": "org.aabytt.webos.custom-screensaver-aerial",
-    "version": "3.0.5",
+    "version": "3.0.6",
     "main": "frontend/index.js",
     "moduleDir": "frontend",
     "scripts": {

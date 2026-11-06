@@ -9,6 +9,11 @@ var SettingsStore = {
   appPath: basePath + '/assets/settings.json',
   persistDir: persistDir,
   persistPath: persistDir + '/settings.json',
+  // assets/ of the installed app: scripts and data files the screensaver and the boot hooks use
+  assetsDir: basePath + '/assets',
+  // custom OSD fonts: the copy the screensaver reads, and the one that survives a reinstall
+  fontsAppDir: basePath + '/assets/fonts/custom',
+  fontsPersistDir: persistDir + '/fonts',
 
   // Shell command that writes both copies. The writes are independent: if one location
   // is not writable, the other copy is still saved.

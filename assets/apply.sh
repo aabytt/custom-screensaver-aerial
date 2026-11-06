@@ -19,6 +19,23 @@ if [ -s "$PERSIST_SETTINGS" ] && grep -q '^{' "$PERSIST_SETTINGS" &&
     cp "$PERSIST_SETTINGS" "$ASSETS_DIR/settings.json" ||
         echo "[-] Could not restore settings from $PERSIST_SETTINGS" >&2
 fi
+
+# Custom OSD fonts (added from the app, see font-server.js) are kept next to the settings and copied
+# into assets/fonts/custom, the only place the screensaver page can read them from. Files that were
+# deleted from the persistent folder are removed from the copy too.
+PERSIST_FONTS="/var/lib/webosbrew/custom-screensaver-aerial/fonts"
+CUSTOM_FONTS="$ASSETS_DIR/fonts/custom"
+mkdir -p "$CUSTOM_FONTS" 2>/dev/null || true
+if [ -d "$PERSIST_FONTS" ]; then
+    for f in "$PERSIST_FONTS"/*; do
+        [ -f "$f" ] || continue
+        cmp -s "$f" "$CUSTOM_FONTS/${f##*/}" || cp -f "$f" "$CUSTOM_FONTS/" 2>/dev/null || true
+    done
+    for f in "$CUSTOM_FONTS"/*; do
+        [ -f "$f" ] || continue
+        [ -f "$PERSIST_FONTS/${f##*/}" ] || rm -f "$f"
+    done
+fi
 SAM="luna://com.webos.applicationManager"
 BLOCK_SCHEMA="/etc/palm/schemas/sam/applicationManager.blockSystemApp.schema"
 
@@ -226,10 +243,11 @@ va_appinfo() {
 }
 
 # Whether every file of this assets/ is in the videoads copy unchanged, except tn/ (left out),
-# appinfo.json (another id) and the mounted settings.json and watcher.json
+# appinfo.json (another id) and the mounted settings.json, watcher.json, solar.json and fonts/custom
 va_files_current() {
     (cd "$ASSETS_DIR" && find . -path ./tn -prune -o -path ./appinfo.json -prune \
-        -o -path ./settings.json -prune -o -path ./watcher.json -prune -o -type f -print) |
+        -o -path ./settings.json -prune -o -path ./watcher.json -prune -o -path ./solar.json -prune \
+        -o -path ./fonts/custom -prune -o -type f -print) |
         while IFS= read -r f; do
             cmp -s "$ASSETS_DIR/$f" "$VA_DIR/$f" || exit 1
         done
@@ -243,6 +261,8 @@ va_mounted_current() {
     findmnt "$VA_DIR" >/dev/null || return 1
     if va_files_current && va_appinfo | cmp -s - "$VA_DIR/appinfo.json" &&
        [[ "$ASSETS_DIR/settings.json" -ef "$VA_DIR/settings.json" ]] &&
+       [[ "$ASSETS_DIR/solar.json" -ef "$VA_DIR/solar.json" ]] &&
+       findmnt "$VA_DIR/fonts/custom" >/dev/null &&
        [[ "$NOTIFY_HEARTBEAT" -ef "$VA_DIR/watcher.json" ]]; then
         return 0
     fi
@@ -273,6 +293,12 @@ va_mount_copy() {
     # again. A bind mount rather than a symlink, since web apps can only read files inside
     # their own app directory.
     mount --bind "$ASSETS_DIR/settings.json" "$VA_DIR/settings.json"
+    # Same for the sunrise / sunset times (solar-update.sh rewrites that file in place) and for the
+    # custom fonts (added while the copy is mounted)
+    [[ -f "$ASSETS_DIR/solar.json" ]] && [[ -f "$VA_DIR/solar.json" ]] &&
+        { mount --bind "$ASSETS_DIR/solar.json" "$VA_DIR/solar.json" || true; }
+    mkdir -p "$VA_DIR/fonts/custom" 2>/dev/null || true
+    mount --bind "$CUSTOM_FONTS" "$VA_DIR/fonts/custom" || true
     mount_heartbeat "$VA_DIR"
 }
 

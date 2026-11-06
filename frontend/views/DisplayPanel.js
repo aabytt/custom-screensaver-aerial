@@ -3,6 +3,9 @@ var
   Panel = require('moonstone/Panel'),
   Scroller = require('moonstone/Scroller'),
   Item = require('moonstone/Item'),
+  Button = require('moonstone/Button'),
+  Popup = require('moonstone/Popup'),
+  Control = require('enyo/Control'),
   BodyText = require('moonstone/BodyText'),
   Divider = require('./Heading.js'),
   Marquee = require('moonstone/Marquee'),
@@ -13,6 +16,7 @@ var
   FittableColumns = require('layout/FittableColumns'),
   LunaService = require('enyo-webos/LunaService'),
   SettingsStore = require('./SettingsStore.js'),
+  QrCode = require('./QrCode.js'),
   I18n = require('./I18n.js'),
   ProtectionPanel = require('./ProtectionPanel.js'),
   Theme = require('./Theme.js');
@@ -92,27 +96,67 @@ var PREVIEW_W = 840, PREVIEW_H = 472.5;
 var BACKDROP = 'assets/tn/cities.webp';
 var SAMPLE_VIDEO = 'video_i3_nyc_brooklyn_bed-stuy_20250919_086';
 
-// Fonts of the OSD (all free: SIL OFL / Apache). The files are in assets/fonts/ (Segoe UI Light is the
-// classic one in assets/). `spacing` is the letter spacing in px. The ids are what is stored in settings.osd.font.
+// Fonts of the OSD (all free: SIL OFL / Apache). The files are in assets/fonts/ (Segoe UI Light too). `spacing` is the letter spacing in px. The ids are what is stored in settings.osd.font.
+// `boldFile` (optional) is the real bold face used by the "Bold text" switch; a font without one gets a faux bold
+// (a thin outline in the text color, see FAUX_BOLD), because the browser's own synthetic bold is hardly visible.
 var FONTS = [
-  {id: 'segoe', label: 'Segoe UI Light', file: 'assets/SegoeUI-Light.ttf', spacing: -1},
-  {id: 'roboto', label: 'Roboto Light', file: 'assets/fonts/Roboto-Light.ttf', spacing: 0},
-  {id: 'opensans', label: 'Open Sans Light', file: 'assets/fonts/OpenSans-Light.ttf', spacing: 0},
-  {id: 'montserrat', label: 'Montserrat Light', file: 'assets/fonts/Montserrat-Light.ttf', spacing: 0},
-  {id: 'oswald', label: 'Oswald Light', file: 'assets/fonts/Oswald-Light.ttf', spacing: 0},
-  {id: 'comfortaa', label: 'Comfortaa Light', file: 'assets/fonts/Comfortaa-Light.ttf', spacing: 0},
-  {id: 'lora', label: 'Lora', file: 'assets/fonts/Lora-Regular.ttf', spacing: 0},
+  {id: 'segoe', label: 'Segoe UI Light', file: 'assets/fonts/SegoeUI-Light.ttf', boldFile: 'assets/fonts/SegoeUI-Bold.ttf', spacing: -1},
+  {id: 'roboto', label: 'Roboto Light', file: 'assets/fonts/Roboto-Light.ttf', boldFile: 'assets/fonts/Roboto-Bold.ttf', spacing: 0},
+  {id: 'opensans', label: 'Open Sans Light', file: 'assets/fonts/OpenSans-Light.ttf', boldFile: 'assets/fonts/OpenSans-Bold.ttf', spacing: 0},
+  {id: 'montserrat', label: 'Montserrat Light', file: 'assets/fonts/Montserrat-Light.ttf', boldFile: 'assets/fonts/Montserrat-Bold.ttf', spacing: 0},
+  {id: 'oswald', label: 'Oswald Light', file: 'assets/fonts/Oswald-Light.ttf', boldFile: 'assets/fonts/Oswald-Bold.ttf', spacing: 0},
+  {id: 'comfortaa', label: 'Comfortaa Light', file: 'assets/fonts/Comfortaa-Light.ttf', boldFile: 'assets/fonts/Comfortaa-Bold.ttf', spacing: 0},
+  {id: 'lora', label: 'Lora', file: 'assets/fonts/Lora-Regular.ttf', boldFile: 'assets/fonts/Lora-Bold.ttf', spacing: 0},
   {id: 'satisfy', label: 'Satisfy', file: 'assets/fonts/Satisfy-Regular.ttf', spacing: 0} 
 ];
+var FAUX_BOLD = '0.035em #fff';   // -webkit-text-stroke of a font without a (loadable) bold face
+var boldFailed = {};   // font id -> true when its boldFile could not be loaded (the outline is used instead)
 var FONT_BY_ID = {};
 FONTS.forEach(function (f) { FONT_BY_ID[f.id] = f; });
+
+// Custom fonts: files in assets/fonts/custom/, added from a phone (see font-server.js). They are stored in
+// settings.osd.font as "custom:<file name>" and join FONTS / FONT_BY_ID next to the built-in ones. No bold
+// face, so Bold text uses the outline for them.
+var CUSTOM_FILE = /^[A-Za-z0-9._-]+\.(ttf|otf|woff2?)$/i;
+function customLabel(file) { return file.replace(/\.(ttf|otf|woff2?)$/i, '').replace(/[_-]+/g, ' ').trim() || file; }
+function addCustomFont(file) {
+  var id = 'custom:' + file, f = FONT_BY_ID[id], st;
+  if (f) { return f; }
+  f = {id: id, label: customLabel(file), file: 'assets/fonts/custom/' + file + '?v=' + Date.now(), spacing: 0, custom: true, name: file};
+  FONTS.push(f);
+  FONT_BY_ID[id] = f;
+  st = document.createElement('style');
+  st.textContent = "@font-face { font-family: 'OsdFont-" + id + "'; font-weight: normal; src: url('" + f.file + "'); }";
+  document.head.appendChild(st);
+  f.styleNode = st;
+  return f;
+}
+function dropCustomFont(file) {
+  var id = 'custom:' + file, f = FONT_BY_ID[id];
+  if (!f) { return; }
+  FONTS.splice(FONTS.indexOf(f), 1);
+  delete FONT_BY_ID[id];
+  if (f.styleNode && f.styleNode.parentNode) { f.styleNode.parentNode.removeChild(f.styleNode); }
+}
+function fmt(text, name) { return String(text).replace('{name}', name); }
 
 // defaults of settings.osd: must stay equal to the defaults in screensaver-main.qml
 var DEFAULTS = {
   title: true, poi: true, clock: true, date: true,
   placeAnchor: 'bl', placeScale: 100, clockAnchor: 'br', clockScale: 100,
-  seconds: true, clock24: true, font: 'segoe'
+  seconds: true, clock24: true, font: 'segoe', bold: false, shadow: false
 };
+
+// The text shadow is drawn by the web screensaver only (QML keeps its 1 px outline). The web one runs on webOS 10 and newer.
+var WEB_MIN_MAJOR = 10;
+// 'release' comes from the TV ("10.3.0"); unknown -> false, so the shadow switch stays hidden
+function isWebScreensaver(release) {
+  var m = String(release || '').match(/\d+/);
+  return !!m && parseInt(m[0], 10) >= WEB_MIN_MAJOR;
+}
+// text-shadow of the OSD lines: a thin outline by default, a soft wide one when the switch is on
+var SHADOW_OFF = '0 1px 0 #000';
+var SHADOW_ON = '0 2px 8px rgba(0,0,0,0.9), 0 0 3px rgba(0,0,0,0.8)';
 
 // anchor: first letter t/b = top/bottom, second l/c/r = left/center/right
 var POSITIONS = [
@@ -129,7 +173,8 @@ var POS_KEYS = {posPlace: 'placeAnchor', posClock: 'clockAnchor'};
 var SIZE_KEYS = {sizePlace: 'placeScale', sizeClock: 'clockScale'};
 var TOGGLES = {
   tgTitle: ['title', 'osdTitle'], tgPoi: ['poi', 'osdPoi'], tgClock: ['clock', 'osdClock'], tgDate: ['date', 'osdDate'],
-  tgSeconds: ['seconds', 'osdSeconds'], tgClock24: ['clock24', 'osdClock24']
+  tgSeconds: ['seconds', 'osdSeconds'], tgClock24: ['clock24', 'osdClock24'],
+  tgBold: ['bold', 'osdBold'], tgShadow: ['shadow', 'osdShadow']
 };
 
 // Texts of the new controls. They are looked up in I18n under these keys first (so they can be
@@ -141,6 +186,14 @@ var STR = {
   osdPlaceBlock: 'Title and description', osdClockBlock: 'Clock and date',
   osdPosition: 'Position', osdSize: 'Size', osdFont: 'Font',
   osdSeconds: 'Show seconds', osdClock24: '24-hour format',
+  osdBold: 'Bold text', osdShadow: 'Text shadow',
+  fontAdd: 'Add a font from your phone',
+  fontDelete: 'Delete the font \u201c{name}\u201d',
+  fontAddTitle: 'Add a font', fontClose: 'Close', fontDeleteTitle: 'Delete the font',
+  fontAddHint: 'Scan the code with your phone (on the same Wi-Fi). Choose a font file there, or paste a link to one.',
+  fontStarting: 'Starting\u2026', fontReady: 'Waiting for a font\u2026', fontAdded: 'Added: {name}',
+  fontNoServer: 'Could not start the font server',
+  fontDeleteAsk: 'Delete the font \u201c{name}\u201d?', fontDeleteYes: 'Delete', fontDeleteNo: 'Cancel',
   protOverridden: 'overridden by Panel protection',
   protPreviewNote: 'Panel protection preview: time is sped up'
 };
@@ -151,6 +204,21 @@ function T(key, fallback) {
   return (s && typeof s === 'string' && s !== key) ? s : fallback;
 }
 function tt(key) { return T(key, STR[key]); }
+
+// The look of the app's modals: centered card, themed background and border, title with the accent rule, footer with the buttons.
+function modalStyle(width) {
+  return 'left: 0; right: 0; top: 50%; bottom: auto; margin: 0 auto; box-sizing: border-box; width: ' + width + 'px; max-width: 94%; ' +
+    'transform: translateY(-50%) !important; -webkit-transform: translateY(-50%) !important; transition: none !important; -webkit-transition: none !important; ' +
+    'padding: 30px 44px 28px; background: ' + Theme.MODAL_BG + '; color: ' + Theme.TEXT + '; border: ' + Theme.MODAL_BORDER_PX + 'px solid ' +
+    Theme.MODAL_BORDER + '; border-radius: ' + Theme.MODAL_RADIUS + 'px;';
+}
+function modalTitle(name) {
+  return {style: 'position: relative; padding-bottom: 16px; border-bottom: 2px solid ' + Theme.RULE + ';', components: [
+    {name: name, style: 'font-size: 36px; font-weight: bold; color: #fff;', content: ''},
+    {style: 'position: absolute; left: 0; bottom: -2px; width: 120px; height: 2px; background: ' + Theme.ACCENT + ';'}
+  ]};
+}
+var MODAL_FOOTER = 'display: flex; align-items: center; justify-content: flex-end; margin: 26px 0 0; padding-top: 22px; border-top: 2px solid ' + Theme.RULE + ';';
 
 // y of a block of height h in the given anchor (same rule as blockY() in the QML)
 function blockY(anchor, h) {
@@ -181,7 +249,8 @@ function ensureStyles() {
   var st, css;
   if (document.getElementById('osd-preview-style')) { return; }
   css = FONTS.map(function (f) {
-    return "@font-face { font-family: 'OsdFont-" + f.id + "'; src: url('" + f.file + "'); }";
+    return "@font-face { font-family: 'OsdFont-" + f.id + "'; font-weight: normal; src: url('" + f.file + "'); }" +
+      (f.boldFile ? "\n@font-face { font-family: 'OsdFontB-" + f.id + "'; font-weight: normal; src: url('" + f.boldFile + "'); }" : '');
   }).join('\n');
   st = document.createElement('style');
   st.id = 'osd-preview-style';
@@ -189,8 +258,26 @@ function ensureStyles() {
   document.head.appendChild(st);
 }
 
+// The bold faces are declared in ensureStyles() (CSS). This loads each one once more only to find out whether it is
+// really there / accepted by the browser: if not, the font falls back to the outline and the console says which file.
+function checkBoldFaces(done) {
+  if (!window.FontFace) { return; }
+  FONTS.forEach(function (f) {
+    var face;
+    if (!f.boldFile) { return; }
+    try {
+      face = new FontFace('OsdBoldCheck-' + f.id, "url('" + f.boldFile + "')");
+      face.load().then(null, function (e) {
+        console.error('bold font not loaded: ' + f.boldFile, e);
+        boldFailed[f.id] = true;
+        done();
+      });
+    } catch (e) { console.error('bold font check failed: ' + f.boldFile, e); }
+  });
+}
+
 var TEXT_STYLE = 'position: absolute; white-space: nowrap; color: #fff; line-height: 1.33; ' +
-  'text-shadow: 0 1px 0 #000; -webkit-transition: opacity 0.7s linear; transition: opacity 0.7s linear;';
+  'text-shadow: ' + SHADOW_OFF + '; -webkit-transition: opacity 0.7s linear; transition: opacity 0.7s linear;';
 
 // The preview of Panel protection runs on a short cycle (seconds instead of minutes), same shapes as the screensaver
 var PV_CORNER_EVERY = 4, PV_DRIFT_PERIOD = 8, PV_FADE_CYCLE = 12, PV_DIM_CYCLE = 12, PV_DIM_RAMP = 10;
@@ -205,6 +292,7 @@ var DisplayPanel = kind({
   headerType: 'small',
   // passed in by MainPanel
   settings: null,
+  webosRelease: '',   // webOS release of the TV ("10.3.0"): decides which settings are offered
   onChange: null,   // optional callback: MainPanel refreshes its summary line
   // the controls fire change events while they are being created, before create() has set everything up
   initializing: true,
@@ -232,7 +320,16 @@ var DisplayPanel = kind({
             {kind: Item, components: [
               {kind: Marquee.Text, name: 'fontLabel'},
               {kind: SimplePicker, name: 'fontPicker', onChange: 'fontChange'}
-            ]}
+            ]},
+            {kind: Item, name: 'fontAdd', ontap: 'openFontAdd', components: [
+              {kind: Marquee.Text, name: 'fontAddLabel'}
+            ]},
+            // only while a custom font is selected
+            {kind: Item, name: 'fontDelete', showing: false, ontap: 'askFontDelete', components: [
+              {kind: Marquee.Text, name: 'fontDeleteLabel'}
+            ]},
+            {kind: ToggleItem, name: 'tgBold', osdKey: 'bold', onchange: 'toggleOpt'},
+            {kind: ToggleItem, name: 'tgShadow', osdKey: 'shadow', showing: false, onchange: 'toggleOpt'}   // web screensaver only
           ]},
 
           {kind: Divider, name: 'dvShow', style: SECTION_STYLE},
@@ -299,7 +396,31 @@ var DisplayPanel = kind({
         {kind: BodyText, name: 'pvNote', showing: false, style: 'margin: 8px 0 0; font-size: ' + Theme.DESC_FONT + '; color: ' + Theme.MUTED + ';'}
       ]}
     ]},
-    {kind: LunaService, name: 'save', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec'}
+    // add a font: QR code of the address of font-server.js, which the phone opens
+    {kind: Popup, name: 'fontPopup', floating: true, modal: true, spotlightModal: true, autoDismiss: false, animate: false, onHide: 'fontPopupHidden',
+      style: modalStyle(820), components: [
+      modalTitle('fontPopTitle'),
+      {kind: BodyText, name: 'fontPopHint', style: 'font-size: ' + Theme.DESC_FONT + '; margin: 22px 0 10px; opacity: 0.85;'},
+      {kind: Control, name: 'fontQr', allowHtml: true, style: 'width: 340px; height: 340px; margin: 10px auto; background: #fff;'},
+      {kind: BodyText, name: 'fontPopUrl', style: 'font-size: 24px; margin: 6px 0; word-break: break-all; text-align: center;'},
+      {kind: BodyText, name: 'fontPopStatus', style: 'font-size: 28px; margin: 6px 0 0; color: #7ddc8a; text-align: center;'},
+      {style: MODAL_FOOTER, components: [
+        {kind: Button, name: 'fontPopClose', small: true, ontap: 'closeFontAdd'}
+      ]}
+    ]},
+    {kind: Popup, name: 'fontDelPopup', floating: true, modal: true, spotlightModal: true, autoDismiss: true, animate: false,
+      style: modalStyle(700), components: [
+      modalTitle('fontDelTitle'),
+      {kind: BodyText, name: 'fontDelText', style: 'font-size: 32px; margin: 22px 0 0;'},
+      {style: MODAL_FOOTER, components: [
+        {kind: Button, name: 'fontDelNo', small: true, ontap: 'cancelDeleteFont'},
+        {kind: Button, name: 'fontDelYes', small: true, ontap: 'deleteFont', style: 'margin-left: 16px;'}
+      ]}
+    ]},
+    {kind: LunaService, name: 'save', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec'},
+    {kind: LunaService, name: 'fontExec', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onFontExec', onError: 'onFontExecError'},
+    {kind: LunaService, name: 'fontList', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onFontList'},
+    {kind: LunaService, name: 'fontDel', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onFontDeleted'}
   ],
 
   create: function () {
@@ -324,16 +445,22 @@ var DisplayPanel = kind({
     this.$.debug.set('checked', !!this.settings.debug);
     this.buildControls();
     ensureStyles();
+    checkBoldFaces(function () { if (!self.pvGone) { self.renderPreview(); } });
     this.sample = {title: PREVIEW_PLACE[this.previewLang()] || PREVIEW_PLACE['en-US'], poi: 'Shibuya Crossing'};
     this.previewReady = true;
     this.applySample();
     this.loadSamples();
     this.timer = setInterval(function () { self.tickPreview(); self.stepProtection(); }, 1000);
     this.applyProtection();
+    this.listFonts();
+    this.$.fontPopup.applyStyle('bottom', 'auto');
+    this.$.fontDelPopup.applyStyle('bottom', 'auto');
   },
 
   destroy: function () {
     this.pvGone = true;
+    this.stopJob('fontPoll');
+    if (this.fontServerOn) { this.$.fontExec.send({command: 'sh ' + SettingsStore.assetsDir + '/font-server.sh stop'}); }
     if (this.timer) { clearInterval(this.timer); this.timer = null; }
     // flush a pending save so nothing is lost when going back
     if (this.dirty) {
@@ -355,7 +482,10 @@ var DisplayPanel = kind({
     var o = this.settings.osd, v = (o && typeof o === 'object' && o[key] !== undefined) ? o[key] : DEFAULTS[key];
     // values this panel does not offer (an older file: the middle row; an unknown font) fall back to the default
     if ((key === 'placeAnchor' || key === 'clockAnchor') && !ANCHORS[v]) { v = DEFAULTS[key]; }
-    if (key === 'font' && !FONT_BY_ID[v]) { v = DEFAULTS.font; }
+    if (key === 'font' && !FONT_BY_ID[v]) {
+      // a custom font is registered when it is used, before the list of files has been read
+      if (/^custom:[A-Za-z0-9._-]+$/.test(String(v))) { addCustomFont(String(v).slice(7)); } else { v = DEFAULTS.font; }
+    }
     return v;
   },
 
@@ -393,13 +523,157 @@ var DisplayPanel = kind({
       self.$[name].set('value', self.osdGet(SIZE_KEYS[name]));
     });
     this.$.fontLabel.set('content', tt('osdFont'));
-    this.$.fontPicker.createComponents(FONTS.map(function (f, i) {
-      if (f.id === self.osdGet('font')) { fontIndex = i; }
+    this.$.tgShadow.set('showing', isWebScreensaver(this.webosRelease));
+    this.$.fontAddLabel.set('content', tt('fontAdd'));
+    this.$.fontPopTitle.set('content', tt('fontAddTitle'));
+    this.$.fontPopHint.set('content', tt('fontAddHint'));
+    this.$.fontPopClose.set('content', tt('fontClose'));
+    this.$.fontDelTitle.set('content', tt('fontDeleteTitle'));
+    this.$.fontDelYes.set('content', tt('fontDeleteYes'));
+    this.$.fontDelNo.set('content', tt('fontDeleteNo'));
+    this.fillFontPicker();
+  },
+
+  // ---- custom fonts ----
+
+  // (Re)builds the font picker from FONTS and selects the font in the settings
+  fillFontPicker: function () {
+    var picker = this.$.fontPicker, cur = this.osdGet('font'), index = 0;
+    this.quiet();   // the picker reports its own changes while it is rebuilt
+    picker.destroyClientControls();
+    picker.createComponents(FONTS.map(function (f, i) {
+      if (f.id === cur) { index = i; }
       return {content: f.label, value: f.id,
         style: "font-family: 'OsdFont-" + f.id + "', 'Segoe UI', sans-serif; letter-spacing: " + f.spacing + 'px;'};
     }), {owner: this});
-    this.$.fontPicker.set('selectedIndex', fontIndex);
+    if (picker.hasNode()) { picker.render(); }
+    picker.set('selectedIndex', index);
+    this.updateFontDelete();
   },
+
+  // the Delete row is there while a custom font is selected
+  updateFontDelete: function () {
+    var f = FONT_BY_ID[this.osdGet('font')];
+    this.$.fontDelete.set('showing', !!(f && f.custom));
+    if (f && f.custom) { this.$.fontDeleteLabel.set('content', fmt(tt('fontDelete'), f.label)); }
+  },
+
+  // reads the files in assets/fonts/custom
+  listFonts: function () {
+    this.$.fontList.send({command: 'ls -1 ' + SettingsStore.fontsAppDir + ' 2>/dev/null; true'});
+  },
+
+  onFontList: function (sender, evt) {
+    var files = String((evt && evt.stdoutString) || '').split('\n').map(function (l) { return l.trim(); })
+        .filter(function (l) { return CUSTOM_FILE.test(l); }).sort(),
+      known = FONTS.filter(function (f) { return f.custom; }).map(function (f) { return f.name; }),
+      fresh = files.filter(function (f) { return known.indexOf(f) < 0; }),
+      gone = known.filter(function (f) { return files.indexOf(f) < 0; }),
+      cur = this.settings.osd && this.settings.osd.font, self = this;
+    if (this.destroyed) { return true; }
+    if (!fresh.length && !gone.length) { return true; }
+    fresh.forEach(addCustomFont);
+    // a selected font whose file is gone: back to the default (the screensaver would show its fallback)
+    gone.forEach(function (f) {
+      if (cur === 'custom:' + f) { self.osdSet('font', DEFAULTS.font); }
+      dropCustomFont(f);
+    });
+    // custom fonts after the built-in ones, by name
+    FONTS.sort(function (a, b) { return (a.custom ? 1 : 0) - (b.custom ? 1 : 0) || (a.custom ? a.label.localeCompare(b.label) : 0); });
+    if (fresh.length && this.$.fontPopup.showing) {
+      // the one the phone just added is selected right away
+      this.osdSet('font', 'custom:' + fresh[fresh.length - 1]);
+      this.$.fontPopStatus.set('content', fmt(tt('fontAdded'), customLabel(fresh[fresh.length - 1])));
+    }
+    this.fillFontPicker();
+    this.renderPreview();
+    return true;
+  },
+
+  openFontAdd: function () {
+    this.$.fontPopStatus.set('content', tt('fontStarting'));
+    this.$.fontPopStatus.applyStyle('color', '#7ddc8a');
+    this.$.fontPopUrl.set('content', '');
+    this.$.fontQr.set('content', '');
+    this.$.fontPopup.show();
+    this.fontServerOn = true;
+    this.$.fontExec.send({command: 'sh ' + SettingsStore.assetsDir + '/font-server.sh start'});
+    return true;
+  },
+
+  // the reply of font-server.sh: the address to open on the phone, or "ERR <why>"
+  onFontExec: function (sender, evt) {
+    var out = String((evt && evt.stdoutString) || '').trim().split('\n').pop(), qr;
+    if (this.destroyed || !this.$.fontPopup.showing || !/^(http|ERR)/.test(out)) { return true; }
+    if (/^http/.test(out)) {
+      // QrCode.js is the app's own: svg(text, level, size) -> {markup, px}
+      try { qr = QrCode.svg(out, 'M', 340); } catch (e) { qr = null; }
+      // the code is a whole number of pixels per module, so the white box takes its size
+      this.$.fontQr.applyStyle('width', qr ? qr.px + 'px' : '340px');
+      this.$.fontQr.applyStyle('height', qr ? qr.px + 'px' : '340px');
+      this.$.fontQr.set('content', qr ? qr.markup : '');
+      this.$.fontPopUrl.set('content', out.replace(/\?t=.*$/, ''));
+      this.$.fontPopStatus.set('content', tt('fontReady'));
+      // the files the phone adds show up in the list within a few seconds
+      this.startJob('fontPoll', 'pollFonts', 3000);
+    } else {
+      this.onFontExecError(sender, {errorText: out.replace(/^ERR\s*/, '')});
+    }
+    return true;
+  },
+  onFontExecError: function (sender, evt) {
+    this.$.fontPopStatus.applyStyle('color', '#ff8a8a');
+    this.$.fontPopStatus.set('content', tt('fontNoServer') + (evt && evt.errorText ? ': ' + evt.errorText : ''));
+    return true;
+  },
+  pollFonts: function () {
+    if (!this.$.fontPopup.showing) { return; }
+    this.listFonts();
+    this.startJob('fontPoll', 'pollFonts', 3000);
+  },
+  closeFontAdd: function () {
+    this.$.fontPopup.hide();
+    return true;
+  },
+  fontPopupHidden: function () {
+    this.stopJob('fontPoll');
+    if (this.fontServerOn) {
+      this.fontServerOn = false;
+      this.$.fontExec.send({command: 'sh ' + SettingsStore.assetsDir + '/font-server.sh stop'});
+    }
+    this.listFonts();
+  },
+
+  askFontDelete: function () {
+    var f = FONT_BY_ID[this.osdGet('font')];
+    if (!f || !f.custom) { return true; }
+    this.$.fontDelText.set('content', fmt(tt('fontDeleteAsk'), f.label));
+    this.$.fontDelPopup.show();
+    return true;
+  },
+  cancelDeleteFont: function () {
+    this.$.fontDelPopup.hide();
+    return true;
+  },
+  deleteFont: function () {
+    var f = FONT_BY_ID[this.osdGet('font')];
+    this.$.fontDelPopup.hide();
+    if (!f || !f.custom || !CUSTOM_FILE.test(f.name)) { return true; }   // the name goes into a shell command: checked
+    this.deletingFile = f.name;
+    this.$.fontDel.send({command: 'rm -f ' + SettingsStore.fontsPersistDir + '/' + f.name + ' ' + SettingsStore.fontsAppDir + '/' + f.name});
+    return true;
+  },
+  onFontDeleted: function () {
+    var file = this.deletingFile;
+    if (this.destroyed || !file) { return true; }
+    this.deletingFile = null;
+    if (this.osdGet('font') === 'custom:' + file) { this.osdSet('font', DEFAULTS.font); }
+    dropCustomFont(file);
+    this.fillFontPicker();
+    this.renderPreview();
+    return true;
+  },
+
 
   // ---- handlers ----
   selectLang: function () {
@@ -478,7 +752,7 @@ var DisplayPanel = kind({
   fontChange: function (sender, event) {
     var sel = (event && event.selected) || sender.get('selected');
     if (this.initializing) { return; }
-    if (sel && this.osdGet('font') !== sel.value) { this.osdSet('font', sel.value); }
+    if (sel && this.osdGet('font') !== sel.value) { this.osdSet('font', sel.value); this.updateFontDelete(); }
   },
 
   debugToggle: function (sender) {
@@ -726,7 +1000,9 @@ var DisplayPanel = kind({
       cH = (clockOn && dateOn ? 136 : (clockOn ? 79 : (dateOn ? 40 : 0))) * cs,
       py = blockY(pa, pH), cy = blockY(ca, cH),
       opacity = this.opacityOf(this.settings.osdOpacitySplit ? this.previewKind : 'sdr') / 100,
-      font = FONT_BY_ID[g('font')];
+      font = FONT_BY_ID[g('font')],
+      bold = !!g('bold'),
+      real = !!(font.boldFile && !boldFailed[font.id]);   // the real bold face is there
     this.putLine(this.$.pvTitle, titleOn, pa, py, 56 * ps);
     this.putLine(this.$.pvPoi, poiOn, pa, py + (titleOn ? 66 * ps : 0), 40 * ps);
     this.putLine(this.$.pvTime, clockOn, ca, cy, 79 * cs);
@@ -734,8 +1010,12 @@ var DisplayPanel = kind({
     this.pvOpacity = opacity;
     this.applyPvOpacity();
     ['pvTitle', 'pvPoi', 'pvTime', 'pvDate'].forEach(function (n) {
-      this.$[n].applyStyle('font-family', "'OsdFont-" + font.id + "', 'Segoe UI', sans-serif");
+      // the real bold face is a family of its own (OsdFontB-), the light one stays behind it as a fallback
+      this.$[n].applyStyle('font-family', (bold && real ? "'OsdFontB-" + font.id + "', " : '') + "'OsdFont-" + font.id + "', 'Segoe UI', sans-serif");
       this.$[n].applyStyle('letter-spacing', font.spacing + 'px');
+      this.$[n].applyStyle('font-weight', 'normal');
+      this.$[n].applyStyle('-webkit-text-stroke', bold && !real ? FAUX_BOLD : null);
+      this.$[n].applyStyle('text-shadow', g('shadow') ? SHADOW_ON : SHADOW_OFF);
     }, this);
     this.tickPreview();   // seconds / 12-24 h
   }

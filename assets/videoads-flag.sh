@@ -31,6 +31,11 @@
 # The same watcher also serves the QML screensaver (older webOS): then it is its qml/main.qml that
 # is mounted instead of the app directory.
 #
+# Solar mode (sunrise / sunset). The same watcher keeps solar.json up to date: at its start (so
+# after every boot, as apply.sh starts it) and then every SOLAR_EVERY checks it runs
+# solar-update.sh, which fetches new times about once a day and does nothing in between (see there).
+# This is what makes it work without anyone opening the app.
+#
 # Polling rather than subscriptions: nothing to go stale if a service restarts, and no long-lived
 # child process. The screensaver only starts after minutes without input, and an app switch is
 # input, so a few seconds is plenty.
@@ -61,6 +66,7 @@ mounted() {
 
 ASSETS_DIR="$(dirname "$(realpath "$0")")"
 SETTINGS="$ASSETS_DIR/settings.json"
+SOLAR_EVERY=60 # checks (5 min) between runs of solar-update.sh, which fetches only when due
 STABLE=6       # checks (POLL seconds each) the brightness must stay the same to count as the user's
 
 . "$ASSETS_DIR/backlight-lib.sh"
@@ -151,7 +157,17 @@ prot_idle() {
     prot_track
 }
 
+# In the background, so a slow network never delays the checks; it does nothing when not due
+solar_tick() {
+    [ -f "$ASSETS_DIR/solar-update.sh" ] || return 0
+    solar_n=$((solar_n + 1))
+    [ $solar_n -ge $SOLAR_EVERY ] || return 0
+    solar_n=0
+    { sh "$ASSETS_DIR/solar-update.sh" </dev/null >/dev/null 2>&1 & } 2>/dev/null
+}
+
 orig=; orig_mode=; cand=; cand_mode=; cand_n=0; frozen=0; rl=0
+solar_n=$SOLAR_EVERY   # due at the first check
 load_state || true   # a screensaver that left the brightness lowered (killed, or the TV rebooted)
 quiet=0     # 1 once notifications were switched on and the screensaver hasn't run since
 no_answer=0
@@ -160,6 +176,7 @@ ran=0
 while mounted; do
     ran=1
     heartbeat
+    solar_tick
     reply="$($TIMEOUT luna-send -n 1 "$POWER" '{}' </dev/null 2>/dev/null || true)"
     state="$(echo "$reply" | sed -n 's/.*"state" *: *"\([^"]*\)".*/\1/p')"
     processing="$(echo "$reply" | sed -n 's/.*"processing" *: *"\([^"]*\)".*/\1/p')"

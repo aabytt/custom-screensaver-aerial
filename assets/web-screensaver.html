@@ -15,7 +15,7 @@
 <meta charset="utf-8">
 <title>Aerial</title>
 <style>
-  @font-face { font-family: SegoeUILight; src: url("SegoeUI-Light.ttf"); }
+  @font-face { font-family: SegoeUILight; src: url("fonts/SegoeUI-Light.ttf"); }
   html, body { margin: 0; width: 100%; height: 100%; background: #000; overflow: hidden; cursor: none; }
   /* 1px short of fullscreen: webOS ends the screensaver when fullscreen video plays */
   video { position: absolute; top: 0; left: 0; width: 100%; height: calc(100% - 1px); object-fit: cover;
@@ -31,7 +31,7 @@
   /* Panel protection, drift: the box moves 1 px at a time, smoothly */
   body.drift #osd { transition-property: opacity, transform; transition-duration: 3s, 1s; transition-timing-function: ease, linear; }
   body.drift #osd.fading { transition-duration: 5s, 1s; }
-  #osd .ln { position: absolute; white-space: nowrap; line-height: 1.33; text-shadow: 0 1px 0 #000;
+  #osd .ln { position: absolute; white-space: nowrap; line-height: 1.33; text-shadow: var(--osd-shadow, 0 1px 0 #000);
              transition: opacity var(--od, 1.5s) ease, filter 1.5s ease; }   /* opacity: auto fade out; filter: corner hop */
   /* Clock mode: only the time and date, moved every minute against OLED burn-in */
   body.clock #osd { right: auto; bottom: auto; text-align: right; }
@@ -50,6 +50,7 @@
   <div id="date" class="ln"></div>
 </div>
 <div id="debug"></div>
+<script src="solar.js"></script>
 <script>
 var basePath = "";
 var settings = { localeLang: "en-GB", sourceType: "url-4K-SDR", osdOpacity: 60, debug: false, playLowerQuality: true };
@@ -57,6 +58,7 @@ var playList = { assets: [] };
 var poi = { strings: {} };
 var randomIndex = -1;
 var nightPlaying = false; // the video playing now is from the night playlist
+var solarPlaying = "";    // solar mode: the timeOfDay tag the video playing now was picked for
 var disabledSet = null;
 var sourceAlt = "";
 var sourceKey = "";   // the source type actually chosen for the current video (url-4K-HDR, ...)
@@ -81,16 +83,16 @@ var osd = document.getElementById("osd");
 var OSD_DEFAULTS = {
     title: true, poi: true, clock: true, date: true,
     placeAnchor: "bl", placeScale: 100, clockAnchor: "br", clockScale: 100,
-    seconds: true, clock24: true, font: "segoe"
+    seconds: true, clock24: true, font: "segoe", bold: false, shadow: false
 };
 var OSD_FONTS = {   // file relative to this page, letter spacing in px
-    segoe: { file: "SegoeUI-Light.ttf", spacing: -1 },
-    roboto: { file: "fonts/Roboto-Light.ttf", spacing: 0 },
-    opensans: { file: "fonts/OpenSans-Light.ttf", spacing: 0 },
-    montserrat: { file: "fonts/Montserrat-Light.ttf", spacing: 0 },
-    oswald: { file: "fonts/Oswald-Light.ttf", spacing: 0 },
-    comfortaa: { file: "fonts/Comfortaa-Light.ttf", spacing: 0 },
-    lora: { file: "fonts/Lora-Regular.ttf", spacing: 0 },
+    segoe: { file: "fonts/SegoeUI-Light.ttf", boldFile: "fonts/SegoeUI-Bold.ttf", spacing: -1 },
+    roboto: { file: "fonts/Roboto-Light.ttf", boldFile: "fonts/Roboto-Bold.ttf", spacing: 0 },
+    opensans: { file: "fonts/OpenSans-Light.ttf", boldFile: "fonts/OpenSans-Bold.ttf", spacing: 0 },
+    montserrat: { file: "fonts/Montserrat-Light.ttf", boldFile: "fonts/Montserrat-Bold.ttf", spacing: 0 },
+    oswald: { file: "fonts/Oswald-Light.ttf", boldFile: "fonts/Oswald-Bold.ttf", spacing: 0 },
+    comfortaa: { file: "fonts/Comfortaa-Light.ttf", boldFile: "fonts/Comfortaa-Bold.ttf", spacing: 0 },
+    lora: { file: "fonts/Lora-Regular.ttf", boldFile: "fonts/Lora-Bold.ttf", spacing: 0 },
     satisfy: { file: "fonts/Satisfy-Regular.ttf", spacing: 0 }
 };
 var OSD_ANCHORS = { tl: 1, tc: 1, tr: 1, bl: 1, bc: 1, br: 1 };
@@ -99,7 +101,13 @@ function osdGet(key) {
     var o = settings.osd, v = (o && typeof o === "object" && o[key] !== undefined) ? o[key] : OSD_DEFAULTS[key];
     if ((key === "placeAnchor" || key === "clockAnchor") && !OSD_ANCHORS[v]) v = OSD_DEFAULTS[key];
     if ((key === "placeScale" || key === "clockScale") && !(v > 0)) v = OSD_DEFAULTS[key];
-    if (key === "font" && !OSD_FONTS[v]) v = OSD_DEFAULTS.font;
+    if (key === "font") {
+        // "custom:<file name>": a font added in the app, in fonts/custom/ (see font-server.js)
+        if (!OSD_FONTS[v] && typeof v === "string" && /^custom:[A-Za-z0-9._-]+$/.test(v)) {
+            OSD_FONTS[v] = { file: "fonts/custom/" + v.slice(7), spacing: 0 };
+        }
+        if (!OSD_FONTS[v]) v = OSD_DEFAULTS.font;
+    }
     return v;
 }
 
@@ -119,16 +127,32 @@ function osdInvisible() {
     return osdOpacityOf("sdr") == 0 && (!settings.osdOpacitySplit || osdOpacityOf("dv") == 0);
 }
 
+// The real bold face is a font family of its own (OsdFontB-<id>) placed before the light one, so no weight matching is involved
+function setOsdBold(bold, real, id) {
+    osd.style.fontWeight = "normal";
+    osd.style.webkitTextStroke = (bold && !real) ? "0.035em #fff" : "";
+    // Segoe UI Light is declared in the CSS above (family SegoeUILight), the other fonts are declared in applyOsdFont()
+    osd.style.fontFamily = ((bold && real) ? "'OsdFontB-" + id + "', " : "") + (id === "segoe" ? "" : "'OsdFont-" + id + "', ") +
+        "SegoeUILight, 'Segoe UI', sans-serif";
+}
+
 // Loads only the chosen font (the page is in the app directory, so the file is relative)
 function applyOsdFont() {
     var id = osdGet("font"), f = OSD_FONTS[id], st;
-    if (id !== "segoe") {   // Segoe UI Light is declared above already
-        st = document.createElement("style");
-        st.textContent = "@font-face { font-family: 'OsdFont-" + id + "'; src: url('" + basePath + f.file + "'); }";
-        document.head.appendChild(st);
-        osd.style.fontFamily = "'OsdFont-" + id + "', SegoeUILight, 'Segoe UI', sans-serif";
-    }
+    st = document.createElement("style");   // Segoe UI Light itself is declared above already
+    st.textContent = (id !== "segoe" ? "@font-face { font-family: 'OsdFont-" + id + "'; font-weight: normal; src: url('" + basePath + f.file + "'); }" : "") +
+        (f.boldFile ? "@font-face { font-family: 'OsdFontB-" + id + "'; font-weight: normal; src: url('" + basePath + f.boldFile + "'); }" : "");
+    document.head.appendChild(st);
     osd.style.letterSpacing = f.spacing + "px";
+    // bold: the real bold face if the font has one, otherwise a thin outline in the text color
+    setOsdBold(osdGet("bold"), !!f.boldFile, id);
+    if (osdGet("bold") && f.boldFile && window.FontFace) {   // the file missing / rejected: the outline instead
+        try {
+            new FontFace("OsdBoldCheck", "url('" + basePath + f.boldFile + "')").load().then(null, function () { setOsdBold(true, false, id); });
+        } catch (e) { setOsdBold(true, false, id); }
+    }
+    // soft shadow for bright scenes; the same value as SHADOW_ON in DisplayPanel.js
+    osd.style.setProperty("--osd-shadow", osdGet("shadow") ? "0 2px 8px rgba(0,0,0,0.9), 0 0 3px rgba(0,0,0,0.8)" : "0 1px 0 #000");
 }
 
 // One line of the OSD in its place (same numbers as the preview / QML)
@@ -285,13 +309,62 @@ function nightHours(date) {
     return start < end ? h >= start && h < end : h >= start || h < end;
 }
 
-function inPool(asset, night) {
-    return night ? !!nightSet[asset.id] : isAllowed(asset);
+// ---- Solar mode: the videos' timeOfDay tags (sunrise / day / sunset / night) follow the sun at the
+// chosen city (settings.solarCity). The times come from solar.json, which solar-update.sh keeps
+// (boot + about once a day); if that is missing, for another place or run out, they are calculated
+// (solar.js), which is accurate to a couple of minutes.
+var solarData = null;
+function loadSolar() {
+    return loadJSONData(basePath + "solar.json")
+        .then(function (d) { solarData = d; })
+        .catch(function () { solarData = null; });
 }
 
-// Whether it's night for the night playlist (playRandomVideo falls back to the normal playlist
-// when none of its videos can play)
-function nightNow() {
+function solarCityOk() {
+    var c = settings.solarCity;
+    return !!(settings.solarMode && c && isFinite(Number(c.lat)) && isFinite(Number(c.lon)));
+}
+
+// "sunrise" | "day" | "sunset" | "night", or null when solar mode is off
+var solarSource = "";
+function solarPhase() {
+    if (!solarCityOk() || typeof solarTimeOfDay !== "function") return null;
+    var lat = Number(settings.solarCity.lat), lon = Number(settings.solarCity.lon),
+        win = settings.solarWindow !== undefined ? Number(settings.solarWindow) : 60,
+        now = Date.now(), d = solarData, phase = null;
+    if (d && Math.abs(Number(d.lat) - lat) < 0.001 && Math.abs(Number(d.lon) - lon) < 0.001 &&
+        d.sunrise && d.sunset && d.sunrise.length && d.sunset.length) {
+        var r = [], s = [], i, before = false, after = false;
+        for (i = 0; i < d.sunrise.length; i++) r.push(d.sunrise[i] * 1000);
+        for (i = 0; i < d.sunset.length; i++) s.push(d.sunset[i] * 1000);
+        // the stored days must surround now (at least one event on each side), else they ran out
+        for (i = 0; i < r.length; i++) { if (r[i] <= now) before = true; else after = true; }
+        for (i = 0; i < s.length; i++) { if (s[i] <= now) before = true; else after = true; }
+        if (before && after) {
+            phase = solarPhaseFromEvents(now, r, s, win);
+            solarSource = "stored";
+        }
+    }
+    if (!phase) {
+        phase = solarTimeOfDay(lat, lon, now, win);
+        solarSource = "calculated";
+    }
+    return phase;
+}
+
+// The pool a video is picked from: false = the normal playlist, true = the night playlist (night
+// mode), or a timeOfDay tag in solar mode (the normal playlist, only videos with that tag).
+function inPool(asset, pool) {
+    if (typeof pool === "string") return isAllowed(asset) && asset.timeOfDay === pool;
+    return pool ? !!nightSet[asset.id] : isAllowed(asset);
+}
+
+// The pool for the next video (playRandomVideo falls back when none of its videos can play)
+var solarNow = "";
+function poolNow() {
+    var phase = solarPhase();
+    solarNow = phase || "";
+    if (phase) return phase;
     return !!nightSet && nightHours(new Date());
 }
 
@@ -325,15 +398,22 @@ function playRandomVideo(afterError) {
     if (closing) return;
     var assets = playList.assets;
     var again = afterError !== true;
-    var night = nightNow();
+    var night = poolNow();
     var candidates = candidatesFor(night, again);
     if (!candidates.length && night) {
         // no night video can play with the chosen source, or the only one failed: the normal
-        // playlist instead
-        night = false;
-        candidates = candidatesFor(false, again);
+        // playlist instead. Solar mode: sunrise and sunset fall back to the day videos first.
+        if (night === "sunrise" || night === "sunset") {
+            night = "day";
+            candidates = candidatesFor(night, again);
+        }
+        if (!candidates.length) {
+            night = false;
+            candidates = candidatesFor(false, again);
+        }
     }
-    nightPlaying = night;
+    nightPlaying = night === true;
+    solarPlaying = typeof night === "string" ? night : "";
     if (!candidates.length) return;
     randomIndex = candidates[Math.floor(Math.random() * candidates.length)];
     stalledSeconds = 0;
@@ -653,6 +733,7 @@ function updateDebug() {
     el.style.display = "block";
     el.textContent = "Mode: " + (clockMode ? "clock (video decoder in use)" : "video") +
         "\n Video " + randomIndex + " of " + playList.assets.length + (nightPlaying ? " (night playlist)" : "") +
+        (settings.solarMode ? "\n Solar: now " + solarNow + ", playing " + (solarPlaying || "other (fallback)") + " (" + solarSource + " times)" : "") +
         "\n Source Type: " + settings.sourceType + sourceAlt +
         "\n Try Other Source: " + settings.playLowerQuality +
         "\n Locale: " + settings.localeLang +
@@ -694,6 +775,7 @@ loadJSONData(basePath + "settings.json")
             loadJSONData(basePath + "locales/" + settings.localeLang + ".json").catch(function () { return { strings: {} }; }),
             videoDecoderInUse(),
             checkWatcher(),
+            loadSolar(),
             setManualMode()
         ]);
     })

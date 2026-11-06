@@ -6,6 +6,8 @@ var
   Button = require('moonstone/Button'),
   BodyText = require('moonstone/BodyText'),
   Marquee = require('moonstone/Marquee'),
+  InputDecorator = require('moonstone/InputDecorator'),
+  Input = require('moonstone/Input'),
   ExpandablePicker = require('moonstone/ExpandablePicker'),
   Popup = require('moonstone/Popup'),
   ToggleItem = require('moonstone/ToggleItem'),
@@ -14,6 +16,7 @@ var
   Spotlight = require('spotlight'),
   LunaService = require('enyo-webos/LunaService'),
   SettingsStore = require('./SettingsStore.js'),
+  Solar = require('./solar.js'),
   I18n = require('./I18n.js'),
   Theme = require('./Theme.js');
 
@@ -83,6 +86,26 @@ var SOURCE_ORDER = ['Apple Aerials', 'Amazon Fire OS', 'Jetson Creative', 'Robin
 // Amazon tag "night", plus the ones whose English name says Night)
 var NIGHT_START = 22, NIGHT_END = 7;
 var NIGHT_NAME = /\bnight\b/i;
+
+// Solar mode: minutes around sunrise / sunset in which the videos tagged sunrise / sunset play
+var SOLAR_WINDOW = 60;
+// English texts of the solar mode; translated ones are taken from I18n under the same keys when there are any
+var SOLAR_STR = {
+  solarMode: 'Solar mode', solarModeInfo: 'Plays the videos that fit the time of day (sunrise, day, sunset, night) at your city',
+  solarCity: 'City', solarWindow: 'Sunrise and sunset last, minutes',
+  solarNoCity: 'Type the name of a city to choose it', solarFetching: 'Getting sunrise and sunset times\u2026',
+  solarSunrise: 'Sunrise', solarDay: 'Day', solarSunset: 'Sunset', solarNight: 'Night', solarNow: 'now it is',
+  solarPolar: 'the sun does not rise or set here now',
+  solarCalculated: 'Times are calculated.', solarOffline: 'No network: the times are calculated, and fetched when it is back.',
+  solarTagged: 'Tagged videos:',
+  reportClose: 'Close',
+  solarCityNone: 'No city found', solarCityOffline: 'The city search needs the internet'
+};
+function st(key) {
+  var v;
+  try { v = I18n.t(key); } catch (e) { v = null; }
+  return (v && typeof v === 'string' && v !== key) ? v : (SOLAR_STR[key] || key);
+}
 
 // Whether the screensavers can play a video with the chosen format (same rules as pickSourceKey in
 // web-screensaver.html and playRandomVideo in screensaver-main.qml)
@@ -631,6 +654,23 @@ var VideoSelectPanel = kind({
         {name: 'grid'},
         // night mode: below the main playlist, only on the first level of the normal playlist
         {name: 'night', showing: false, style: 'margin: 16px 0 0', components: [
+          // solar mode: the videos' timeOfDay tags follow the sun at the chosen city (replaces night mode while on)
+          {kind: ToggleItem, name: 'solarMode', onchange: 'solarToggle'},
+          {kind: BodyText, name: 'solarModeInfo', style: 'margin: 0 0 6px 20px; font-size: ' + Theme.DESC_FONT + '; opacity: 0.8;'},
+          {name: 'solarOptions', showing: false, components: [
+            // a plain list row (reachable with the d-pad like every other row); OK opens the popup with the input
+            {kind: Item, name: 'cityItem', ontap: 'openCityDialog', components: [
+              {kind: Marquee.Text, name: 'solarCityLabel'},
+              {kind: BodyText, name: 'cityValue', style: 'margin: 0; font-size: ' + Theme.DESC_FONT + '; opacity: 0.8;'}
+            ]},
+            {kind: BodyText, name: 'solarInfo', style: 'margin: 8px 20px 0; font-size: ' + Theme.DESC_FONT + ';'},
+            {kind: BodyText, name: 'solarCounts', style: 'margin: 0 20px 6px; font-size: ' + Theme.DESC_FONT + '; opacity: 0.8;'},
+            {kind: Item, components: [
+              {kind: Marquee.Text, name: 'solarWindowLabel'},
+              {kind: SimpleIntegerPicker, name: 'solarWindow', min: 15, max: 180, step: 15, unit: '', onChange: 'solarWindowChanged'}
+            ]}
+          ]},
+          {name: 'nightBox', components: [
           {kind: ToggleItem, name: 'nightMode', i18n: 'nightMode', onchange: 'nightToggle'},
           {name: 'nightOptions', showing: false, components: [
             {kind: Item, components: [
@@ -645,6 +685,7 @@ var VideoSelectPanel = kind({
               {kind: Marquee.Text, i18n: 'nightPlaylist'},
               {kind: BodyText, name: 'nightInfo', style: 'margin: 0; font-size: ' + Theme.DESC_FONT + '; opacity: 0.8;'}
             ]}
+          ]}
           ]}
         ]}
       ]}
@@ -677,16 +718,41 @@ var VideoSelectPanel = kind({
           {kind: BodyText, name: 'previewInfo', style: 'color:#c9c9d1; margin:0; padding:0; height:46px; line-height:46px; font-size:26px; text-align:center; opacity:0.8; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;'}
         ]}
       ]},
+    // city card: the same modal as the compatibility report (MainPanel): centered, themed, title with the accent rule,
+    // footer with Close. The input gets the focus as soon as it is shown.
+    // Not centered: it sits near the top of the screen, because the webOS virtual keyboard covers the bottom third of it
+    {kind: Popup, name: 'cityPopup', floating: true, modal: true, spotlightModal: true, autoDismiss: true, animate: false,
+      onShow: 'cityPopupShown', onHide: 'cityPopupHidden',
+      style: 'left: 0; right: 0; top: 24px; bottom: auto; margin: 0 auto; box-sizing: border-box; ' +
+        'transform: none !important; -webkit-transform: none !important; transition: none !important; -webkit-transition: none !important; ' +
+        'width: 900px; max-width: 94%; padding: 30px 44px 28px; background: ' + Theme.MODAL_BG + '; color: ' + Theme.TEXT + '; border: ' + Theme.MODAL_BORDER_PX + 'px solid ' + Theme.MODAL_BORDER + '; border-radius: ' + Theme.MODAL_RADIUS + 'px;', components: [
+      {style: 'position: relative; padding-bottom: 16px; border-bottom: 2px solid ' + Theme.RULE + ';', components: [
+        {name: 'cityTitle', style: 'font-size: 36px; font-weight: bold; color: #fff;', content: ''},
+        {style: 'position: absolute; left: 0; bottom: -2px; width: 120px; height: 2px; background: ' + Theme.ACCENT + ';'}
+      ]},
+      {kind: InputDecorator, name: 'cityDecorator', style: 'width: 100%; margin: 22px 0 1em;', onSpotlightDown: 'cityDown', onSpotlightSelect: 'cityInputSelect', onSpotlightFocused: 'cityDecoratorFocused', onSpotlightBlur: 'cityDecoratorBlurred', ontap: 'cityInputSelect', components: [
+        {kind: Input, name: 'cityInput', spotlight: false, style: 'width: 100%', dismissOnEnter: true, oninput: 'cityTyped'}
+      ]},
+      {name: 'cityResults'},
+      {style: 'display: flex; align-items: center; margin: 26px 0 0; padding-top: 22px; border-top: 2px solid ' + Theme.RULE + ';', components: [
+        {kind: Button, name: 'cityClose', small: true, style: 'flex: none; margin: 0 0 0 auto;', ontap: 'closeCity'}
+      ]}
+    ]},
     {kind: LunaService, name: 'cat', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onCat', onError: 'onCat'},
-    {kind: LunaService, name: 'save', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec'}
+    {kind: LunaService, name: 'save', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec'},
+    {kind: LunaService, name: 'solarRun', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onSolarRun', onError: 'onSolarRun'}
   ],
 
   create: function () {
     if (!this.isChild) { this.title = I18n.t('playlist'); }
     this.inherited(arguments);
     I18n.apply(this);   // texts of the controls with an `i18n` key
+    // webOS TV tells the app when the virtual keyboard appears / disappears (see keyboardChanged)
+    this.kbListener = this.bindSafely('keyboardChanged');
+    document.addEventListener('keyboardStateChange', this.kbListener, false);
     // Moonstone Popup resets inline `bottom` when animate is off; the preview positions itself with top/left
     this.$.preview.applyStyle('bottom', 'auto');
+    this.$.cityPopup.applyStyle('bottom', 'auto');
     this.dirty = false;
     this.settings = this.settings || {};
 
@@ -725,6 +791,16 @@ var VideoSelectPanel = kind({
     this.stopJob('nightApply');
     this.stopJob('nightApplied');
     this.stopJob('nightRedraw');
+    this.stopJob('cityLookup');
+    this.stopJob('cityFocus');
+    this.stopJob('cityKbHidden');
+    this.stopJob('cityInputFocus');
+    this.stopJob('cityNoKb');
+    this.stopJob('cityDownCheck');
+    if (this.kbListener) { document.removeEventListener('keyboardStateChange', this.kbListener, false); this.kbListener = null; }
+    this.stopJob('cityBack');
+    if (this.cityXhr) { this.cityXhr.abort(); this.cityXhr = null; }
+    if (this.solarXhr) { this.solarXhr.abort(); this.solarXhr = null; }
     this.stopJob('batch');
     this.stopJob('toastHide');
     this.stopJob('focusScroll');
@@ -1207,8 +1283,10 @@ var VideoSelectPanel = kind({
   scrollNodeTo: function (g, node, top) {
     var scroller = this.$.scroller, b = scroller.getScrollBounds(),
       // the position of the node inside the scrolled content does not depend on the current scroll offset
-      y = (node.getBoundingClientRect().top - g.c.top) - top;
-    scroller.scrollTo(b.left, Math.max(0, Math.min(y, b.maxTop)));
+      y = (node.getBoundingClientRect().top - g.c.top) - top,
+      // the scroller's cached maxTop is stale right after the content grew (keyboard space shown): the DOM is not
+      maxTop = Math.max(b.maxTop || 0, Math.round(g.c.height - g.v.height));
+    scroller.scrollTo(b.left, Math.max(0, Math.min(y, maxTop)));
   },
 
   // the group of a focused header / tile: its header, tiles and the number of tile rows
@@ -1672,6 +1750,7 @@ var VideoSelectPanel = kind({
 
   updateCount: function () {
     var all = this.categoryStats(''), text, night = this.list === 'night';
+    if (this.list === 'day' && !this.isChild) { this.updateSolarCounts(); }
     if (this.mode === 'videos' && this.categoryId) {
       var cat = this.categoryStats(this.categoryId);
       text = I18n.t(night ? 'nightCountCategory' : 'countCategory', {on: cat.on, total: cat.total, allOn: all.on, allTotal: all.total});
@@ -1712,6 +1791,7 @@ var VideoSelectPanel = kind({
   initNight: function () {
     var s = this.settings;
     this.applyNightValues();
+    this.applySolarValues();
     this.$.night.set('showing', true);
     // the pickers are not laid out / rendered yet and may ignore the value (they show 0): set it again
     // once the block is visible. Changes reported by the pickers meanwhile are not the user's.
@@ -1751,6 +1831,7 @@ var VideoSelectPanel = kind({
       }
       picker.set('value', v);
     });
+    this.applySolarValues(redraw);
     this.startJob('nightApplied', function () { this.initializing = false; }, 300);
   },
 
@@ -1860,6 +1941,458 @@ var VideoSelectPanel = kind({
     var root = this.nightShared && this.nightShared.root;
     this.updateNightInfo();
     if (root && !root.destroyed) { root.refreshCounts(); }
+  },
+
+  // ---- solar mode (first level of the normal playlist) ----
+  // The screensaver picks videos by their timeOfDay tag (sunrise / day / sunset / night) from the sun at the chosen
+  // city. Times come from assets/solar.json, which solar-update.sh keeps (boot + once a day, see there).
+
+  applySolarValues: function (redraw) {
+    var s = this.settings, picker = this.$.solarWindow, on = !!s.solarMode;
+    this.$.solarMode.set('checked', on);
+    this.$.solarOptions.set('showing', on);
+    this.$.nightBox.set('showing', !on);   // the two modes exclude each other
+    this.$.solarMode.set('content', st('solarMode'));   // the toggle had no label: an invisible row
+    this.$.solarModeInfo.set('content', st('solarModeInfo'));
+    this.$.solarCityLabel.set('content', st('solarCity'));
+    this.$.cityInput.set('placeholder', st('solarNoCity'));
+    this.$.solarWindowLabel.set('content', st('solarWindow'));
+    if (redraw === true && picker.hasNode()) {
+      try { if (picker.resized) { picker.resized(); } picker.render(); } catch (e) { /* ignore */ }
+    }
+    picker.set('value', this.solarWindowValue());
+    this.$.cityValue.set('content', s.solarCity ? this.cityLabel(s.solarCity) : st('solarNoCity'));
+    this.updateSolarInfo();
+  },
+
+  solarWindowValue: function () {
+    var v = parseInt(this.settings.solarWindow, 10);
+    return v >= 15 && v <= 180 ? v : SOLAR_WINDOW;
+  },
+
+  cityLabel: function (c) {
+    return [c.name, c.region && c.region !== c.name ? c.region : '', c.country].filter(function (x) { return !!x; }).join(', ');
+  },
+
+  solarToggle: function (sender) {
+    var on = !!sender.active, s = this.settings;
+    if (this.initializing || on === !!s.solarMode) { return; }
+    if (on && !s.solarCity) {
+      // solar mode needs a city: keep it off, ask for the city first; it is switched on when one is picked
+      this.$.solarMode.set('checked', false);
+      this.solarWantCity = true;
+      this.openCityDialog();
+      return;
+    }
+    s.solarMode = on;
+    if (on) {
+      s.nightMode = false;
+      s.solarWindow = this.solarWindowValue();
+    }
+    this.$.solarOptions.set('showing', on);
+    this.$.nightBox.set('showing', !on);
+    this.$.nightMode.set('checked', !!s.nightMode);
+    this.$.nightOptions.set('showing', !!s.nightMode);
+    if (on) { this.startJob('nightRedraw', 'redrawNightPickers', 100); }
+    this.updateSolarInfo();
+    if (on && s.solarCity) { this.runSolarUpdate(); } else { this.markSettingsDirty(); }
+  },
+
+  solarWindowChanged: function (sender) {
+    var v = sender.get('value');
+    if (this.initializing || this.settings.solarWindow === v) { return; }
+    this.settings.solarWindow = v;
+    this.updateSolarInfo();
+    this.markSettingsDirty();
+  },
+
+  // Saves the settings and has solar-update.sh write assets/solar.json for the screensaver (needs the Homebrew Channel
+  // service). The panel does not wait for it: it gets the times itself (see solarOnlineTimes).
+  runSolarUpdate: function () {
+    this.stopJob('saveSettings');
+    this.settingsDirty = false;
+    this.solarOnline = null;
+    this.solarFailed = false;
+    this.$.solarInfo.set('content', st('solarFetching'));
+    this.$.solarRun.send({command: SettingsStore.saveCommand(this.settings) + '; sh ' + SettingsStore.assetsDir + '/solar-update.sh force'});
+    this.updateSolarInfo();
+  },
+
+  // the answer (or error) of the service says nothing about what the panel shows
+  onSolarRun: function () {
+    return true;
+  },
+
+  // "Helsinki, Finland: sunrise 07:54, sunset 16:11, now night" and how many videos each part of the day has
+  // "Tagged videos: Sunrise 3 · Day 10 · Sunset 4 · Night 6": the videos that are on in the playlist, by their timeOfDay tag.
+  // Called again whenever the playlist changes (updateCount).
+  updateSolarCounts: function () {
+    var s = this.settings, self = this, counts = {sunrise: 0, day: 0, sunset: 0, night: 0};
+    if (this.isChild || !this.$.solarCounts || !s || !s.solarMode || !s.solarCity || !this.assets) { return; }
+    this.assets.forEach(function (a) {
+      if (!self.disabled[a.id] && counts[a.timeOfDay] !== undefined && playableWith(a, s)) { counts[a.timeOfDay]++; }
+    });
+    this.$.solarCounts.set('content', st('solarTagged') + ' ' + st('solarSunrise') + ' ' + counts.sunrise + ' \u00b7 ' +
+      st('solarDay') + ' ' + counts.day + ' \u00b7 ' + st('solarSunset') + ' ' + counts.sunset + ' \u00b7 ' +
+      st('solarNight') + ' ' + counts.night);
+  },
+
+  updateSolarInfo: function () {
+    var s = this.settings, c = s.solarCity, self = this, lat, lon, win;
+    if (!this.$.solarInfo || !s.solarMode) { return; }
+    // no city: the row itself already says "Type the name of a city to choose it", do not repeat it below
+    if (!c) { this.$.solarInfo.set('content', ''); this.$.solarCounts.set('content', ''); return; }
+    lat = Number(c.lat); lon = Number(c.lon); win = this.solarWindowValue();
+    this.updateSolarCounts();
+    this.loadJSON('assets/solar.json', this.basePath + '/assets/solar.json', function (d) {
+      var ok = d && Math.abs(Number(d.lat) - lat) < 0.001 && Math.abs(Number(d.lon) - lon) < 0.001 && d.sunrise && d.sunset && d.sunrise.length;
+      if (ok) {
+        self.showSolarTimes(c, lat, lon, win, {sunrises: d.sunrise.map(function (x) { return x * 1000; }),
+          sunsets: d.sunset.map(function (x) { return x * 1000; }), stored: true});
+      } else {
+        self.solarOnlineTimes(c, lat, lon, win);
+      }
+    }, function () { self.solarOnlineTimes(c, lat, lon, win); });
+  },
+
+  // sunrise / sunset instants of the city from Open-Meteo (free, no key; the same service as the city search), so the
+  // panel shows real times without the Homebrew Channel service. Kept for an hour; on failure the times are calculated.
+  solarOnlineTimes: function (c, lat, lon, win) {
+    var self = this, o = this.solarOnline, xhr, now = Date.now();
+    if (o && o.lat === lat && o.lon === lon && now - o.at < 3600000) {
+      if (o.ev) { this.showSolarTimes(c, lat, lon, win, o.ev); return; }
+      if (now - o.at < 60000) { this.solarFailed = true; this.showSolarTimes(c, lat, lon, win, null); return; }   // failed a moment ago
+    }
+    if (this.solarXhr) { this.solarXhr.abort(); this.solarXhr = null; }
+    this.$.solarInfo.set('content', st('solarFetching'));
+    xhr = this.solarXhr = new XMLHttpRequest();
+    xhr.open('GET', 'https://api.open-meteo.com/v1/forecast?latitude=' + encodeURIComponent(lat) + '&longitude=' + encodeURIComponent(lon) +
+      '&daily=sunrise,sunset&timeformat=unixtime&timezone=GMT&past_days=1&forecast_days=3');
+    xhr.timeout = 10000;
+    function done(ev) {
+      if (self.destroyed || xhr !== self.solarXhr) { return; }
+      self.solarXhr = null;
+      self.solarOnline = {lat: lat, lon: lon, at: Date.now(), ev: ev};
+      self.solarFailed = !ev;
+      self.showSolarTimes(c, lat, lon, win, ev);
+    }
+    xhr.onload = function () {
+      var d, ev = null;
+      try { d = JSON.parse(xhr.responseText).daily; } catch (e) { d = null; }
+      if (d && d.sunrise && d.sunset) {
+        ev = {
+          sunrises: d.sunrise.filter(function (x) { return x; }).map(function (x) { return x * 1000; }),
+          sunsets: d.sunset.filter(function (x) { return x; }).map(function (x) { return x * 1000; }),
+          stored: true
+        };
+        if (!ev.sunrises.length || !ev.sunsets.length) { ev = null; }   // polar day / night: let the calculation decide
+      }
+      done(ev);
+    };
+    xhr.onerror = xhr.ontimeout = function () { done(null); };
+    xhr.send();
+  },
+
+  showSolarTimes: function (c, lat, lon, win, ev) {
+    var now = Date.now(), today = new Date(now).toDateString(), rise, set, phase, text, stored = !!(ev && ev.stored);
+    function hhmm(ms) { var d = new Date(ms), p = function (n) { return (n < 10 ? '0' : '') + n; }; return p(d.getHours()) + ':' + p(d.getMinutes()); }
+    function cap(x) { return x.charAt(0).toUpperCase() + x.slice(1); }
+    function ofToday(list) { return list.filter(function (t) { return new Date(t).toDateString() === today; })[0]; }
+    if (this.destroyed || !this.$.solarInfo) { return; }
+    if (!ev) { ev = Solar.solarEvents(lat, lon, now, 1); }
+    rise = ofToday(ev.sunrises); set = ofToday(ev.sunsets);
+    phase = stored && ev.sunrises.length && ev.sunsets.length ? Solar.solarPhaseFromEvents(now, ev.sunrises, ev.sunsets, win) : Solar.solarTimeOfDay(lat, lon, now, win);
+    // the city itself is shown in the row above: not repeated here
+    text = cap((rise ? st('solarSunrise') + ' ' + hhmm(rise) : '') + (rise && set ? ', ' : '') +
+      (set ? st('solarSunset') + ' ' + hhmm(set) : '') + (!rise && !set ? st('solarPolar') : '')) +
+      '. ' + cap(st('solarNow')) + ' ' + st('solar' + phase.charAt(0).toUpperCase() + phase.slice(1)).toLowerCase() + '.';
+    if (this.solarFailed) { text += ' ' + st('solarOffline'); }
+    else if (!stored) { text += ' ' + st('solarCalculated'); }
+    this.$.solarInfo.set('content', text);
+  },
+
+  // ---- city search ----
+
+  // typing: suggestions from Open-Meteo's geocoding (free, no key) after a short pause
+  cityTyped: function () {
+    this.cityPending = true;
+    this.startJob('cityLookup', 'cityLookup', 350);
+  },
+
+  cityLookup: function () {
+    this.cityPending = false;
+    var q = String(this.$.cityInput.get('value') || '').trim(), self = this, xhr,
+      lang = String(this.settings.uiLang || this.settings.localeLang || 'en').split('-')[0].toLowerCase();
+    if (this.cityXhr) { this.cityXhr.abort(); this.cityXhr = null; }
+    if (q.length < 2) { this.showCities([], q); return; }
+    xhr = this.cityXhr = new XMLHttpRequest();
+    xhr.open('GET', 'https://geocoding-api.open-meteo.com/v1/search?count=5&format=json&language=' + encodeURIComponent(lang) + '&name=' + encodeURIComponent(q));
+    xhr.timeout = 10000;
+    xhr.onload = function () {
+      var d;
+      if (self.destroyed || xhr !== self.cityXhr) { return; }
+      try { d = JSON.parse(xhr.responseText); } catch (e) { d = null; }
+      self.showCities(d ? (d.results || []) : null, q);
+    };
+    xhr.onerror = xhr.ontimeout = function () { if (!self.destroyed && xhr === self.cityXhr) { self.showCities(null, q); } };
+    xhr.send();
+  },
+
+  // list = null: no answer
+  showCities: function (list, q) {
+    var box = this.$.cityResults, cities = [], sig, cur, idx, kids, target;
+    if (list) {
+      list.forEach(function (r) {
+        var city = {name: String(r.name || '').replace(/[{}"\\]/g, ''), region: String(r.admin1 || '').replace(/[{}"\\]/g, ''),
+          country: String(r.country || '').replace(/[{}"\\]/g, ''), lat: Number(Number(r.latitude).toFixed(4)),
+          lon: Number(Number(r.longitude).toFixed(4)), tz: r.timezone || ''};
+        if (!isFinite(city.lat) || !isFinite(city.lon) || !city.name) { return; }
+        cities.push(city);
+      });
+    }
+    // The same answer again (a late request, or a repeated search): leave the rows alone. Rebuilding them drops the d-pad
+    // focus the user has already moved onto a suggestion (the first request is slow, its answer comes 1-2 s later).
+    sig = list === null ? '!offline' : (cities.length ? cities.map(function (c) { return c.name + '|' + c.lat + '|' + c.lon; }).join(';') :
+      ((q && q.length >= 2) ? '!none' : '!empty'));
+    if (sig === this.cityShownSig && box.getClientControls().length) { return; }
+    this.cityShownSig = sig;
+    // remember which row has the focus, to put it back on the same place after the rebuild
+    cur = Spotlight.getCurrent && Spotlight.getCurrent();
+    kids = box.getClientControls();
+    idx = cur ? kids.indexOf(cur) : -1;
+    box.destroyClientControls();
+    if (list === null) {
+      box.createComponent({kind: BodyText, content: st('solarCityOffline'), style: 'margin: 6px 12px; opacity: 0.8;'}, {owner: this});
+    } else if (!cities.length && q && q.length >= 2) {
+      box.createComponent({kind: BodyText, content: st('solarCityNone'), style: 'margin: 6px 12px; opacity: 0.8;'}, {owner: this});
+    } else {
+      cities.forEach(function (city) {
+        box.createComponent({kind: Item, content: this.cityLabel(city), city: city, ontap: 'pickCity'}, {owner: this});
+      }, this);
+    }
+    box.render();
+    if (idx >= 0 && this.$.cityPopup.showing && !(Spotlight.getPointerMode && Spotlight.getPointerMode())) {
+      kids = box.getClientControls().filter(function (c) { return c.city; });
+      target = kids.length ? kids[Math.min(idx, kids.length - 1)] : this.$.cityDecorator;
+      Spotlight.spot(target);
+    }
+  },
+
+  pickCity: function (sender) {
+    var c = sender.city, enable = !!this.solarWantCity;
+    if (!c) { return true; }
+    this.solarWantCity = false;
+    this.settings.solarCity = c;
+    this.$.cityValue.set('content', this.cityLabel(c));
+    this.$.cityResults.destroyClientControls();
+    this.solarFailed = false;
+    this.$.cityPopup.hide();
+    if (enable) {
+      this.$.solarMode.set('checked', true);   // solarToggle now finds a city and turns the mode on
+      if (!this.settings.solarMode) { this.solarToggle({active: true}); }
+    } else {
+      this.runSolarUpdate();
+    }
+    return true;
+  },
+
+  // ---- the city popup ----
+  // The input lives in a popup (as in the Homebrew Channel's settings), not in the scrolled list: the list row is
+  // reachable with the d-pad like any other, and the popup is not covered by the on-screen keyboard.
+
+  openCityDialog: function () {
+    this.$.cityTitle.set('content', st('solarCity'));
+    this.$.cityClose.set('content', st('reportClose'));
+    this.kbVisible = false; this.cityAwait = false; this.cityPending = false; this.cityKbWanted = false; this.cityShownSig = null;
+    this.$.cityInput.set('value', '');   // a search box: the chosen city is shown in the row
+    this.$.cityResults.destroyClientControls();
+    this.$.cityPopup.show();
+    this.startJob('cityFocus', 'focusCity', 350);   // fallback if the popup's onShow does not come
+    return true;
+  },
+
+  cityPopupShown: function () {
+    this.startJob('cityFocus', 'focusCity', 60);
+  },
+
+  // The input gets the focus when the card is shown: the d-pad highlight on its decorator and the real input focus
+  // (caret + on-screen keyboard). Moonstone freezes Spotlight while the input has focus; Up / Down or OK (dismissOnEnter)
+  // leave it, so the suggestions and Close can be reached with the d-pad.
+  focusCity: function () {
+    var node;
+    if (this.destroyed || !this.$.cityPopup.showing) { return; }
+    this.cityKbWanted = true;   // the popup was just opened: the keyboard comes this once
+    Spotlight.spot(this.$.cityDecorator);
+    node = this.$.cityInput.hasNode();
+    // same as in focusCityInput: webOS may report "hidden" while it is still opening the keyboard for this focus
+    this.cityKbGrace = Date.now() + 1500;
+    this.stopJob('cityKbHidden');
+    if (node) { try { node.focus(); } catch (e) { /* the d-pad highlight is enough */ } }
+  },
+
+  // While the virtual keyboard is up, webOS TV keeps the remote's arrow keys for itself (LG: "if the input has focus, the
+  // virtual keyboard will process the input"; key events do not reach the app), so the d-pad cannot leave the input then.
+  // When the keyboard goes away (its Enter / Back), the d-pad is given back here: Spotlight is unfrozen and the focus
+  // goes to the first suggestion, or stays on the input if there is none. The keyboard's voice button hides it for a moment
+  // and shows it again, and the input must not lose its focus then, so the "hidden" is only believed after a pause.
+  keyboardChanged: function (e) {
+    var visible = !!(e && e.detail && e.detail.visibility);
+    if (this.destroyed || !this.$.cityPopup || !this.$.cityPopup.showing) { return; }
+    this.kbVisible = visible;
+    if (visible) { this.stopJob('cityKbHidden'); this.cityAwait = false; return; }
+    // webOS can report "hidden" right while it is opening the keyboard for a focus we just gave (the arrow key that
+    // brought us here is still being released); believing it would close the keyboard again after ~0.7 s
+    if (Date.now() < (this.cityKbGrace || 0)) { return; }
+    this.startJob('cityKbHidden', 'cityKeyboardHidden', 700);
+  },
+
+  cityKeyboardHidden: function () {
+    var node, cur, moved;
+    if (this.destroyed || !this.$.cityPopup.showing) { return; }
+    this.cityKbWanted = false;
+    node = this.$.cityInput.hasNode();
+    cur = Spotlight.getCurrent && Spotlight.getCurrent();
+    moved = !!(cur && cur !== this.$.cityDecorator && cur !== this.$.cityInput && cur.isDescendantOf && cur.isDescendantOf(this.$.cityPopup));
+    if (node && document.activeElement === node) { node.blur(); }
+    if (Spotlight.isFrozen && Spotlight.isFrozen()) { Spotlight.unfreeze(); }
+    // the user is already on a suggestion / Close: blurring the input must not take the highlight away from it
+    if (moved) { Spotlight.spot(cur); return; }
+    // Magic Remote pointer: the user clicks, nothing should be highlighted for the d-pad
+    if (Spotlight.getPointerMode && Spotlight.getPointerMode()) { return; }
+    // Enter came before the 350 ms typing pause ended: search now, so the suggestions are there when the user presses Down
+    if (this.cityPending) { this.stopJob('cityLookup'); this.cityLookup(); }
+    // back to the whole input element (highlighted); OK / click on it goes into the field again, Down to the suggestions
+    Spotlight.spot(this.$.cityDecorator);
+  },
+
+  firstCityResult: function () {
+    return this.$.cityResults.getClientControls().filter(function (c) { return c.city && c.showing !== false; })[0] || null;
+  },
+
+  // Down from the input (physical keyboard, or the virtual keyboard already hidden): to the first suggestion, else Close.
+  // Moonstone freezes Spotlight while the input has focus; make sure it is not, whatever the input's focus state is.
+  cityDown: function () {
+    var target = this.firstCityResult() || this.$.cityClose, node = this.$.cityInput.hasNode(), ok;
+    this.stopJob('cityKbHidden');          // the d-pad works, so the keyboard is gone: nothing more to do about it later
+    this.cityKbWanted = false;
+    // the input may still hold the DOM focus (keyboard closed with Back): blurring it later, after the highlight has moved
+    // to the suggestion, is what made the highlight vanish
+    if (node && document.activeElement === node) { try { node.blur(); } catch (e) { /* ignore */ } }
+    if (Spotlight.isFrozen && Spotlight.isFrozen()) { Spotlight.unfreeze(); }
+    this.cityHighlight(false);
+    ok = !!Spotlight.spot(target);
+    this.cityDownTarget = target;
+    this.startJob('cityDownCheck', 'cityDownCheck', 120);   // the blur above can drop the highlight: put it back
+    return ok;
+  },
+
+  cityDownCheck: function () {
+    var t = this.cityDownTarget, cur;
+    this.cityDownTarget = null;
+    if (this.destroyed || !t || t.destroyed || !this.$.cityPopup.showing) { return; }
+    cur = Spotlight.getCurrent && Spotlight.getCurrent();
+    if (cur !== t && !(Spotlight.getPointerMode && Spotlight.getPointerMode())) { Spotlight.spot(t); }
+  },
+
+  // webOS TV has no API to show the keyboard: it comes up only when the <input> element itself gets the DOM focus
+  // (LG docs: to relaunch the virtual keyboard, select an input field). Spotlight highlighting the
+  // decorator is not enough, so the focus is given to the input explicitly. If it still holds the focus (keyboard closed
+  // by the TV, e.g. its 2 minute timeout), it is blurred first, otherwise focus() does nothing and no keyboard appears.
+  focusCityInput: function () {
+    var node;
+    if (this.destroyed || !this.$.cityPopup.showing) { return; }
+    node = this.$.cityInput.hasNode();
+    if (!node) { return; }
+    this.cityKbGrace = Date.now() + 1500;
+    this.cityKbWanted = true;   // OK on the input: the keyboard is asked for
+    this.stopJob('cityKbHidden');
+    try {
+      if (document.activeElement === node) { node.blur(); }
+      node.focus();
+    } catch (e) { /* the d-pad highlight is enough */ }
+  },
+
+  // The standard flow (LG: "to relaunch the virtual keyboard, select an input field with a remote controller"):
+  // Up / Down only highlight the input, OK on it gives the input the DOM focus, which is what shows the keyboard.
+  cityInputSelect: function () {
+    var node = this.$.cityInput.hasNode(), pointer = !!(Spotlight.getPointerMode && Spotlight.getPointerMode());
+    this.cityKbWanted = true;   // asked for on purpose: cityDecoratorFocused must not take the focus away again
+    // A click with the Magic Remote on the field itself: the browser has already focused it and webOS is opening the
+    // keyboard. Blurring and focusing it again (below) is for OK on the d-pad only, and would close that keyboard / caret.
+    if (pointer && node && document.activeElement === node) { return false; }
+    this.startJob('cityInputFocus', 'focusCityInput', 250);
+    return false;
+  },
+
+  // The d-pad came back to the input (Up from the suggestions / Close, or the keyboard was dismissed). Only highlight it:
+  // if the input got the DOM focus on its own (which brings the keyboard up each time), take it away again. The keyboard
+  // is for OK on the input (cityInputSelect) and for the moment the popup opens; the Magic Remote pointer is left alone.
+  // the whole input box is the d-pad target: show it highlighted (accent colour, like the other focused rows)
+  cityHighlight: function (on) {
+    var d = this.$.cityDecorator;
+    if (!d || d.destroyed) { return; }
+    d.applyStyle('background', on ? Theme.ACCENT : null);
+    d.applyStyle('border-color', on ? Theme.ACCENT : null);
+    d.applyStyle('box-shadow', on ? '0 0 0 4px ' + Theme.ACCENT : null);
+    d.applyStyle('color', on ? '#fff' : null);
+    // Moonstone colours the input text and its placeholder grey: force white (and a white caret) while highlighted
+    if (!document.getElementById('city-hl-style')) {
+      var css = document.createElement('style');
+      css.id = 'city-hl-style';
+      css.textContent = '.city-hl input, .city-hl .moon-input { color: #fff !important; -webkit-text-fill-color: #fff !important; caret-color: #fff; opacity: 1 !important; }' +
+        '.city-hl input::-webkit-input-placeholder { color: #fff !important; -webkit-text-fill-color: #fff !important; opacity: 1 !important; }' +
+        '.city-hl input::placeholder { color: #fff !important; opacity: 1 !important; }';
+      document.head.appendChild(css);
+    }
+    d.addRemoveClass('city-hl', !!on);
+  },
+
+  cityDecoratorBlurred: function () {
+    var node = this.$.cityInput.hasNode();
+    // still highlighted while the keyboard is up (the input has the DOM focus)
+    if (!(node && document.activeElement === node)) { this.cityHighlight(false); }
+    return false;
+  },
+
+  cityDecoratorFocused: function () {
+    this.cityHighlight(true);
+    if (this.cityKbWanted || (Spotlight.getPointerMode && Spotlight.getPointerMode())) { return false; }
+    this.startJob('cityNoKb', 'cityDropInputFocus', 30);
+    return false;
+  },
+
+  cityDropInputFocus: function () {
+    var node;
+    if (this.destroyed || this.cityKbWanted || !this.$.cityPopup.showing) { return; }
+    node = this.$.cityInput.hasNode();
+    if (node && document.activeElement === node) { try { node.blur(); } catch (e) { /* ignore */ } }
+    if (Spotlight.isFrozen && Spotlight.isFrozen()) { Spotlight.unfreeze(); }
+  },
+
+  closeCity: function () {
+    this.$.cityPopup.hide();
+    return true;
+  },
+
+  cityPopupHidden: function () {
+    this.cityHighlight(false);
+    this.cityShownSig = null;
+    this.solarWantCity = false;
+    this.cityKbWanted = false;
+    this.stopJob('cityNoKb');
+    this.kbVisible = false; this.cityAwait = false; this.cityPending = false;
+    this.stopJob('cityLookup');
+    this.stopJob('cityKbHidden');
+    this.stopJob('cityInputFocus');
+    if (this.cityXhr) { this.cityXhr.abort(); this.cityXhr = null; }
+    if (Spotlight.isFrozen && Spotlight.isFrozen()) { Spotlight.unfreeze(); }   // the input may have been focused
+    this.$.cityResults.destroyClientControls();
+    // give the focus back to the row that opened the popup
+    this.startJob('cityBack', 'spotCityItem', 100);
+  },
+
+  spotCityItem: function () {
+    if (!this.destroyed && !(Spotlight.getPointerMode && Spotlight.getPointerMode())) { Spotlight.spot(this.$.solarOptions.showing ? this.$.cityItem : this.$.solarMode); }
   },
 
   markSettingsDirty: function () {

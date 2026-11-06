@@ -18,6 +18,7 @@ var
   LanguagePanel = require('./LanguagePanel.js'),
   SettingsStore = require('./SettingsStore.js'),
   QrCode = require('./QrCode.js'),
+  ReleaseNotes = require('./ReleaseNotes.js'),
   I18n = require('./I18n.js'),
   Theme = require('./Theme.js');
 var basePath = SettingsStore.basePath;
@@ -30,6 +31,9 @@ var settings = {};
 // Homebrew Channel repository index: the version listed here is what HBC offers, and it is published
 // later than the GitHub release, so the update check must use it instead of the GitHub releases.
 var repoApi = 'https://repo.webosbrew.org/api/apps.json';
+// The release pages (Markdown) of the versions between the installed one and the latest are shown in the update card
+var releasesApi = 'https://api.github.com/repos/aabytt/custom-screensaver-aerial/releases?per_page=20';
+var NOTES_MAX_PX = 260;   // height of the notes area; longer notes scroll
 var appId = 'org.aabytt.webos.custom-screensaver-aerial';
 var hbChannelId = 'org.webosbrew.hbchannel';
 // Line icons (24x24 grid) as inline SVG that takes the text color (currentColor), so an icon matches
@@ -205,6 +209,16 @@ module.exports = kind({
         {name: 'qrCol', style: 'flex: none; text-align: center;', components: [
           {name: 'qr', allowHtml: true, style: 'line-height: 0; border-radius: 14px; overflow: hidden;', content: ''},
           {name: 'reportCaption', allowHtml: true, style: 'margin: 14px 0 0; font-size: 24px; line-height: 1.35; color: ' + Theme.MUTED + '; text-align: center;', content: ''}
+        ]}
+      ]},
+      // release notes of the new version(s), only while an update exists and GitHub answered
+      {name: 'notesBox', showing: false, style: 'margin: 22px 0 0;', components: [
+        {name: 'notesTitle', style: 'font-size: 28px; font-weight: bold; color: ' + ACCENT + '; margin: 0 0 8px;'},
+        {kind: Scroller, name: 'notesScroller', horizontal: 'hidden', style: 'height: ' + NOTES_MAX_PX + 'px; background: ' + Theme.CARD + '; border-radius: 12px;', components: [
+          // focusable so the remote can scroll it: Up / Down move the text, and leave it at the ends
+          {name: 'notes', allowHtml: true, spotlight: true, onSpotlightUp: 'notesUp', onSpotlightDown: 'notesDown',
+            onSpotlightFocused: 'notesFocused', onSpotlightBlur: 'notesBlurred',
+            style: 'padding: 14px 24px; font-size: 24px; line-height: 1.4; color: #d6d6db; outline: 3px solid transparent; border-radius: 12px;', content: ''}
         ]}
       ]},
       {style: 'display: flex; align-items: center; margin: 26px 0 0; padding-top: 22px; border-top: 2px solid ' + Theme.RULE + ';', components: [
@@ -542,6 +556,7 @@ module.exports = kind({
       }
       if (latest && compareVersions(latest, self.version) > 0) {
         self.latest = String(latest).replace(/^v/i, '');
+        self.loadNotes();
         self.renderVersion();
         self.refit();
         if (self.$.reportPopup && self.$.reportPopup.showing) { self.refreshReport(); }
@@ -550,6 +565,62 @@ module.exports = kind({
     xhr.onerror = xhr.ontimeout = function () { console.info('Update check failed'); };
     xhr.send();
   },
+
+  // Release notes: one request for the list of releases, then the ones from the installed version up to the
+  // offered one are rendered (the repository index lags behind GitHub, so newer ones are left out). Silent on failure:
+  // the card is then the same as before.
+  loadNotes: function () {
+    var self = this, xhr;
+    if (this.notesHtml || this.notesLoading) { return; }
+    this.notesLoading = true;
+    xhr = new XMLHttpRequest();
+    xhr.open('GET', releasesApi);
+    xhr.setRequestHeader('Accept', 'application/vnd.github+json');
+    xhr.timeout = 10000;
+    xhr.onload = function () {
+      var list;
+      self.notesLoading = false;
+      if (xhr.status !== 200) { return; }
+      try {
+        list = ReleaseNotes.select(JSON.parse(xhr.responseText), self.version, self.latest, compareVersions);
+        self.notesHtml = list.length ? ReleaseNotes.render(list) : '';
+      } catch (e) {
+        console.error(e);
+        return;
+      }
+      if (self.$.reportPopup && self.$.reportPopup.showing) { self.showNotes(); }
+    };
+    xhr.onerror = xhr.ontimeout = function () { self.notesLoading = false; console.info('Release notes failed'); };
+    xhr.send();
+  },
+
+  showNotes: function () {
+    var on = !!(this.latest && this.notesHtml);
+    this.$.notesBox.set('showing', on);
+    if (!on) { return; }
+    this.$.notesTitle.set('content', tr('whatsNew', 'What\u2019s new') + ' \u00b7 ' + this.latest);
+    this.$.notes.set('content', this.notesHtml);
+    // the area is as high as the text, up to NOTES_MAX_PX; measured once the text is in the page
+    this.startJob('notesFit', 'fitNotes', 60);
+  },
+
+  fitNotes: function () {
+    var node = this.$.notes.hasNode(), h = node ? Math.min(NOTES_MAX_PX, node.scrollHeight) : NOTES_MAX_PX;
+    this.$.notesScroller.applyStyle('height', h + 'px');
+    this.$.notesScroller.resized();
+  },
+
+  // Up / Down scroll the notes while there is more text that way; at the ends the focus moves on
+  notesScrollBy: function (dy) {
+    var sc = this.$.notesScroller, b = sc.getScrollBounds(), y = Math.max(0, Math.min(b.maxTop, b.top + dy));
+    if (y === b.top) { return false; }
+    sc.scrollTo(b.left, y);
+    return true;
+  },
+  notesUp: function () { return this.notesScrollBy(-140); },
+  notesDown: function () { return this.notesScrollBy(140); },
+  notesFocused: function () { this.$.notes.applyStyle('outline-color', ACCENT); },
+  notesBlurred: function () { this.$.notes.applyStyle('outline-color', 'transparent'); },
 
   // TV model, firmware and webOS release for the report card. Read once at startup (so the card opens at once):
   //  model / firmware / sdk version: the system property service; webOS release: nyx os_info.json
@@ -608,6 +679,7 @@ module.exports = kind({
       this.$.reportUpdateText.set('content', I18n.t('updateAvailable', {version: this.version, latest: this.latest}));
       this.$.reportUpdate.set('content', tr('update', 'Update'));
     }
+    this.showNotes();
     try {
       qr = QrCode.svg(this.reportUrl(), 'M', 360);
     } catch (e) {
@@ -765,6 +837,7 @@ module.exports = kind({
         kind: DisplayPanel,
         settings: settings,
         settingsPath: settingsPath,
+        webosRelease: (this.device && this.device.release) || '',
         onChange: this.bindSafely('updateDisplayInfo')
       }});
     } catch (e) {
