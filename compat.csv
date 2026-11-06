@@ -1,4 +1,5 @@
 issue,tv_model,webos,webos_full,firmware,aerial,idle_start,app_test,sdr,dolby_vision,ui_settings,status,details
 80,43UR81006LJ,webOS 25 (10),10.3.0,33.31.10,3.0.4,Works,Works,Works,Not supported by this TV,Works,Works,Dolby Vision not supported
+85,OLED55CX3LA,webOS 5,5.6.2,04.64.00,3.0.4,Doesn't work,Doesn't work,Doesn't work,Doesn't work,Works,Not working,"Pressing test takes a couple secs and reports “sucess!”, but nothing happens. After uninstalling the app, the original screensaver no longer triggers. Any ideas?"
 84,OLED65C36LC,webOS 26 (11),11.2.0,43.21.71,3.0.4,Works,Works,Works,Works,Works,Works,
 79,OLED65CXRLA,webOS 5,5.3.0,04.30.58,3.0.4,Works,Works,Works,Works,Works,Works,
