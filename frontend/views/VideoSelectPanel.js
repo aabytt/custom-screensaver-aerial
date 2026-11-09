@@ -41,6 +41,25 @@ var GROUP_BOTTOM_PAD = 8;       // bottom margin of a tile
 var HEADER_SCROLL_DELAY_MS = 300;   // let Moonstone finish its own scroll first
 
 var TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:300px; margin:8px; padding:6px; ';
+// Small watermark on a video tile: the video's timeOfDay tag (sunrise / day / sunset / night) as a thin line icon
+// (drawn for this app, 1.5 stroke). The svg is placed by coordinates: centred in the 44 px circle. Each icon has its own
+// viewBox, so that its drawing is centred and fills the square (sunrise / sunset are a bit lower and wider than tall).
+function todSvg(viewBox) {
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="' + viewBox + '" fill="none" stroke="#fff" ' +
+    'stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:absolute; left:8px; top:8px; display:block">';
+}
+var TOD_HORIZON = 'M2 20h20M5 23h14M7.5 20a4.5 4.5 0 0 1 9 0M16.95 15.05L18.7 13.3M7.05 15.05L5.3 13.3';
+var TOD_ICONS = {
+  day: todSvg('0 0 24 24') + '<circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>',
+  // crescent and two small sparkles in its opening
+  night: todSvg('0 0 24 24') + '<path d="M11.19 3.6A9 9 0 1 0 21.19 14.84A7.6 7.6 0 0 1 11.19 3.6z"/>' +
+    '<path fill="#fff" stroke-width="1" d="M16.6 6.2Q17.348 8.852 20 9.6Q17.348 10.348 16.6 13Q15.852 10.348 13.2 9.6Q15.852 8.852 16.6 6.2z"/>' +
+    '<path fill="#fff" stroke-width="1" d="M20.6 2.3Q21.062 3.938 22.7 4.4Q21.062 4.862 20.6 6.5Q20.138 4.862 18.5 4.4Q20.138 3.938 20.6 2.3z"/></svg>',
+  // half sun on the horizon with a short arrow: up = sunrise, down = sunset
+  sunrise: todSvg('1 4.5 22 22') + '<path d="' + TOD_HORIZON + 'M12 13V8M8.5 11.5L12 8l3.5 3.5"/></svg>',
+  sunset: todSvg('1 4.5 22 22') + '<path d="' + TOD_HORIZON + 'M12 8v5M8.5 9.5L12 13l3.5-3.5"/></svg>'
+};
+
 var CAT_TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:470px; margin:10px; padding:6px; ';
 // 75 -> "1:15", 3725 -> "1:02:05"
 function formatTime(sec) {
@@ -244,6 +263,9 @@ var VideoTile = kind({
   },
   components: [
     {name: 'img', tag: 'img', style: IMG_STYLE},
+    // time of day of the video (top left of the picture, like a watermark)
+    {name: 'tod', allowHtml: true, showing: false, style: 'position:absolute; top:12px; left:12px; width:44px; height:44px; box-sizing:border-box; overflow:hidden; ' +
+      'line-height:0; border-radius:22px; background:rgba(0,0,0,0.5); opacity:0.9; pointer-events:none;'},
     {name: 'badge', content: '\u2713', style: 'position:absolute; top:12px; right:12px; width:36px; height:36px; line-height:36px; text-align:center; border-radius:18px; font-size:24px; background:#cf0652; color:#fff;'},
     // the name sits on the bottom of the picture (dark gradient keeps it readable)
     {name: 'caption', style: 'position:absolute; left:6px; right:6px; bottom:6px; padding:28px 12px 2px; color:#fff; ' +
@@ -257,12 +279,17 @@ var VideoTile = kind({
       this.$.img.setAttribute('src', this.src);
     }
     this.$.label.set('content', this.label || '');
+    if (TOD_ICONS[this.timeOfDay]) {
+      this.$.tod.set('content', TOD_ICONS[this.timeOfDay]);
+      this.$.tod.set('showing', true);
+    }
     this.selectedChanged();
   },
   selectedChanged: function () {
     this.$.badge.set('showing', !!this.selected);
     this.$.img.applyStyle('opacity', this.selected ? 1 : 0.3);
     this.$.label.applyStyle('color', this.selected ? '#fff' : '#80808a');
+    this.$.tod.applyStyle('opacity', this.selected ? 0.9 : 0.35);   // dimmed with the picture and the name when the video is off
   },
   // Item's own handler (onRequestScrollIntoView: the list follows the focus) must keep working,
   // so it is extended here, not replaced through `handlers`
@@ -1227,6 +1254,7 @@ var VideoSelectPanel = kind({
           kind: VideoTile,
           assetId: a.id,
           src: a.previewImage,
+          timeOfDay: a.timeOfDay,
           label: this.nameOf(a),
           selected: !this.disabled[a.id],
           showing: !(this.curGroup && this.collapsedGroups[this.curGroup])
