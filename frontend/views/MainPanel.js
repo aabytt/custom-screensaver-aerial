@@ -582,8 +582,10 @@ module.exports = kind({
   // offered one are rendered (the repository index lags behind GitHub, so newer ones are left out). Silent on failure:
   // the card is then the same as before.
   loadNotes: function () {
-    var self = this, xhr;
-    if (this.notesHtml || this.notesLoading) { return; }
+    var self = this, xhr, stamp = this.version + '>' + this.latest;
+    if (this.notesLoading) { return; }
+    if (this.notesHtml && this.notesStamp === stamp) { return; }   // already loaded for these versions
+    this.notesHtml = '';                                          // versions changed: never show the old notes
     this.notesLoading = true;
     xhr = new XMLHttpRequest();
     xhr.open('GET', releasesApi);
@@ -593,9 +595,11 @@ module.exports = kind({
       var list;
       self.notesLoading = false;
       if (xhr.status !== 200) { return; }
+      if (stamp !== self.version + '>' + self.latest) { self.loadNotes(); return; }   // changed while loading
       try {
         list = ReleaseNotes.select(JSON.parse(xhr.responseText), self.version, self.latest, compareVersions);
         self.notesHtml = list.length ? ReleaseNotes.render(list) : '';
+        self.notesStamp = stamp;
         self.translateNotes();
       } catch (e) {
         console.error(e);
@@ -638,8 +642,31 @@ module.exports = kind({
     return base;
   },
 
+  // Cache key of the translated notes. It holds everything the translation depends on: the installed version and
+  // the offered one (they decide which releases are in the notes), the language, and a hash of the English notes
+  // (so a release page edited on GitHub is translated again). Anything that changes -> a fresh translation.
+  notesKey: function (tl) {
+    var s = String(this.notesHtml || ''), h = 5381, i;
+    for (i = 0; i < s.length; i++) { h = ((h * 33) ^ s.charCodeAt(i)) >>> 0; }
+    return this.version + '>' + this.latest + '|' + tl + '|' + h.toString(36);
+  },
+
+  // drops the stored translations of other versions / texts (other languages of the same notes stay)
+  pruneNotesCache: function (keep) {
+    var keys = [], i, k, a = keep.split('|'), b;
+    try {
+      for (i = 0; i < window.localStorage.length; i++) {
+        k = window.localStorage.key(i);
+        if (!k || k.indexOf('notesTr:') !== 0) { continue; }
+        b = k.slice(8).split('|');
+        if (b[0] !== a[0] || b[2] !== a[2]) { keys.push(k); }
+      }
+      keys.forEach(function (k) { window.localStorage.removeItem(k); });
+    } catch (e) { /* no storage */ }
+  },
+
   notesText: function () {
-    var tl = this.notesTl(), key = this.latest + '|' + tl, html;
+    var tl = this.notesTl(), key = this.notesKey(tl), html;
     this.notesWaiting = false;
     if (!tl) { return this.notesHtml; }
     html = (this.notesTrCache || {})[key];
@@ -650,13 +677,14 @@ module.exports = kind({
     if (html) { return html; }
     this.translateNotes();
     this.notesWaiting = (this.notesTrState || {})[key] === 'run';
-    return this.notesHtml;
+    return (!this.notesWaiting && (this.notesPartial || {})[key]) || this.notesHtml;
   },
 
   translateNotes: function () {
-    var self = this, tl = this.notesTl(), key = this.latest + '|' + tl, box, nodes = [], next = 0, active = 0, failed = 0;
+    var self = this, tl = this.notesTl(), key = this.notesKey(tl), box, nodes = [], next = 0, active = 0, failed = 0;
     if (!tl || !this.notesHtml || !this.latest || !settings.uiLang) { return; }   // uiLang: language is final
     this.notesTrState = this.notesTrState || {};
+    if (this.notesTrState[key] === 'failed' && this.notesRetryOk) { delete this.notesTrState[key]; }   // user opened the notes again
     if (this.notesTrState[key]) { return; }                    // running, done or failed in this session
     if ((this.notesTrCache || {})[key]) { return; }
     try { if (window.localStorage.getItem('notesTr:' + key)) { return; } } catch (e) { /* no storage */ }
@@ -675,27 +703,36 @@ module.exports = kind({
 
     function finish() {
       var html;
+      html = box.innerHTML;
       if (failed) {
+        // some lines could not be translated even after retries: show what we have (the rest stays English),
+        // keep it in memory only, so the next start tries again
+        console.info('Notes translation incomplete: ' + failed + ' of ' + nodes.length + ' lines failed');
+        if (failed < nodes.length) { (self.notesPartial = self.notesPartial || {})[key] = html; }
         self.notesTrState[key] = 'failed';
-        console.info('Notes translation failed');
-        if (self.notesTl() === tl && self.$.notesBtn.showing) { self.showNotes(); }   // spinner -> English text
+        if (self.notesTl() === tl && self.$.notesBtn.showing) { self.showNotes(); }
         return;
       }
-      html = box.innerHTML;
       self.notesTrState[key] = 'done';
       (self.notesTrCache = self.notesTrCache || {})[key] = html;
       try { window.localStorage.setItem('notesTr:' + key, html); } catch (e) { /* no storage */ }
+      self.pruneNotesCache(key);
       if (self.notesTl() === tl && self.$.notesBtn.showing) { self.showNotes(); }
     }
     function pump() {
       var node, m, lead, tail, core, src, xhr;
-      while (active < 4 && next < nodes.length) {
+      while (active < 3 && next < nodes.length) {
         node = nodes[next++];
         m = /^(\s*)([\s\S]*?)(\s*)$/.exec(node.nodeValue);
         lead = m[1]; core = m[2]; tail = m[3];
         active++;
-        (function (node, lead, core, tail) {
+        (function send(node, lead, core, tail, attempt) {
           var xhr = new XMLHttpRequest();
+          function retry(why) {
+            console.info('Notes translation: ' + why + (attempt < 3 ? ', retry' : ', giving up'));
+            if (attempt < 3) { setTimeout(function () { send(node, lead, core, tail, attempt + 1); }, 600 * attempt); return; }
+            failed++; active--; pump();
+          }
           xhr.open('GET', 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&dt=t&tl=' +
             encodeURIComponent(tl) + '&q=' + encodeURIComponent(core));
           xhr.timeout = 10000;
@@ -710,12 +747,12 @@ module.exports = kind({
               keep = core.match(/@[\w-]+|https?:\/\/\S+|#\d+|\d+(\.\d+)+/g) || [];
               for (i = 0; i < keep.length; i++) { if (out.indexOf(keep[i]) < 0) { out = core; break; } }
               node.nodeValue = lead + out + tail;
-            } catch (e) { failed++; }
+            } catch (e) { retry(e.message); return; }
             active--; pump();
           };
-          xhr.onerror = xhr.ontimeout = function () { failed++; active--; pump(); };
+          xhr.onerror = xhr.ontimeout = function () { retry('network'); };
           xhr.send();
-        })(node, lead, core, tail);
+        })(node, lead, core, tail, 1);
       }
       if (!active && next >= nodes.length) { finish(); }
     }
@@ -723,6 +760,9 @@ module.exports = kind({
   },
 
   openNotes: function () {
+    this.notesRetryOk = true;
+    this.notesText();
+    this.notesRetryOk = false;
     this.$.reportPopup.hide();
     this.$.notesPopup.show();
     // the area is as high as the text, up to NOTES_MAX_PX; measured once the text is in the page
