@@ -224,6 +224,10 @@ module.exports = kind({
     {kind: Popup, name: 'notesPopup', centered: true, floating: true, modal: true, autoDismiss: true,
       style: 'width: 1100px; max-width: 94%; padding: 28px 44px 24px; background: ' + Theme.MODAL_BG + '; color: ' + Theme.TEXT + '; border: ' + Theme.MODAL_BORDER_PX + 'px solid ' + Theme.MODAL_BORDER + '; border-radius: ' + Theme.MODAL_RADIUS + 'px;', components: [
       {name: 'notesTitle', style: 'font-size: 34px; font-weight: bold; color: ' + ACCENT + '; margin: 0 0 14px;'},
+      // message shown instead of the text while it is being translated
+      {name: 'notesWait', showing: false, style: 'height: 160px; display: flex; align-items: center; justify-content: center; background: ' + Theme.CARD + '; border-radius: 12px;', components: [
+        {name: 'notesSpinner', style: 'font-size: 28px; color: ' + Theme.MUTED + ';', content: ''}
+      ]},
       {kind: Scroller, name: 'notesScroller', horizontal: 'hidden', style: 'height: ' + NOTES_MAX_PX + 'px; background: ' + Theme.CARD + '; border-radius: 12px;', components: [
         // focusable so the remote can scroll it: Up / Down move the text, and leave it at the ends
         {name: 'notes', allowHtml: true, spotlight: true, onSpotlightUp: 'notesUp', onSpotlightDown: 'notesDown',
@@ -459,6 +463,9 @@ module.exports = kind({
     var lang = settings.uiLang || this.guessLang;
     I18n.setLang(lang);
     this.fadeStrings();
+    // the release notes are translated in the background as soon as the language is known (no-op if there is
+    // no update, the notes have not arrived yet or the language is English)
+    this.translateNotes();
   },
 
   // The texts are swapped under a short fade-out / fade-in instead of jumping (only once the panel is on
@@ -589,6 +596,7 @@ module.exports = kind({
       try {
         list = ReleaseNotes.select(JSON.parse(xhr.responseText), self.version, self.latest, compareVersions);
         self.notesHtml = list.length ? ReleaseNotes.render(list) : '';
+        self.translateNotes();
       } catch (e) {
         console.error(e);
         return;
@@ -607,7 +615,111 @@ module.exports = kind({
     this.$.notesBtn.set('content', label);
     this.$.notesTitle.set('content', label);
     this.$.notesClose.set('content', tr('reportClose', 'Close'));
-    this.$.notes.set('content', this.notesHtml);
+    this.$.notes.set('content', this.notesText());
+    // while the translation is running a message replaces the (English) text
+    this.$.notesSpinner.set('content', tr('translating', 'Translating\u2026'));
+    this.$.notesWait.set('showing', this.notesWaiting);
+    this.$.notesScroller.set('showing', !this.notesWaiting);
+    if (this.$.notesPopup.showing && !this.notesWaiting) { this.startJob('notesFit', 'fitNotes', 60); }
+  },
+
+  // ---- release notes translation -------------------------------------------------------------------------
+  // The notes are written in English on GitHub. For any other interface language the text nodes of the rendered
+  // HTML are translated over the internet (once per version and language, then cached in localStorage). Until the
+  // translation is ready, or if it fails (offline, blocked), the English text is shown as before.
+
+  // translation service language code for the interface language, '' for English
+  notesTl: function () {
+    var tag = String(I18n.getLang() || 'en').replace('_', '-'), base = tag.split('-')[0].toLowerCase();
+    if (base === 'en') { return ''; }
+    if (base === 'zh') { return /-(tw|hk|mo|hant)/i.test(tag) ? 'zh-TW' : 'zh-CN'; }
+    if (base === 'nb' || base === 'nn') { return 'no'; }
+    if (base === 'he') { return 'iw'; }
+    return base;
+  },
+
+  notesText: function () {
+    var tl = this.notesTl(), key = this.latest + '|' + tl, html;
+    this.notesWaiting = false;
+    if (!tl) { return this.notesHtml; }
+    html = (this.notesTrCache || {})[key];
+    if (!html) {
+      try { html = window.localStorage.getItem('notesTr:' + key); } catch (e) { html = null; }
+      if (html) { (this.notesTrCache = this.notesTrCache || {})[key] = html; }
+    }
+    if (html) { return html; }
+    this.translateNotes();
+    this.notesWaiting = (this.notesTrState || {})[key] === 'run';
+    return this.notesHtml;
+  },
+
+  translateNotes: function () {
+    var self = this, tl = this.notesTl(), key = this.latest + '|' + tl, box, nodes = [], next = 0, active = 0, failed = 0;
+    if (!tl || !this.notesHtml || !this.latest || !settings.uiLang) { return; }   // uiLang: language is final
+    this.notesTrState = this.notesTrState || {};
+    if (this.notesTrState[key]) { return; }                    // running, done or failed in this session
+    if ((this.notesTrCache || {})[key]) { return; }
+    try { if (window.localStorage.getItem('notesTr:' + key)) { return; } } catch (e) { /* no storage */ }
+    this.notesTrState[key] = 'run';
+
+    box = document.createElement('div');
+    box.innerHTML = this.notesHtml;
+    (function walk(n) {
+      var c;
+      if (n.nodeType === 3) {
+        if (/\S/.test(n.nodeValue) && !/^(code|pre)$/i.test(n.parentNode.nodeName)) { nodes.push(n); }
+      } else {
+        for (c = n.firstChild; c; c = c.nextSibling) { walk(c); }
+      }
+    })(box);
+
+    function finish() {
+      var html;
+      if (failed) {
+        self.notesTrState[key] = 'failed';
+        console.info('Notes translation failed');
+        if (self.notesTl() === tl && self.$.notesBtn.showing) { self.showNotes(); }   // spinner -> English text
+        return;
+      }
+      html = box.innerHTML;
+      self.notesTrState[key] = 'done';
+      (self.notesTrCache = self.notesTrCache || {})[key] = html;
+      try { window.localStorage.setItem('notesTr:' + key, html); } catch (e) { /* no storage */ }
+      if (self.notesTl() === tl && self.$.notesBtn.showing) { self.showNotes(); }
+    }
+    function pump() {
+      var node, m, lead, tail, core, src, xhr;
+      while (active < 4 && next < nodes.length) {
+        node = nodes[next++];
+        m = /^(\s*)([\s\S]*?)(\s*)$/.exec(node.nodeValue);
+        lead = m[1]; core = m[2]; tail = m[3];
+        active++;
+        (function (node, lead, core, tail) {
+          var xhr = new XMLHttpRequest();
+          xhr.open('GET', 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&dt=t&tl=' +
+            encodeURIComponent(tl) + '&q=' + encodeURIComponent(core));
+          xhr.timeout = 10000;
+          xhr.onload = function () {
+            var out = '', i, keep;
+            try {
+              if (xhr.status !== 200) { throw new Error('status ' + xhr.status); }
+              src = JSON.parse(xhr.responseText)[0];
+              for (i = 0; i < src.length; i++) { out += src[i][0] || ''; }
+              if (!out) { throw new Error('empty'); }
+              // names, links, numbers must survive; if the service garbled one, keep the English line
+              keep = core.match(/@[\w-]+|https?:\/\/\S+|#\d+|\d+(\.\d+)+/g) || [];
+              for (i = 0; i < keep.length; i++) { if (out.indexOf(keep[i]) < 0) { out = core; break; } }
+              node.nodeValue = lead + out + tail;
+            } catch (e) { failed++; }
+            active--; pump();
+          };
+          xhr.onerror = xhr.ontimeout = function () { failed++; active--; pump(); };
+          xhr.send();
+        })(node, lead, core, tail);
+      }
+      if (!active && next >= nodes.length) { finish(); }
+    }
+    pump();
   },
 
   openNotes: function () {
@@ -623,6 +735,7 @@ module.exports = kind({
   },
 
   fitNotes: function () {
+    if (this.notesWaiting) { return; }
     var node = this.$.notes.hasNode(), h = node ? Math.min(NOTES_MAX_PX, node.scrollHeight) : NOTES_MAX_PX;
     this.$.notesScroller.applyStyle('height', h + 'px');
     this.$.notesScroller.resized();
