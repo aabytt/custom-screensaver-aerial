@@ -33,7 +33,7 @@ var settings = {};
 var repoApi = 'https://repo.webosbrew.org/api/apps.json';
 // The release pages (Markdown) of the versions between the installed one and the latest are shown in the update card
 var releasesApi = 'https://api.github.com/repos/aabytt/custom-screensaver-aerial/releases?per_page=20';
-var NOTES_MAX_PX = 260;   // height of the notes area; longer notes scroll
+var NOTES_MAX_PX = 400;   // height of the notes area; longer notes scroll
 var appId = 'org.aabytt.webos.custom-screensaver-aerial';
 var hbChannelId = 'org.webosbrew.hbchannel';
 // Line icons (24x24 grid) as inline SVG that takes the text color (currentColor), so an icon matches
@@ -195,7 +195,7 @@ module.exports = kind({
     // compatibility report card: not full screen, data on the left, QR code on the right,
     // footer with the Update button (only when a newer version exists) and Close
     {kind: Popup, name: 'reportPopup', centered: true, floating: true, modal: true, autoDismiss: true,
-      style: 'width: 1280px; max-width: 94%; padding: 30px 44px 28px; background: ' + Theme.MODAL_BG + '; color: ' + Theme.TEXT + '; border: ' + Theme.MODAL_BORDER_PX + 'px solid ' + Theme.MODAL_BORDER + '; border-radius: ' + Theme.MODAL_RADIUS + 'px;', components: [
+      style: 'width: 1280px; max-width: 94%; padding: 22px 44px 20px; background: ' + Theme.MODAL_BG + '; color: ' + Theme.TEXT + '; border: ' + Theme.MODAL_BORDER_PX + 'px solid ' + Theme.MODAL_BORDER + '; border-radius: ' + Theme.MODAL_RADIUS + 'px;', components: [
       {style: 'position: relative; padding-bottom: 16px; border-bottom: 2px solid ' + Theme.RULE + ';', components: [
         {name: 'reportTitle', style: 'font-size: 36px; font-weight: bold; color: #fff;', content: ''},
         {style: 'position: absolute; left: 0; bottom: -2px; width: 120px; height: 2px; background: ' + ACCENT + ';'}
@@ -211,22 +211,27 @@ module.exports = kind({
           {name: 'reportCaption', allowHtml: true, style: 'margin: 14px 0 0; font-size: 24px; line-height: 1.35; color: ' + Theme.MUTED + '; text-align: center;', content: ''}
         ]}
       ]},
-      // release notes of the new version(s), only while an update exists and GitHub answered
-      {name: 'notesBox', showing: false, style: 'margin: 22px 0 0;', components: [
-        {name: 'notesTitle', style: 'font-size: 28px; font-weight: bold; color: ' + ACCENT + '; margin: 0 0 8px;'},
-        {kind: Scroller, name: 'notesScroller', horizontal: 'hidden', style: 'height: ' + NOTES_MAX_PX + 'px; background: ' + Theme.CARD + '; border-radius: 12px;', components: [
-          // focusable so the remote can scroll it: Up / Down move the text, and leave it at the ends
-          {name: 'notes', allowHtml: true, spotlight: true, onSpotlightUp: 'notesUp', onSpotlightDown: 'notesDown',
-            onSpotlightFocused: 'notesFocused', onSpotlightBlur: 'notesBlurred',
-            style: 'padding: 14px 24px; font-size: 24px; line-height: 1.4; color: #d6d6db; outline: 3px solid transparent; border-radius: 12px;', content: ''}
-        ]}
-      ]},
-      {style: 'display: flex; align-items: center; margin: 26px 0 0; padding-top: 22px; border-top: 2px solid ' + Theme.RULE + ';', components: [
+      {style: 'display: flex; align-items: center; margin: 18px 0 0; padding-top: 18px; border-top: 2px solid ' + Theme.RULE + ';', components: [
         {name: 'reportUpdateBox', showing: false, style: 'flex: 1 1 auto; min-width: 0; margin-right: 24px;', components: [
-          {tag: 'span', name: 'reportUpdateText', style: 'font-size: 28px; font-weight: bold; color: ' + ACCENT + '; margin-right: 26px; vertical-align: middle;'},
+          {tag: 'span', name: 'reportUpdateText', style: 'font-size: 24px; font-weight: bold; color: ' + ACCENT + '; margin-right: 22px; vertical-align: middle;'},
           {kind: Button, name: 'reportUpdate', small: true, style: 'margin: 0; vertical-align: middle;', ontap: 'openHbChannel'}
         ]},
-        {kind: Button, name: 'reportClose', small: true, style: 'flex: none; margin: 0 0 0 auto;', ontap: 'closeReport'}
+        {kind: Button, name: 'notesBtn', small: true, showing: false, style: 'flex: none; margin: 0 0 0 auto;', ontap: 'openNotes'},
+        {kind: Button, name: 'reportClose', small: true, style: 'flex: none; margin: 0 0 0 16px;', ontap: 'closeReport'}
+      ]}
+    ]},
+    // release notes: a separate card, so the report card always fits on the screen
+    {kind: Popup, name: 'notesPopup', centered: true, floating: true, modal: true, autoDismiss: true,
+      style: 'width: 1100px; max-width: 94%; padding: 28px 44px 24px; background: ' + Theme.MODAL_BG + '; color: ' + Theme.TEXT + '; border: ' + Theme.MODAL_BORDER_PX + 'px solid ' + Theme.MODAL_BORDER + '; border-radius: ' + Theme.MODAL_RADIUS + 'px;', components: [
+      {name: 'notesTitle', style: 'font-size: 34px; font-weight: bold; color: ' + ACCENT + '; margin: 0 0 14px;'},
+      {kind: Scroller, name: 'notesScroller', horizontal: 'hidden', style: 'height: ' + NOTES_MAX_PX + 'px; background: ' + Theme.CARD + '; border-radius: 12px;', components: [
+        // focusable so the remote can scroll it: Up / Down move the text, and leave it at the ends
+        {name: 'notes', allowHtml: true, spotlight: true, onSpotlightUp: 'notesUp', onSpotlightDown: 'notesDown',
+          onSpotlightFocused: 'notesFocused', onSpotlightBlur: 'notesBlurred',
+          style: 'padding: 14px 24px; font-size: 24px; line-height: 1.4; color: #d6d6db; outline: 3px solid transparent; border-radius: 12px;', content: ''}
+      ]},
+      {style: 'display: flex; margin: 18px 0 0; padding-top: 18px; border-top: 2px solid ' + Theme.RULE + ';', components: [
+        {kind: Button, name: 'notesClose', small: true, style: 'margin: 0 0 0 auto;', ontap: 'closeNotes'}
       ]}
     ]},
     {kind: LunaService, name: 'statusCheck', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onStatusCheck', onError: 'onStatusCheck'},
@@ -594,14 +599,27 @@ module.exports = kind({
     xhr.send();
   },
 
+  // the "What's new" button of the report card (only while an update with notes exists) + the text of the notes card
   showNotes: function () {
-    var on = !!(this.latest && this.notesHtml);
-    this.$.notesBox.set('showing', on);
+    var on = !!(this.latest && this.notesHtml), label = tr('whatsNew', 'What\u2019s new') + ' \u00b7 ' + this.latest;
+    this.$.notesBtn.set('showing', on);
     if (!on) { return; }
-    this.$.notesTitle.set('content', tr('whatsNew', 'What\u2019s new') + ' \u00b7 ' + this.latest);
+    this.$.notesBtn.set('content', label);
+    this.$.notesTitle.set('content', label);
+    this.$.notesClose.set('content', tr('reportClose', 'Close'));
     this.$.notes.set('content', this.notesHtml);
+  },
+
+  openNotes: function () {
+    this.$.reportPopup.hide();
+    this.$.notesPopup.show();
     // the area is as high as the text, up to NOTES_MAX_PX; measured once the text is in the page
     this.startJob('notesFit', 'fitNotes', 60);
+  },
+
+  closeNotes: function () {
+    this.$.notesPopup.hide();
+    this.openReport();
   },
 
   fitNotes: function () {
@@ -681,7 +699,7 @@ module.exports = kind({
     }
     this.showNotes();
     try {
-      qr = QrCode.svg(this.reportUrl(), 'M', 360);
+      qr = QrCode.svg(this.reportUrl(), 'M', 300);
     } catch (e) {
       console.error(e);
     }
