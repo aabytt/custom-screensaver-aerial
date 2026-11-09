@@ -14,7 +14,12 @@ function inline(text) {
     .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
     .replace(/`([^`]+)`/g, function (m, c) { codes.push(c); return '\u0000' + (codes.length - 1) + '\u0000'; })
     .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
-    .replace(/\s+by\s+@[\w-]+\s+in\s+https?:\/\/\S+/g, '')   // "by @user in <pull request link>" of generated notes
+    // "by @user in <pull request link>" of generated notes -> only the pull request number stays: " (#123)"
+    .replace(/\s+by\s+@[\w-]+\s+in\s+(https?:\/\/\S+|#\d+)/g, function (m, ref) {
+      var n = /\/pull\/(\d+)/.exec(ref) || /^#(\d+)$/.exec(ref);
+      return n ? ' (#' + n[1] + ')' : '';
+    })
+    .replace(/https?:\/\/[^\s\/]+\/\S*?\/(?:pull|issues)\/(\d+)\S*/g, '#$1')   // a bare pull request / issue link -> its number
     .replace(/https?:\/\/\S+/g, '')
     .replace(/:[a-z0-9_+-]+:/g, '')                           // emoji shortcodes
     .replace(/\*\*([^*]+)\*\*|__([^_]+)__/g, function (m, a, b) { return '<b style="color:#fff;">' + (a || b) + '</b>'; })
