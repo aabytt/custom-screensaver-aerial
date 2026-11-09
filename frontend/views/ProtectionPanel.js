@@ -320,6 +320,7 @@ var ProtectionPanel = kind({
       self.$[key].set('value', self.value(key));
     });
     SWITCHES.forEach(function (key) { self.$[key + 'Box'].set('showing', !!self.value(key)); });
+    this.fixTimers();
     this.updateCurve();
   },
 
@@ -340,6 +341,16 @@ var ProtectionPanel = kind({
       if (p && p.reflow) { p.reflow(); }
       if (this.$[key + 'Item']) { this.$[key + 'Item'].resized(); }
     }, this);
+  },
+
+  // The TV cannot go to standby before the panel is turned off: with both timers on, standby is never earlier than the
+  // panel turn-off. Whichever of the two was changed, the standby time is the one that gives way (it moves up to the
+  // turn-off time). Also fixes a file saved before this rule existed.
+  fixTimers: function () {
+    var off = this.value('offAfter');
+    if (!this.value('offOn') || !this.value('standbyOn') || this.value('standbyAfter') >= off) { return; }
+    this.setValue('standbyAfter', off);
+    this.$.standbyAfter.set('value', off);
   },
 
   // ---- handlers ----
@@ -363,6 +374,7 @@ var ProtectionPanel = kind({
       }
     }
     this.setValue(key, on);
+    if (key === 'offOn' || key === 'standbyOn') { this.fixTimers(); }
     if (box) {
       box.set('showing', on);
       if (on) { this.startJob('relayout', 'relayout', 0); }
@@ -373,6 +385,7 @@ var ProtectionPanel = kind({
     var v = sender.get('value');
     if (this.initializing || this.value(sender.protKey) === v) { return; }
     this.setValue(sender.protKey, v);
+    if (sender.protKey === 'offAfter' || sender.protKey === 'standbyAfter') { this.fixTimers(); }
   },
 
   markDirty: function () {
