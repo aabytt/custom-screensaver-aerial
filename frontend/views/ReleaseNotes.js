@@ -20,7 +20,7 @@ function inline(text) {
     .replace(/\*\*([^*]+)\*\*|__([^_]+)__/g, function (m, a, b) { return '<b style="color:#fff;">' + (a || b) + '</b>'; })
     .replace(/(^|[^*\w])\*([^*\s][^*]*)\*/g, '$1<i>$2</i>')
     .replace(/\s{2,}/g, ' ').trim();
-  return text.replace(/\u0000(\d+)\u0000/g, function (m, i) { return '<span style="' + CODE_STYLE + '">' + esc(codes[i]) + '</span>'; });
+  return text.replace(/\u0000(\d+)\u0000/g, function (m, i) { return '<span data-nt="1" style="' + CODE_STYLE + '">' + esc(codes[i]) + '</span>'; });
 }
 
 // Markdown -> HTML (headings, bullet and numbered lists with nesting, paragraphs)
@@ -61,8 +61,9 @@ function select(releases, current, latest, compare) {
 }
 
 // HTML of the notes. Several releases (skipped versions): each under its version.
-function render(list) {
-  var many = list.length > 1;
+// withVersions: the version headings even for a single release (the full changelog)
+function render(list, withVersions) {
+  var many = withVersions || list.length > 1;
   return list.map(function (r) {
     var v = stripV(r.tag_name), title = String(r.name || '').trim(), body = mdToHtml(r.body);
     if (!body) { body = '<div style="margin:6px 0; opacity:0.7;">\u2014</div>'; }
