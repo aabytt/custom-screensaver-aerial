@@ -32,7 +32,7 @@ var settings = {};
 // later than the GitHub release, so the update check must use it instead of the GitHub releases.
 var repoApi = 'https://repo.webosbrew.org/api/apps.json';
 // The release pages (Markdown) of the versions between the installed one and the latest are shown in the update card
-var releasesApi = 'https://api.github.com/repos/aabytt/custom-screensaver-aerial/releases?per_page=20';
+var releasesApi = 'https://api.github.com/repos/aabytt/custom-screensaver-aerial/releases?per_page=100';
 var NOTES_MAX_PX = 400;   // height of the notes area; longer notes scroll
 var appId = 'org.aabytt.webos.custom-screensaver-aerial';
 var hbChannelId = 'org.webosbrew.hbchannel';
@@ -123,6 +123,136 @@ function compareVersions(a, b) {
   }
   return 0;
 }
+// ---- release notes translation helpers ----------------------------------------------------------------
+// Names and terms that stay as they are in every language
+var NO_TRANSLATE = ['Homebrew Channel', 'webOS', 'Aerial', 'Apple TV', 'Apple', 'GitHub', 'OSD', 'HDR10', 'HDR',
+  'Dolby Vision', 'OLED', 'LG', 'HEVC', 'H.264', 'HLS', 'MP4', 'WebM', 'JSON', 'API', 'URL', 'USB', 'Wi-Fi', 'README'];
+var NO_TRANSLATE_RE = new RegExp('\\b(?:' + NO_TRANSLATE.slice().sort(function (a, b) { return b.length - a.length; })
+  .map(function (t) { return t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('|') + ')\\b', 'g');
+var LIST_PREFIX_RE = /^(\u2022[\s\u00a0]*|\d+\.[\s\u00a0]*)/;               // bullet / number the renderer put in front of a line
+var MARKER_RE = /[\[\uFF3B\u3010]\s*([\/\uFF0F]?)\s*(c?)(\d+)\s*[\]\uFF3D\u3011]/gi;   // [3] [/3] [c2], also in full-width brackets
+
+function escHtml(t) { return String(t).replace(/[&<>]/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;'}[c]; }); }
+
+// One block (a line of the notes) -> one sentence for the translation service: the inline tags (bold, italic)
+// become numbered markers [1]...[/1] the service moves along with the words, code and protected terms become
+// atoms [c0] that are put back untouched. Returns {text, tags, atoms, prefix}.
+function noteSerialize(block) {
+  var tags = [], atoms = [], text = '', prefix = '', first = true;
+  function atom(html) { atoms.push(html); return '[c' + (atoms.length - 1) + ']'; }
+  function walk(parent) {
+    var c, i, outer, p, v;
+    for (c = parent.firstChild; c; c = c.nextSibling) {
+      if (c.nodeType === 3) {
+        v = c.nodeValue;
+        if (first && (p = LIST_PREFIX_RE.exec(v))) { prefix = p[0]; v = v.slice(p[0].length); }
+        text += v.replace(NO_TRANSLATE_RE, function (t) { return atom(escHtml(t)); });
+      } else if (c.nodeType === 1) {
+        if (c.getAttribute('data-nt')) { text += atom(c.outerHTML); }
+        else {
+          outer = c.cloneNode(false).outerHTML;
+          tags.push({open: outer.slice(0, outer.lastIndexOf('</')), close: '</' + c.nodeName.toLowerCase() + '>'});
+          i = tags.length - 1;
+          text += '[' + i + ']';
+          walk(c);
+          text += '[/' + i + ']';
+        }
+      }
+      first = false;
+    }
+  }
+  walk(block);
+  return {text: text, tags: tags, atoms: atoms, prefix: prefix};
+}
+
+// The translated sentence -> HTML. null if the service lost or scrambled a marker (the caller then falls back).
+function noteRebuild(m, out) {
+  var html = '', last = 0, seen = {}, stack = [], bad = false, i, r = new RegExp(MARKER_RE.source, 'gi'), x;
+  function plain(t) { html += escHtml(t); }
+  while ((x = r.exec(out))) {
+    plain(out.slice(last, x.index));
+    last = r.lastIndex;
+    i = parseInt(x[3], 10);
+    if (x[2]) {                                            // [cN]
+      if (!m.atoms[i] || seen['c' + i]) { bad = true; break; }
+      seen['c' + i] = 1; html += m.atoms[i];
+    } else if (!x[1]) {                                    // [N]
+      if (!m.tags[i] || seen['o' + i]) { bad = true; break; }
+      seen['o' + i] = 1; stack.push(i); html += m.tags[i].open;
+    } else {                                               // [/N]
+      if (!m.tags[i] || seen['x' + i] || stack.pop() !== i) { bad = true; break; }
+      seen['x' + i] = 1; html += m.tags[i].close;
+    }
+  }
+  if (bad || stack.length) { return null; }
+  plain(out.slice(last));
+  for (i = 0; i < m.atoms.length; i++) { if (!seen['c' + i]) { return null; } }
+  for (i = 0; i < m.tags.length; i++) { if (!seen['o' + i] || !seen['x' + i]) { return null; } }
+  return escHtml(m.prefix) + html;
+}
+
+// text -> translated text through the web service (3 attempts); cb(error, text)
+function noteTranslate(tl, core, cb) {
+  (function send(attempt) {
+    var xhr = new XMLHttpRequest();
+    function retry(why) {
+      console.info('Notes translation: ' + why + (attempt < 3 ? ', retry' : ', giving up'));
+      if (attempt < 3) { setTimeout(function () { send(attempt + 1); }, 600 * attempt); } else { cb(new Error(why)); }
+    }
+    xhr.open('GET', 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&dt=t&tl=' +
+      encodeURIComponent(tl) + '&q=' + encodeURIComponent(core));
+    xhr.timeout = 10000;
+    xhr.onload = function () {
+      var out = '', i, src, keep;
+      try {
+        if (xhr.status !== 200) { throw new Error('status ' + xhr.status); }
+        src = JSON.parse(xhr.responseText)[0];
+        for (i = 0; i < src.length; i++) { out += src[i][0] || ''; }
+        if (!out) { throw new Error('empty'); }
+      } catch (e) { retry(e.message); return; }
+      // names, links, numbers must survive; if the service garbled one, keep the English line
+      keep = core.match(/@[\w-]+|https?:\/\/\S+|#\d+|\d+(\.\d+)+/g) || [];
+      for (i = 0; i < keep.length; i++) { if (out.indexOf(keep[i]) < 0) { out = core; break; } }
+      cb(null, out);
+    };
+    xhr.onerror = xhr.ontimeout = function () { retry('network'); };
+    xhr.send();
+  })(1);
+}
+
+// Fallback for a line whose markers did not come back: every text piece separately (the old way)
+function noteTranslatePieces(tl, block, cb) {
+  var nodes = [], left, bad = 0;
+  (function walk(n) {
+    var c;
+    for (c = n.firstChild; c; c = c.nextSibling) {
+      if (c.nodeType === 3) { if (/[A-Za-z]/.test(c.nodeValue)) { nodes.push(c); } }
+      else if (c.nodeType === 1 && !c.getAttribute('data-nt')) { walk(c); }
+    }
+  })(block);
+  left = nodes.length;
+  if (!left) { cb(true); return; }
+  nodes.forEach(function (node) {
+    var m = /^(\s*)([\s\S]*?)(\s*)$/.exec(node.nodeValue), p = LIST_PREFIX_RE.exec(m[2]) || [''];
+    noteTranslate(tl, m[2].slice(p[0].length), function (err, out) {
+      if (err) { bad++; } else { node.nodeValue = m[1] + p[0] + out + m[3]; }
+      if (--left === 0) { cb(!bad); }
+    });
+  });
+}
+
+// translates one line of the notes in place; cb(true) if it was translated
+function noteTranslateBlock(tl, block, cb) {
+  var m = noteSerialize(block);
+  if (!/[A-Za-z]/.test(m.text.replace(/\[\/?c?\d+\]/g, ''))) { setTimeout(function () { cb(true); }, 0); return; }   // numbers only
+  noteTranslate(tl, m.text, function (err, out) {
+    var html = err ? null : noteRebuild(m, out);
+    if (html !== null) { block.innerHTML = html; cb(true); return; }
+    console.info('Notes translation: markers lost, line translated in pieces');
+    noteTranslatePieces(tl, block, cb);
+  });
+}
+
 module.exports = kind({
   name: 'MainPanel',
   kind: Panel,
@@ -553,7 +683,7 @@ module.exports = kind({
     xhr.timeout = 10000;
     xhr.onload = function () {
       var latest, id = self.appId || appId, pkgs, i;
-      if (xhr.status !== 200) { return; }
+      if (xhr.status !== 200) { self.loadNotes(); return; }   // no repository answer: the changelog is still shown
       try {
         pkgs = JSON.parse(xhr.responseText).packages || [];
         for (i = 0; i < pkgs.length; i++) {
@@ -564,6 +694,7 @@ module.exports = kind({
         }
       } catch (e) {
         console.error(e);
+        self.loadNotes();
         return;
       }
       if (latest && compareVersions(latest, self.version) > 0) {
@@ -572,9 +703,11 @@ module.exports = kind({
         self.renderVersion();
         self.refit();
         if (self.$.reportPopup && self.$.reportPopup.showing) { self.refreshReport(); }
+      } else {
+        self.loadNotes();   // up to date: the button shows the changelog of all versions
       }
     };
-    xhr.onerror = xhr.ontimeout = function () { console.info('Update check failed'); };
+    xhr.onerror = xhr.ontimeout = function () { console.info('Update check failed'); self.loadNotes(); };
     xhr.send();
   },
 
@@ -582,7 +715,7 @@ module.exports = kind({
   // offered one are rendered (the repository index lags behind GitHub, so newer ones are left out). Silent on failure:
   // the card is then the same as before.
   loadNotes: function () {
-    var self = this, xhr, stamp = this.version + '>' + this.latest;
+    var self = this, xhr, stamp = this.version + '>' + (this.latest || '');
     if (this.notesLoading) { return; }
     if (this.notesHtml && this.notesStamp === stamp) { return; }   // already loaded for these versions
     this.notesHtml = '';                                          // versions changed: never show the old notes
@@ -595,10 +728,11 @@ module.exports = kind({
       var list;
       self.notesLoading = false;
       if (xhr.status !== 200) { return; }
-      if (stamp !== self.version + '>' + self.latest) { self.loadNotes(); return; }   // changed while loading
+      if (stamp !== self.version + '>' + (self.latest || '')) { self.loadNotes(); return; }   // changed while loading
       try {
-        list = ReleaseNotes.select(JSON.parse(xhr.responseText), self.version, self.latest, compareVersions);
-        self.notesHtml = list.length ? ReleaseNotes.render(list) : '';
+        // update available: the releases after the installed one; otherwise all releases up to the installed one
+        list = ReleaseNotes.select(JSON.parse(xhr.responseText), self.latest ? self.version : '0', self.latest || self.version, compareVersions);
+        self.notesHtml = list.length ? ReleaseNotes.render(list, !self.latest) : '';
         self.notesStamp = stamp;
         self.translateNotes();
       } catch (e) {
@@ -613,7 +747,7 @@ module.exports = kind({
 
   // the "What's new" button of the report card (only while an update with notes exists) + the text of the notes card
   showNotes: function () {
-    var on = !!(this.latest && this.notesHtml), label = tr('whatsNew', 'What\u2019s new') + ' \u00b7 ' + this.latest;
+    var on = !!this.notesHtml, label = tr('whatsNew', 'What\u2019s new') + (this.latest ? ' \u00b7 ' + this.latest : '');
     this.$.notesBtn.set('showing', on);
     if (!on) { return; }
     this.$.notesBtn.set('content', label);
@@ -648,7 +782,7 @@ module.exports = kind({
   notesKey: function (tl) {
     var s = String(this.notesHtml || ''), h = 5381, i;
     for (i = 0; i < s.length; i++) { h = ((h * 33) ^ s.charCodeAt(i)) >>> 0; }
-    return this.version + '>' + this.latest + '|' + tl + '|' + h.toString(36);
+    return this.version + '>' + (this.latest || '') + '|' + tl + '|' + h.toString(36);
   },
 
   // drops the stored translations of other versions / texts (other languages of the same notes stay)
@@ -680,9 +814,11 @@ module.exports = kind({
     return (!this.notesWaiting && (this.notesPartial || {})[key]) || this.notesHtml;
   },
 
+  // Translates the notes line by line: a whole line (with its bold / code marked up as placeholders) goes to the
+  // service as one sentence, so the grammar comes out right; see noteSerialize / noteRebuild above.
   translateNotes: function () {
-    var self = this, tl = this.notesTl(), key = this.notesKey(tl), box, nodes = [], next = 0, active = 0, failed = 0;
-    if (!tl || !this.notesHtml || !this.latest || !settings.uiLang) { return; }   // uiLang: language is final
+    var self = this, tl = this.notesTl(), key = this.notesKey(tl), box, blocks, next = 0, active = 0, failed = 0, finished = false;
+    if (!tl || !this.notesHtml || !settings.uiLang) { return; }   // uiLang: language is final
     this.notesTrState = this.notesTrState || {};
     if (this.notesTrState[key] === 'failed' && this.notesRetryOk) { delete this.notesTrState[key]; }   // user opened the notes again
     if (this.notesTrState[key]) { return; }                    // running, done or failed in this session
@@ -692,23 +828,18 @@ module.exports = kind({
 
     box = document.createElement('div');
     box.innerHTML = this.notesHtml;
-    (function walk(n) {
-      var c;
-      if (n.nodeType === 3) {
-        if (/\S/.test(n.nodeValue) && !/^(code|pre)$/i.test(n.parentNode.nodeName)) { nodes.push(n); }
-      } else {
-        for (c = n.firstChild; c; c = c.nextSibling) { walk(c); }
-      }
-    })(box);
+    blocks = Array.prototype.slice.call(box.children);
 
     function finish() {
       var html;
+      if (finished) { return; }
+      finished = true;
       html = box.innerHTML;
       if (failed) {
         // some lines could not be translated even after retries: show what we have (the rest stays English),
         // keep it in memory only, so the next start tries again
-        console.info('Notes translation incomplete: ' + failed + ' of ' + nodes.length + ' lines failed');
-        if (failed < nodes.length) { (self.notesPartial = self.notesPartial || {})[key] = html; }
+        console.info('Notes translation incomplete: ' + failed + ' of ' + blocks.length + ' lines failed');
+        if (failed < blocks.length) { (self.notesPartial = self.notesPartial || {})[key] = html; }
         self.notesTrState[key] = 'failed';
         if (self.notesTl() === tl && self.$.notesBtn.showing) { self.showNotes(); }
         return;
@@ -720,41 +851,15 @@ module.exports = kind({
       if (self.notesTl() === tl && self.$.notesBtn.showing) { self.showNotes(); }
     }
     function pump() {
-      var node, m, lead, tail, core, src, xhr;
-      while (active < 3 && next < nodes.length) {
-        node = nodes[next++];
-        m = /^(\s*)([\s\S]*?)(\s*)$/.exec(node.nodeValue);
-        lead = m[1]; core = m[2]; tail = m[3];
+      while (active < 3 && next < blocks.length) {
         active++;
-        (function send(node, lead, core, tail, attempt) {
-          var xhr = new XMLHttpRequest();
-          function retry(why) {
-            console.info('Notes translation: ' + why + (attempt < 3 ? ', retry' : ', giving up'));
-            if (attempt < 3) { setTimeout(function () { send(node, lead, core, tail, attempt + 1); }, 600 * attempt); return; }
-            failed++; active--; pump();
-          }
-          xhr.open('GET', 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&dt=t&tl=' +
-            encodeURIComponent(tl) + '&q=' + encodeURIComponent(core));
-          xhr.timeout = 10000;
-          xhr.onload = function () {
-            var out = '', i, keep;
-            try {
-              if (xhr.status !== 200) { throw new Error('status ' + xhr.status); }
-              src = JSON.parse(xhr.responseText)[0];
-              for (i = 0; i < src.length; i++) { out += src[i][0] || ''; }
-              if (!out) { throw new Error('empty'); }
-              // names, links, numbers must survive; if the service garbled one, keep the English line
-              keep = core.match(/@[\w-]+|https?:\/\/\S+|#\d+|\d+(\.\d+)+/g) || [];
-              for (i = 0; i < keep.length; i++) { if (out.indexOf(keep[i]) < 0) { out = core; break; } }
-              node.nodeValue = lead + out + tail;
-            } catch (e) { retry(e.message); return; }
-            active--; pump();
-          };
-          xhr.onerror = xhr.ontimeout = function () { retry('network'); };
-          xhr.send();
-        })(node, lead, core, tail, 1);
+        noteTranslateBlock(tl, blocks[next++], function (ok) {
+          if (!ok) { failed++; }
+          active--;
+          pump();
+        });
       }
-      if (!active && next >= nodes.length) { finish(); }
+      if (!active && next >= blocks.length) { finish(); }
     }
     pump();
   },
