@@ -280,7 +280,7 @@ var TEXT_STYLE = 'position: absolute; white-space: nowrap; color: #fff; line-hei
   'text-shadow: ' + SHADOW_OFF + '; -webkit-transition: opacity 0.7s linear; transition: opacity 0.7s linear;';
 
 // The preview of Panel protection runs on a short cycle (seconds instead of minutes), same shapes as the screensaver
-var PV_CORNER_EVERY = 4, PV_DRIFT_PERIOD = 8, PV_FADE_CYCLE = 12, PV_DIM_CYCLE = 12, PV_DIM_RAMP = 10;
+var PV_CORNER_EVERY = 4, PV_DRIFT_PERIOD = 8, PV_FADE_CYCLE = 12;
 
 // vertical gap above each section divider (Show / Title and description / Clock and date)
 var SECTION_STYLE = 'margin-top: 20px;';
@@ -388,10 +388,7 @@ var DisplayPanel = kind({
               {name: 'pvTime', style: TEXT_STYLE},
               {name: 'pvDate', style: TEXT_STYLE}
             ]}
-          ]},
-          // brightness / dimming of Panel protection: a black layer over the picture
-          {name: 'pvDim', style: 'position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: #000; opacity: 0; ' +
-            'pointer-events: none; -webkit-transition: opacity 1s linear; transition: opacity 1s linear;'}
+          ]}
         ]},
         {kind: BodyText, name: 'pvNote', showing: false, style: 'margin: 8px 0 0; font-size: ' + Theme.DESC_FONT + '; color: ' + Theme.MUTED + ';'}
       ]}
@@ -905,7 +902,7 @@ var DisplayPanel = kind({
     this.$.osdBox.applyStyle('transform', null);
     this.lockPositions();
     this.$.pvNote.set('content', tt('protPreviewNote'));
-    this.$.pvNote.set('showing', !!(mode || this.pget('brightnessOn') || this.pget('dimOn')));
+    this.$.pvNote.set('showing', !!mode);
     this.renderPreview();
     this.stepProtection();
   },
@@ -934,7 +931,7 @@ var DisplayPanel = kind({
 
   // every second: advances the sped-up protection preview
   stepProtection: function () {
-    var self = this, t = this.pvT = (this.pvT || 0) + 1, amp, ph, corners, dim, base, k, a, tmp;
+    var self = this, t = this.pvT = (this.pvT || 0) + 1, amp, ph, corners, k, tmp;
     if (!this.previewReady || this.pvGone) { return; }
     if (this.hasMode('drift')) {
       amp = this.pget('driftPx');
@@ -967,15 +964,6 @@ var DisplayPanel = kind({
       if (k === 8 && this.pget('fadeClockBack') > 0) { this.setPvGroup(1, 1); }
       if (k === 0) { this.setPvGroup(0, 1); this.setPvGroup(1, 1); }
     }
-    // brightness and dimming: the layer is the part of the light that is taken away
-    base = this.pget('brightnessOn') ? this.pget('brightness') / 100 : 1;
-    dim = 1;
-    if (this.pget('dimOn')) {
-      k = t % PV_DIM_CYCLE;
-      dim = 1 + (this.pget('dimTo') / 100 - 1) * Math.min(k / PV_DIM_RAMP, 1);
-    }
-    a = Math.min(0.9, Math.max(0, 1 - base * dim));
-    this.$.pvDim.applyStyle('opacity', a);
   },
 
   // one line of the OSD in its place: same numbers as the QML

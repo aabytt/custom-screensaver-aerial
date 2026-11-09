@@ -1,5 +1,6 @@
 var
   kind = require('enyo/kind'),
+  Control = require('enyo/Control'),
   Panel = require('moonstone/Panel'),
   Scroller = require('moonstone/Scroller'),
   Item = require('moonstone/Item'),
@@ -30,7 +31,8 @@ var DEFAULTS = {
 
 // Texts: looked up in I18n under their key first (prot + the setting name); the English text is used until the key exists.
 var STR = {
-  protSecBrightness: 'Brightness', protSecTimers: 'Timers', protSecText: 'On-screen text',
+  protSecBrightness: 'Brightness', protSecTimers: 'Timers', protSecText: 'On-screen text', protSecCurve: 'Brightness over time',
+  protCurveNote: 'Without custom brightness the curve starts from the brightness set on the TV, shown as 100%.',
   protTextNote: 'All three can be on together. They override the text position and opacity settings from the On-screen display panel.',
   protIntro: 'Options that protect the screen from burn-in.',
   protBrightnessOn: 'Custom screen brightness', protBrightness: 'Brightness, %',
@@ -62,6 +64,121 @@ function lk(name) { return 'prot' + name.charAt(0).toUpperCase() + name.slice(1)
 function get(settings, key) {
   var p = settings && settings.protection;
   return (p && typeof p === 'object' && p[key] !== undefined) ? p[key] : DEFAULTS[key];
+}
+
+// ---- brightness curve ---------------------------------------------------------------------------
+// Panel brightness over the time of the screensaver: the custom brightness (or "as set on the TV" = 100%), the gradual
+// dimming, and the moments the panel turns off and the TV goes to standby (the brightness drops to zero at the earlier one). Drawn as an inline SVG
+// that scales to the width of the panel; all numbers below are SVG units, not pixels.
+var CURVE_KEYS = ['brightnessOn', 'brightness', 'dimOn', 'dimAfter', 'dimDuration', 'dimTo',
+  'offOn', 'offAfter', 'standbyOn', 'standbyAfter'];
+var CURVE = {w: 800, h: 200, left: 44, right: 14, top: 12, bottom: 34, font: 12};   // font 12 = about the size of a note text on the TV
+var CURVE_STEPS = [5, 10, 15, 30, 60, 120, 240];    // time axis tick step (minutes); the smallest one giving 6 ticks or fewer
+var CURVE_COLOR = Theme.ACCENT || '#cf0652';
+
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+// SVG text of the curve for the given settings, or null if no protection that changes the brightness is on
+function curveSvg(settings) {
+  var v = function (key) { return get(settings, key); },
+    c = CURVE, x0 = c.left, pw = c.w - c.left - c.right, y0 = c.top, ph = c.h - c.top - c.bottom, y1 = y0 + ph,
+    base = v('brightnessOn') ? v('brightness') : 100,
+    dimOn = !!v('dimOn'), dimStart = v('dimAfter'), dimEnd = dimStart + v('dimDuration'),
+    low = base * v('dimTo') / 100,
+    events = [],                             // panel turn-off and standby, earliest first: both are marked on the chart
+    end = null,                              // the brightness drops to zero here: the earlier of the two
+    key, raw, step, horizon, times, pts, out = [], t, i, last, ly, offAt, sbAt, seg, dashFrom = null, greyFrom = null;
+
+  if (v('offOn')) { events.push({at: v('offAfter'), key: 'protShOff', order: 0}); }
+  if (v('standbyOn')) { events.push({at: v('standbyAfter'), key: 'protShStandby', order: 1}); }
+  events.sort(function (a, b) { return a.at - b.at || a.order - b.order; });
+  if (events.length) { end = events[0].at; }
+  if (!v('brightnessOn') && !dimOn && end === null) { return null; }
+
+  function level(min) {
+    if (!dimOn || min <= dimStart) { return base; }
+    if (min >= dimEnd) { return low; }
+    return base + (low - base) * (min - dimStart) / (dimEnd - dimStart);
+  }
+  function X(min) { return x0 + min / horizon * pw; }
+  function Y(pct) { return y1 - pct / 100 * ph; }
+  function pt(p) { return X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1); }
+  function text(x, y, anchor, str) {
+    return '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" text-anchor="' + anchor + '" fill="' + Theme.MUTED + '">' + esc(str) + '</text>';
+  }
+
+  // time range: at least 30 minutes, a bit more than the last event, rounded to whole ticks
+  key = Math.max(dimOn ? dimEnd : 0, events.length ? events[events.length - 1].at : 0);
+  raw = Math.max(30, key * 1.15);
+  step = CURVE_STEPS[CURVE_STEPS.length - 1];
+  for (i = 0; i < CURVE_STEPS.length; i++) {
+    if (raw / CURVE_STEPS[i] <= 6) { step = CURVE_STEPS[i]; break; }
+  }
+  horizon = Math.ceil(raw / step) * step;
+
+  // the points of the line: start, the corners of the dimming ramp, the end, and the drop to zero after it
+  times = [0, horizon];
+  if (dimOn) { times.push(dimStart, dimEnd); }
+  if (end !== null) { times.push(end); }
+  times = times.filter(function (m, idx) { return (end === null || m <= end) && times.indexOf(m) === idx; });
+  times.sort(function (a, b) { return a - b; });
+  pts = times.map(function (m) { return [m, level(m)]; });
+  if (end !== null) { pts.push([end, 0]); }   // the drop; what follows it is drawn separately, in grey
+  last = pts[pts.length - 1];
+
+  out.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + c.w + ' ' + c.h + '" width="100%" font-size="' + c.font +
+    '" style="display: block; overflow: visible; font-family: inherit;">');
+  // grid and the brightness axis
+  [0, 50, 100].forEach(function (p) {
+    out.push('<line x1="' + x0 + '" y1="' + Y(p).toFixed(1) + '" x2="' + (x0 + pw) + '" y2="' + Y(p).toFixed(1) +
+      '" stroke="' + Theme.RULE + '" stroke-width="1"/>');
+    out.push(text(x0 - 6, Y(p) + 4, 'end', p + '%'));
+  });
+  // the time axis
+  for (t = 0; t <= horizon; t += step) {
+    out.push('<line x1="' + X(t).toFixed(1) + '" y1="' + y1 + '" x2="' + X(t).toFixed(1) + '" y2="' + (y1 + 4) +
+      '" stroke="' + Theme.RULE + '" stroke-width="1"/>');
+    out.push(text(X(t), y1 + 18, 'middle', t));
+  }
+  out.push(text(c.w - c.right, y1 + 32, 'end', tt('protUnitMin')));
+  // the area under the line and the line itself
+  out.push('<polygon points="' + pts.map(pt).join(' ') + ' ' + X(last[0]).toFixed(1) + ',' + y1 + ' ' + X(0).toFixed(1) + ',' + y1 +
+    '" fill="' + CURVE_COLOR + '" fill-opacity="0.18"/>');
+  out.push('<polyline points="' + pts.map(pt).join(' ') + '" fill="none" stroke="' + CURVE_COLOR +
+    '" stroke-width="2.5" stroke-linejoin="round"/>');
+  // after the drop: with the panel off but the TV still on (turn-off timer first) the line goes on dashed in the colour,
+  // from the moment the TV is off (standby) it is grey
+  if (end !== null) {
+    offAt = v('offOn') ? v('offAfter') : null;
+    sbAt = v('standbyOn') ? v('standbyAfter') : null;
+    if (sbAt !== null && (offAt === null || sbAt <= offAt)) { greyFrom = sbAt; }
+    else { dashFrom = offAt; greyFrom = sbAt; }
+    seg = function (from, to, color, dash) {
+      out.push('<line x1="' + X(from).toFixed(1) + '" y1="' + Y(0).toFixed(1) + '" x2="' + X(to).toFixed(1) + '" y2="' + Y(0).toFixed(1) +
+        '" stroke="' + color + '" stroke-width="2.5"' + (dash ? ' stroke-dasharray="7 5"' : '') + '/>');
+    };
+    if (dashFrom !== null) { seg(dashFrom, greyFrom !== null ? greyFrom : horizon, CURVE_COLOR, true); }
+    if (greyFrom !== null) { seg(greyFrom, horizon, Theme.MUTED, false); }
+  }
+  // values: the starting brightness (if it is not on the axis already) and where the dimming ends
+  if (base !== 100) { out.push(text(x0 + 6, Y(base) - 6, 'start', base + '%')); }
+  if (dimOn && low !== base && (end === null || dimEnd <= end)) {
+    ly = Y(low) + 16;
+    if (ly > y1 - 2) { ly = Y(low) - 6; }   // no room below the line, put it above
+    out.push(text(X(dimEnd) + 6, ly, 'start', Math.round(low) + '%'));
+  }
+  // the turn-off and standby moments: a dashed line each, the labels in separate rows so they never overlap each other.
+  // The first label goes on the side with more room; the later ones to the right of their line if it fits.
+  events.forEach(function (e, idx) {
+    var x = X(e.at), left = idx === 0 ? x - x0 >= 170 : x0 + pw - x < 90;
+    if (idx === 0 || e.at !== events[idx - 1].at) {
+      out.push('<line x1="' + x.toFixed(1) + '" y1="' + y0 + '" x2="' + x.toFixed(1) + '" y2="' + y1 +
+        '" stroke="' + Theme.MUTED + '" stroke-width="1.5" stroke-dasharray="5 4"/>');
+    }
+    out.push(text(left ? x - 6 : x + 6, y0 + 14 + idx * 16, left ? 'end' : 'start', tt(e.key) + ' ' + withUnit(e.at, 'protUnitMin')));
+  });
+  out.push('</svg>');
+  return out.join('');
 }
 
 // ---- component builders ------------------------------------------------------------------------
@@ -124,6 +241,13 @@ var ProtectionPanel = kind({
         toggle('standbyOn'),
         group('standbyOn', [picker('standbyAfter', 5, 720, 5)]),
 
+        // the brightness curve: shown only while some protection changes the brightness
+        {name: 'curveBox', showing: false, components: [
+          {kind: Divider, name: 'dvCurve', style: SECTION_STYLE},
+          {kind: Control, name: 'curve', allowHtml: true, style: 'margin: 8px 0 0 12px;'},
+          {kind: BodyText, name: 'curveNote', style: NOTE_STYLE + ' ' + HEAD_INDENT}
+        ]},
+
         {kind: Divider, name: 'dvText', style: SECTION_STYLE},
         {kind: BodyText, name: 'textNote', style: NOTE_STYLE + ' ' + HEAD_INDENT},
         toggle('cornersOn'),
@@ -178,6 +302,8 @@ var ProtectionPanel = kind({
     this.$.dvBrightness.set('content', tt('protSecBrightness'));
     this.$.dvTimers.set('content', tt('protSecTimers'));
     this.$.dvText.set('content', tt('protSecText'));
+    this.$.dvCurve.set('content', tt('protSecCurve'));
+    this.$.curveNote.set('content', tt('protCurveNote'));
     this.$.brightnessNote.set('content', tt('protBrightnessNote'));
     this.$.textNote.set('content', tt('protTextNote'));
     this.$.cornersWhichLabel.set('content', tt('protCornersWhich'));
@@ -194,6 +320,17 @@ var ProtectionPanel = kind({
       self.$[key].set('value', self.value(key));
     });
     SWITCHES.forEach(function (key) { self.$[key + 'Box'].set('showing', !!self.value(key)); });
+    this.updateCurve();
+  },
+
+  // redraw the brightness curve (cheap: one small SVG); hide it while nothing changes the brightness
+  updateCurve: function () {
+    var svg = curveSvg(this.settings);
+    this.$.curveBox.set('showing', !!svg);
+    if (svg) {
+      this.$.curve.set('content', svg);
+      this.$.curveNote.set('showing', !this.value('brightnessOn'));
+    }
   },
 
   // pickers created inside a hidden group were measured at zero size: lay them out again once they are visible
@@ -209,6 +346,7 @@ var ProtectionPanel = kind({
   setValue: function (key, value) {
     if (!this.settings.protection || typeof this.settings.protection !== 'object') { this.settings.protection = {}; }
     this.settings.protection[key] = value;
+    if (CURVE_KEYS.indexOf(key) >= 0) { this.updateCurve(); }
     this.markDirty();
   },
 
@@ -278,6 +416,7 @@ ProtectionPanel.summary = function (settings, detailed) {
   return parts.length ? parts.join(' \u00b7 ') : null;
 };
 ProtectionPanel.DEFAULTS = DEFAULTS;
+ProtectionPanel.curveSvg = curveSvg;
 ProtectionPanel.TEXT_MODES = TEXT_MODES;
 
 module.exports = ProtectionPanel;
