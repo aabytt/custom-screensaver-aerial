@@ -9,6 +9,7 @@ var
   LunaService = require('enyo-webos/LunaService'),
   Divider = require('./Heading.js'),
   Scroller = require('moonstone/Scroller'),
+  Spotlight = require('spotlight'),
   Item = require('moonstone/Item'),
   Popup = require('moonstone/Popup'),
   ToggleItem = require('moonstone/ToggleItem'),
@@ -48,7 +49,8 @@ var ICONS = {
   chat: '<path d="M4 4.5h16a1 1 0 0 1 1 1V15a1 1 0 0 1-1 1H10l-5 4v-4H4a1 1 0 0 1-1-1V5.5a1 1 0 0 1 1-1z"/><path d="M7.5 9h9M7.5 12h5.5"/>',
   shield: '<path d="M12 2.8l7.5 2.9v6c0 4.7-3.1 8.4-7.5 9.5-4.4-1.1-7.5-4.8-7.5-9.5v-6z"/><path d="M8.6 12.2l2.5 2.5 4.4-4.9"/>',
   chevron: '<path d="M9 5l7 7-7 7"/>',
-  uturn: '<path d="M7 20.5V10a5 5 0 0 1 10 0v9"/><path d="M13.5 15.5L17 19l3.5-3.5"/>'
+  uturn: '<path d="M7 20.5V10a5 5 0 0 1 10 0v9"/><path d="M13.5 15.5L17 19l3.5-3.5"/>',
+  translate: '<path d="M3 5.5h10M8 3.5v2M5 5.5c.6 3.4 3.2 6.2 6.5 7.7M11 5.5c-.7 3.6-3.4 6.5-7.5 8.5"/><path d="M12.5 21l4-10 4 10M14 17.5h5"/>'
 };
 // Moonstone highlight color (focused item background); the "update available" text uses it, and turns white on focus
 var ACCENT = Theme.ACCENT;
@@ -253,6 +255,46 @@ function noteTranslateBlock(tl, block, cb) {
   });
 }
 
+// Icon-only button (same approach as the time-of-day buttons in VideoSelectPanel): a focusable square, the svg is
+// placed by coordinates (the TV's browser is old, no flex). `dim`: the icon is faded (the translation is off).
+var NOTES_BTN = 60, NOTES_BTN_ICON = 34;
+var NotesIconButton = kind({
+  name: 'aerial.NotesIconButton',
+  spotlight: true,
+  allowHtml: true,
+  style: 'position: relative; flex: none; width: ' + NOTES_BTN + 'px; height: ' + NOTES_BTN + 'px; box-sizing: border-box; ' +
+    'border: 3px solid transparent; border-radius: 12px; background: rgba(255,255,255,0.12); cursor: pointer;',
+  icon: 'translate',
+  events: {onPressed: ''},
+  handlers: {
+    ontap: 'tapped',
+    onSpotlightFocused: 'focused',
+    onSpotlightBlur: 'blurred'
+  },
+  create: function () {
+    this.inherited(arguments);
+    this.setDim(false);
+  },
+  setDim: function (dim) {
+    var off = Math.round((NOTES_BTN - 6 - NOTES_BTN_ICON) / 2);
+    this.set('content', '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="' + NOTES_BTN_ICON + '" height="' + NOTES_BTN_ICON +
+      '" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: ' + off +
+      'px; top: ' + off + 'px; display: block; opacity: ' + (dim ? 0.4 : 1) + ';">' + ICONS[this.icon] + '</svg>');
+  },
+  tapped: function () {
+    this.doPressed();
+    return true;
+  },
+  focused: function () {
+    this.applyStyle('border-color', '#fff');
+    this.applyStyle('background', ACCENT);
+  },
+  blurred: function () {
+    this.applyStyle('border-color', 'transparent');
+    this.applyStyle('background', 'rgba(255,255,255,0.12)');
+  }
+});
+
 module.exports = kind({
   name: 'MainPanel',
   kind: Panel,
@@ -365,6 +407,8 @@ module.exports = kind({
           style: 'padding: 14px 24px; font-size: 24px; line-height: 1.4; color: #d6d6db; outline: 3px solid transparent; border-radius: 12px;', content: ''}
       ]},
       {style: 'display: flex; margin: 18px 0 0; padding-top: 18px; border-top: 2px solid ' + Theme.RULE + ';', components: [
+        // translation on / off (hidden for English); off = the English original is shown
+        {kind: NotesIconButton, name: 'notesTrBtn', showing: false, onPressed: 'toggleNotesTr'},
         {kind: Button, name: 'notesClose', small: true, style: 'margin: 0 0 0 auto;', ontap: 'closeNotes'}
       ]}
     ]},
@@ -501,6 +545,7 @@ module.exports = kind({
     this.stopJob('settingsTimeout');
     if (!src.packaged && !src.persisted) {
       this.setResult(I18n.t('settingsReadFail'));
+      this.langSettled = true;   // nothing to detect: the guess stays
       this.useUiLang();
       this.hideSplash();
       return;
@@ -522,6 +567,8 @@ module.exports = kind({
         this.hideSplash();
       }
     } else {
+      this.langSettled = true;   // nothing to detect: the language in the settings (or the guess) is final
+      this.useUiLang();
       this.hideSplash();   // nothing to write or detect: the panel is ready
     }
   },
@@ -579,6 +626,7 @@ module.exports = kind({
       settings.localeLangIndex = i;
       this.updateDisplayInfo();
     }
+    this.langSettled = true;   // the detection is over: from now on the language is final (the notes may be translated)
     // interface language: always stored, so the detection does not run again (no match -> English)
     if (!settings.uiLang) {
       settings.uiLang = i >= 0 ? DisplayPanel.LANGUAGES[i].value : I18n.DEFAULT_LANG;
@@ -596,6 +644,7 @@ module.exports = kind({
     // the release notes are translated in the background as soon as the language is known (no-op if there is
     // no update, the notes have not arrived yet or the language is English)
     this.translateNotes();
+    if (this.notesHtml && this.$.notesBtn) { this.showNotes(); }   // button / text of the notes card in the new language
   },
 
   // The texts are swapped under a short fade-out / fade-in instead of jumping (only once the panel is on
@@ -753,6 +802,8 @@ module.exports = kind({
     this.$.notesBtn.set('content', label);
     this.$.notesTitle.set('content', label);
     this.$.notesClose.set('content', tr('reportClose', 'Close'));
+    this.$.notesTrBtn.set('showing', !!this.notesTl());
+    this.$.notesTrBtn.setDim(!!this.notesOriginal);
     this.$.notes.set('content', this.notesText());
     // while the translation is running a message replaces the (English) text
     this.$.notesSpinner.set('content', tr('translating', 'Translating\u2026'));
@@ -767,7 +818,12 @@ module.exports = kind({
   // translation is ready, or if it fails (offline, blocked), the English text is shown as before.
 
   // translation service language code for the interface language, '' for English
+  // The language is final once it is stored in the settings or the first-run detection is over; until then ''
+  // (no translation, no translate button), so nothing is ever translated into the guessed language.
+  langFinal: function () { return !!settings.uiLang || !!this.langSettled; },
+
   notesTl: function () {
+    if (!this.langFinal()) { return ''; }
     var tag = String(I18n.getLang() || 'en').replace('_', '-'), base = tag.split('-')[0].toLowerCase();
     if (base === 'en') { return ''; }
     if (base === 'zh') { return /-(tw|hk|mo|hant)/i.test(tag) ? 'zh-TW' : 'zh-CN'; }
@@ -802,7 +858,7 @@ module.exports = kind({
   notesText: function () {
     var tl = this.notesTl(), key = this.notesKey(tl), html;
     this.notesWaiting = false;
-    if (!tl) { return this.notesHtml; }
+    if (!tl || this.notesOriginal) { return this.notesHtml; }   // English, or the original was asked for
     html = (this.notesTrCache || {})[key];
     if (!html) {
       try { html = window.localStorage.getItem('notesTr:' + key); } catch (e) { html = null; }
@@ -818,7 +874,7 @@ module.exports = kind({
   // service as one sentence, so the grammar comes out right; see noteSerialize / noteRebuild above.
   translateNotes: function () {
     var self = this, tl = this.notesTl(), key = this.notesKey(tl), box, blocks, next = 0, active = 0, failed = 0, finished = false;
-    if (!tl || !this.notesHtml || !settings.uiLang) { return; }   // uiLang: language is final
+    if (!tl || !this.notesHtml) { return; }   // tl is '' until the language is final
     this.notesTrState = this.notesTrState || {};
     if (this.notesTrState[key] === 'failed' && this.notesRetryOk) { delete this.notesTrState[key]; }   // user opened the notes again
     if (this.notesTrState[key]) { return; }                    // running, done or failed in this session
@@ -864,7 +920,20 @@ module.exports = kind({
     pump();
   },
 
+  // the translate button: translation is on by default; taps switch between it and the English original
+  toggleNotesTr: function () {
+    var tl = this.notesTl();
+    if (!tl) { return true; }
+    this.notesOriginal = !this.notesOriginal;
+    this.showNotes();
+    this.notesPos = 0;
+    this.$.notesScroller.scrollTo(0, 0);
+    return true;
+  },
+
   openNotes: function () {
+    this.notesOriginal = false;   // every time the card is opened the translation is on
+    this.notesPos = 0;
     this.notesRetryOk = true;
     this.notesText();
     this.notesRetryOk = false;
@@ -881,21 +950,39 @@ module.exports = kind({
 
   fitNotes: function () {
     if (this.notesWaiting) { return; }
-    var node = this.$.notes.hasNode(), h = node ? Math.min(NOTES_MAX_PX, node.scrollHeight) : NOTES_MAX_PX;
+    var scroller = this.$.notesScroller, node = this.$.notes.hasNode(),
+      h = node ? Math.min(NOTES_MAX_PX, node.scrollHeight) : NOTES_MAX_PX, view, max;
     this.$.notesScroller.applyStyle('height', h + 'px');
-    this.$.notesScroller.resized();
+    scroller.resized();
+    view = scroller.hasNode();
+    max = node && view ? Math.max(0, node.scrollHeight - view.clientHeight) : 0;
+    this.notesPos = Math.min(this.notesPos || 0, max);
+    scroller.scrollTo(0, this.notesPos);
   },
 
-  // Up / Down scroll the notes while there is more text that way; at the ends the focus moves on
+  // Up / Down scroll the notes while there is more text that way; at the end the focus is moved to the buttons
+  // explicitly (the nearest-neighbour search of Spotlight got stuck on the text after the text was swapped).
+  // The position is tracked here: the scroller's own bounds are not reliable right after a swap.
   notesScrollBy: function (dy) {
-    var sc = this.$.notesScroller, b = sc.getScrollBounds(), y = Math.max(0, Math.min(b.maxTop, b.top + dy));
-    if (y === b.top) { return false; }
-    sc.scrollTo(b.left, y);
+    var sc = this.$.notesScroller, b = sc.getScrollBounds() || {}, text = this.$.notes.hasNode(), view = sc.hasNode(),
+      max = isFinite(b.maxTop) ? b.maxTop : 0, pos = this.notesPos || 0, y;
+    if (text && view) { max = Math.max(0, text.scrollHeight - view.clientHeight); }   // translated text can be taller than its box
+    y = Math.max(0, Math.min(max, pos + dy));
+    if (y === pos) {                                                  // the end of the text in this direction
+      if (dy > 0) { Spotlight.spot(this.$.notesTrBtn.showing ? this.$.notesTrBtn : this.$.notesClose); return true; }
+      return false;
+    }
+    this.notesPos = y;
+    sc.scrollTo(0, y);
     return true;
   },
   notesUp: function () { return this.notesScrollBy(-140); },
   notesDown: function () { return this.notesScrollBy(140); },
-  notesFocused: function () { this.$.notes.applyStyle('outline-color', ACCENT); },
+  notesFocused: function () {
+    var b = this.$.notesScroller.getScrollBounds() || {};
+    this.notesPos = isFinite(b.top) ? b.top : 0;   // where the text really is (the wheel of the remote may have moved it)
+    this.$.notes.applyStyle('outline-color', ACCENT);
+  },
   notesBlurred: function () { this.$.notes.applyStyle('outline-color', 'transparent'); },
 
   // TV model, firmware and webOS release for the report card. Read once at startup (so the card opens at once):
