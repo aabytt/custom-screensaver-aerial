@@ -41,24 +41,29 @@ var GROUP_BOTTOM_PAD = 8;       // bottom margin of a tile
 var HEADER_SCROLL_DELAY_MS = 300;   // let Moonstone finish its own scroll first
 
 var TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:300px; margin:8px; padding:6px; ';
-// Small watermark on a video tile: the video's timeOfDay tag (sunrise / day / sunset / night) as a thin line icon
-// (drawn for this app, 1.5 stroke). The svg is placed by coordinates: centred in the 44 px circle. Each icon has its own
-// viewBox, so that its drawing is centred and fills the square (sunrise / sunset are a bit lower and wider than tall).
-function todSvg(viewBox) {
-  return '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="' + viewBox + '" fill="none" stroke="#fff" ' +
-    'stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:absolute; left:8px; top:8px; display:block">';
-}
+// Time-of-day icons (sunrise / day / sunset / night): thin line icons drawn for this app (1.5 stroke). They are used on the
+// video tiles (watermark) and as the buttons in the preview. Each icon has its own viewBox, so that its drawing is
+// centred and fills the square (sunrise / sunset are lower and wider than tall).
+var TOD_KINDS = ['sunrise', 'day', 'sunset', 'night'];
 var TOD_HORIZON = 'M2 20h20M5 23h14M7.5 20a4.5 4.5 0 0 1 9 0M16.95 15.05L18.7 13.3M7.05 15.05L5.3 13.3';
-var TOD_ICONS = {
-  day: todSvg('0 0 24 24') + '<circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>',
+var TOD_DEFS = {
+  day: {vb: '0 0 24 24', body: '<circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/>'},
   // crescent and two small sparkles in its opening
-  night: todSvg('0 0 24 24') + '<path d="M11.19 3.6A9 9 0 1 0 21.19 14.84A7.6 7.6 0 0 1 11.19 3.6z"/>' +
+  night: {vb: '0 0 24 24', body: '<path d="M11.19 3.6A9 9 0 1 0 21.19 14.84A7.6 7.6 0 0 1 11.19 3.6z"/>' +
     '<path fill="#fff" stroke-width="1" d="M16.6 6.2Q17.348 8.852 20 9.6Q17.348 10.348 16.6 13Q15.852 10.348 13.2 9.6Q15.852 8.852 16.6 6.2z"/>' +
-    '<path fill="#fff" stroke-width="1" d="M20.6 2.3Q21.062 3.938 22.7 4.4Q21.062 4.862 20.6 6.5Q20.138 4.862 18.5 4.4Q20.138 3.938 20.6 2.3z"/></svg>',
+    '<path fill="#fff" stroke-width="1" d="M20.6 2.3Q21.062 3.938 22.7 4.4Q21.062 4.862 20.6 6.5Q20.138 4.862 18.5 4.4Q20.138 3.938 20.6 2.3z"/>'},
   // half sun on the horizon with a short arrow: up = sunrise, down = sunset
-  sunrise: todSvg('1 4.5 22 22') + '<path d="' + TOD_HORIZON + 'M12 13V8M8.5 11.5L12 8l3.5 3.5"/></svg>',
-  sunset: todSvg('1 4.5 22 22') + '<path d="' + TOD_HORIZON + 'M12 8v5M8.5 9.5L12 13l3.5-3.5"/></svg>'
+  sunrise: {vb: '1 4.5 22 22', body: '<path d="' + TOD_HORIZON + 'M12 13V8M8.5 11.5L12 8l3.5 3.5"/>'},
+  sunset: {vb: '1 4.5 22 22', body: '<path d="' + TOD_HORIZON + 'M12 8v5M8.5 9.5L12 13l3.5-3.5"/>'}
 };
+// the svg is placed by coordinates (no flex: the TV's browser is old): `size` px, centred in a `box` px square
+function todIcon(kind, box, size) {
+  var d = TOD_DEFS[kind], off = Math.round((box - size) / 2);
+  if (!d) { return ''; }
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="' + size + '" height="' + size + '" viewBox="' + d.vb + '" fill="none" stroke="#fff" ' +
+    'stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:absolute; left:' + off + 'px; top:' + off +
+    'px; display:block">' + d.body + '</svg>';
+}
 
 var CAT_TILE_STYLE = 'display:inline-block; vertical-align:top; position:relative; width:470px; margin:10px; padding:6px; ';
 // 75 -> "1:15", 3725 -> "1:02:05"
@@ -117,6 +122,7 @@ var SOLAR_STR = {
   solarPolar: 'the sun does not rise or set here now',
   solarCalculated: 'Times are calculated.', solarOffline: 'No network: the times are calculated, and fetched when it is back.',
   solarTagged: 'Tagged videos:',
+  solarTodFailed: 'Could not save videos.json',
   reportClose: 'Close',
   solarCityNone: 'No city found', solarCityOffline: 'The city search needs the internet'
 };
@@ -279,11 +285,18 @@ var VideoTile = kind({
       this.$.img.setAttribute('src', this.src);
     }
     this.$.label.set('content', this.label || '');
-    if (TOD_ICONS[this.timeOfDay]) {
-      this.$.tod.set('content', TOD_ICONS[this.timeOfDay]);
-      this.$.tod.set('showing', true);
-    }
+    this.todChanged();
     this.selectedChanged();
+  },
+  // the video's time of day: the watermark (nothing for a video without a known tag)
+  todChanged: function () {
+    var ok = !!TOD_DEFS[this.timeOfDay];
+    this.$.tod.set('content', ok ? todIcon(this.timeOfDay, 44, 28) : '');
+    this.$.tod.set('showing', ok);
+  },
+  setTimeOfDay: function (kind) {
+    this.timeOfDay = kind;
+    this.todChanged();
   },
   selectedChanged: function () {
     this.$.badge.set('showing', !!this.selected);
@@ -625,6 +638,43 @@ var PreviewBadge = kind({
 });
 
 /**
+ * Time-of-day button in the preview (sunrise / day / sunset / night): OK / click sets the video's tag. The active one is
+ * accent coloured; the focused one gets a white ring.
+ */
+var PreviewTod = kind({
+  name: 'aerial.PreviewTod',
+  spotlight: true,
+  allowHtml: true,
+  style: 'display:inline-block; position:relative; vertical-align:top; width:44px; height:44px; margin-left:8px; box-sizing:border-box; ' +
+    'border:3px solid transparent; border-radius:22px; background:rgba(0,0,0,0.6); cursor:pointer; pointer-events:auto;',
+  events: {onPickTod: ''},
+  handlers: {
+    ontap: 'tapped',
+    onSpotlightFocused: 'focused',
+    onSpotlightBlur: 'blurred'
+  },
+  create: function () {
+    this.inherited(arguments);
+    this.set('content', todIcon(this.tod, 38, 28));
+  },
+  tapped: function () {
+    this.doPickTod({tod: this.tod});
+    return true;
+  },
+  focused: function () {
+    this.applyStyle('border-color', '#fff');
+    this.applyStyle('transform', 'scale(' + FOCUS_SCALE + ')');
+  },
+  blurred: function () {
+    this.applyStyle('border-color', 'transparent');
+    this.applyStyle('transform', 'scale(1)');
+  },
+  setActive: function (on) {
+    this.applyStyle('background', on ? '#cf0652' : 'rgba(0,0,0,0.6)');
+  }
+});
+
+/**
  * Preview window. Moonstone closes a popup as soon as Spotlight focus lands on a control outside
  * of it (a short OK press, pointer jitter of the magic remote, ...). The preview must only be
  * closed with Back, so focus that tries to leave is pulled back instead.
@@ -735,14 +785,16 @@ var VideoSelectPanel = kind({
             ]}
           ]},
           {name: 'previewBadges', style: 'position:absolute; top:14px; left:0; right:0; text-align:center; z-index:2; pointer-events:none;'},
+          // time of day of the video (sunrise / day / sunset / night): the buttons change the tag in videos.json
+          {name: 'pvTod', style: 'position:absolute; top:753px; right:12px; z-index:3; white-space:nowrap; pointer-events:none;'},
           {name: 'poi', showing: false, style: 'position:absolute; left:0; right:0; top:560px; text-align:center; z-index:2; pointer-events:none;'},
           // position / duration, progress line and the full screen button along the bottom of the video
           {kind: PreviewSeek, name: 'pvSeek', showing: false, style: 'top:670px;', onSeekBy: 'seekBy', onSeekAt: 'seekAt', onSeekOk: 'seekOk'},
           {name: 'pvTime', showing: false, style: 'position:absolute; left:16px; top:654px; z-index:2; font-size:22px; color:#fff; text-shadow:0 0 6px #000; pointer-events:none;'},
           {kind: PreviewButton, name: 'pvFs', style: 'top:640px;', onPressed: 'toggleFullscreen'},
           {name: 'previewHelp', showing: false, i18n: 'previewHelp', style: 'position:absolute; left:0; right:0; top:64px; text-align:center; font-size:22px; color:#fff; opacity:0.8; text-shadow:0 0 6px #000; pointer-events:none;'},
-          {kind: BodyText, name: 'previewTitle', style: 'color:#fff; margin:0; padding:0; height:46px; line-height:46px; font-size:30px; text-align:center; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;'},
-          {kind: BodyText, name: 'previewInfo', style: 'color:#c9c9d1; margin:0; padding:0; height:46px; line-height:46px; font-size:26px; text-align:center; opacity:0.8; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;'}
+          {kind: BodyText, name: 'previewTitle', style: 'color:#fff; margin:0; padding:0; height:46px; line-height:46px; font-size:30px; text-align:left; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;'},
+          {kind: BodyText, name: 'previewInfo', style: 'color:#c9c9d1; margin:0 240px 0 0; padding:0; height:46px; line-height:46px; font-size:26px; text-align:left; opacity:0.8; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;'}
         ]}
       ]},
     // city card: the same modal as the compatibility report (MainPanel): centered, themed, title with the accent rule,
@@ -767,6 +819,7 @@ var VideoSelectPanel = kind({
     ]},
     {kind: LunaService, name: 'cat', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onCat', onError: 'onCat'},
     {kind: LunaService, name: 'save', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec'},
+    {kind: LunaService, name: 'tagSave', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onTagSaved', onError: 'onTagSaveFailed'},
     {kind: LunaService, name: 'solarRun', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onSolarRun', onError: 'onSolarRun'}
   ],
 
@@ -789,6 +842,9 @@ var VideoSelectPanel = kind({
       this.categories = this.shared.categories;
       this.strings = this.shared.strings;
       this.disabled = this.shared.disabled;
+      this.videosData = this.shared.videosData;
+      this.videosRaw = this.shared.videosRaw;
+      this.tagDisk = this.shared.tagDisk;
       // first level of the night playlist: refreshed when its categories change
       if (this.list === 'night' && this.mode === 'categories') { this.shared.root = this; }
       this.start();
@@ -846,6 +902,7 @@ var VideoSelectPanel = kind({
       var data;
       if (xhr.status === 200 || (xhr.status === 0 && xhr.responseText)) {
         try { data = JSON.parse(xhr.responseText); } catch (e) { viaLuna(); return; }
+        self.lastRaw = xhr.responseText;
         callback.call(self, data);
         return;
       }
@@ -871,6 +928,7 @@ var VideoSelectPanel = kind({
       if (fb) { fb.call(this); } else { this.$.count.set('content', I18n.t('loadFail')); }
       return;
     }
+    this.lastRaw = evt.stdoutString;
     cb.call(this, data);
   },
 
@@ -890,7 +948,10 @@ var VideoSelectPanel = kind({
   },
 
   onVideos: function (data) {
+    this.videosData = data;            // kept whole: the time-of-day buttons of the preview rewrite videos.json
+    this.videosRaw = this.lastRaw || '';
     this.assets = data.assets || [];
+    this.tagDisk = this.tagMap();      // the tags as they are in the file
     this.categoryImages = this.parseCategoryImages(data.categories);
     this.categories = [];
     // names follow the interface language
@@ -916,6 +977,9 @@ var VideoSelectPanel = kind({
       disabled: this.disabled,
       thumbs: {},
       categoryImages: this.categoryImages,
+      videosData: this.videosData,
+      videosRaw: this.videosRaw,
+      tagDisk: this.tagDisk,
       onChange: this.bindSafely('refreshCounts')
     };
     this.start();
@@ -1379,6 +1443,7 @@ var VideoSelectPanel = kind({
     this.pvOk = {};
     this.pvManual = false;
     this.pvPlaying = false;
+    this.pvAsset = asset;
     this.pvPoi = this.poiList(asset);
     this.pvPoiText = null;
     this.showPoi('');
@@ -1386,6 +1451,7 @@ var VideoSelectPanel = kind({
     this.hideTime(true);
     this.setPreviewFullscreen(false, true);
     this.buildBadges();     // before show(): the popup must already be spottable when it opens
+    this.buildTod();
     this.layoutPreview();
     this.$.preview.show();
     this.bindPreviewNode();
@@ -1450,6 +1516,7 @@ var VideoSelectPanel = kind({
     this.$.pvSeek.applyStyle('top', Math.max(0, g.videoH - 36) + 'px');
     this.$.pvTime.applyStyle('top', Math.max(0, g.videoH - 84) + 'px');
     this.$.pvFs.applyStyle('top', Math.max(0, g.videoH - 88) + 'px');
+    this.$.pvTod.applyStyle('top', (g.videoH + 47) + 'px');   // bottom row (the info line), right
     this.$.previewHelp.applyStyle('top', '64px');   // right under the badges
     this.$.poi.applyStyle('top', Math.max(0, g.videoH - 146) + 'px');   // just above the bottom row
   },
@@ -1533,6 +1600,7 @@ var VideoSelectPanel = kind({
     popup.applyStyle('box-shadow', on ? 'none' : '0 0 40px rgba(0,0,0,0.8)');
     this.$.previewTitle.set('showing', !on);
     this.$.previewInfo.set('showing', !on);
+    this.$.pvTod.set('showing', !on);
     this.$.pvFs.setIcon(on);
     if (!quiet) { this.layoutPreview(); }
   },
@@ -1545,16 +1613,30 @@ var VideoSelectPanel = kind({
   // badges <-> full screen button <-> progress line
   previewDown: function () {
     var cur = Spotlight.getCurrent(), fs = this.$.pvFs, seek = this.$.pvSeek;
-    if (cur === seek) { return true; }
+    if (this.onTodButton(cur)) { return true; }   // nothing below the buttons
+    if (cur === seek) { this.spotTodButton(); return true; }
     if (cur === fs) {
-      if (seek.showing) { Spotlight.spot(seek); }
+      if (seek.showing) { Spotlight.spot(seek); } else { this.spotTodButton(); }
       return true;
     }
     Spotlight.spot(fs);
     return true;
   },
+  // is the focus on one of the time-of-day buttons (under the video, right of the title)?
+  onTodButton: function (cur) {
+    return !!(cur && cur.tod && cur.isDescendantOf && cur.isDescendantOf(this.$.pvTod));
+  },
+
+  // the button of the video's current tag (or the first one)
+  spotTodButton: function () {
+    var kids = this.$.pvTod.getClientControls(), cur = this.pvAsset && this.pvAsset.timeOfDay,
+      b = kids.filter(function (k) { return k.tod === cur; })[0] || kids[0];
+    if (b) { try { Spotlight.spot(b); } catch (e) { /* ignore */ } }
+  },
+
   previewUp: function () {
     var cur = Spotlight.getCurrent();
+    if (this.onTodButton(cur)) { Spotlight.spot(this.$.pvSeek.showing ? this.$.pvSeek : this.$.pvFs); return true; }
     if (cur === this.$.pvSeek) { Spotlight.spot(this.$.pvFs); }
     else if (cur === this.$.pvFs) { this.spotCurrentBadge(); }
     return true;   // from the badges there is nothing above
@@ -1671,6 +1753,149 @@ var VideoSelectPanel = kind({
     }
   },
 
+  // ---- time of day of the video (sunrise / day / sunset / night) ----
+
+  buildTod: function () {
+    var box = this.$.pvTod;
+    box.destroyClientControls();
+    TOD_KINDS.forEach(function (k) {
+      var b = box.createComponent({kind: PreviewTod, tod: k, onPickTod: 'pickTod'}, {owner: this});
+      if (box.generated) { b.render(); }
+    }, this);
+    this.refreshTod();
+  },
+
+  // the tag of the video that is open = the highlighted button
+  refreshTod: function () {
+    var cur = this.pvAsset && this.pvAsset.timeOfDay;
+    this.$.pvTod.getClientControls().forEach(function (b) { if (b.setActive) { b.setActive(b.tod === cur); } });
+  },
+
+  pickTod: function (sender, evt) {
+    var asset = this.pvAsset, id, mine = this;
+    if (!asset || !TOD_DEFS[evt.tod] || asset.timeOfDay === evt.tod) { return true; }
+    asset.timeOfDay = evt.tod;     // the same object that is in the loaded videos.json
+    this.refreshTod();
+    // the tile of this video behind the preview, and the counters (solar mode)
+    id = asset.id;
+    this.$.grid.getClientControls().forEach(function (t) { if (t.assetId === id && t.setTimeOfDay) { t.setTimeOfDay(evt.tod); } });
+    if (this.isChild && this.shared && this.shared.onChange) { this.shared.onChange(); } else { this.updateCount(); }
+    if (this.shared && this.shared.mainChange) { this.shared.mainChange(); }
+    this.showToast(st('solar' + evt.tod.charAt(0).toUpperCase() + evt.tod.slice(1)));
+    this.tagDirty = true;
+    this.startJob('tagSave', 'startTagSave', 600);   // several quick changes become one write
+    return true;
+  },
+
+  // {id: timeOfDay} of the videos that have a tag
+  tagMap: function () {
+    var map = {};
+    (this.assets || []).forEach(function (a) { if (a.timeOfDay !== undefined) { map[a.id] = a.timeOfDay; } });
+    return map;
+  },
+
+  // videos.json as text: the indentation of the original is kept (so a diff shows only the tags that changed)
+  videosText: function () {
+    var raw = this.videosRaw || '', m = /\n([ \t]+)"/.exec(raw), text;
+    text = JSON.stringify(this.videosData, null, m ? m[1] : undefined);
+    if (/\n\s*$/.test(raw)) { text += '\n'; }
+    return text;
+  },
+
+  // Overwrites assets/videos.json through the Homebrew Channel service. The text goes in pieces (one command line is
+  // limited to ~128 KB) into a temporary file, which replaces videos.json only when it is complete (size checked), so a
+  // failure leaves the old file as it was. The last piece also does the check and the move, so a file that fits one
+  // piece is written even if the panel is closed right then.
+  startTagSave: function () {
+    var text, path, tmp, bytes, chunks = [], i, n, end;
+    if (!this.videosData) { return; }
+    if (this.tagBusy) { this.tagAgain = true; return; }
+    this.tagDirty = false;
+    this.tagAgain = false;
+    this.tagSnapshot = this.tagMap();   // what this write puts into the file
+    text = this.videosText();
+    path = this.basePath + '/assets/videos.json';
+    tmp = path + '.tmp';
+    bytes = unescape(encodeURIComponent(text)).length;
+    for (i = 0, n = text.length; i < n; i = end) {
+      end = Math.min(n, i + 30000);
+      // never cut between the two halves of a surrogate pair
+      if (end < n && text.charCodeAt(end - 1) >= 0xD800 && text.charCodeAt(end - 1) <= 0xDBFF) { end++; }
+      chunks.push(text.slice(i, end));
+    }
+    function q(x) { return "'" + String(x).replace(/'/g, "'\\''") + "'"; }
+    this.tagCmds = chunks.map(function (c, k) {
+      var cmd = (k === 0 ? 'rm -f ' + q(tmp) + '; ' : '') + "printf '%s' " + q(c) + ' >> ' + q(tmp);
+      if (k === chunks.length - 1) {
+        cmd += ' && [ "$(wc -c < ' + q(tmp) + ')" -eq ' + bytes + ' ] && mv -f ' + q(tmp) + ' ' + q(path) +
+          ' && echo OK || { rm -f ' + q(tmp) + '; echo ERR; }';
+      }
+      return cmd;
+    });
+    this.tagBusy = true;
+    this.tagStep = 0;
+    this.sendTagStep();
+  },
+
+  sendTagStep: function () {
+    this.$.tagSave.send({command: this.tagCmds[this.tagStep]});
+  },
+
+  onTagSaved: function (sender, evt) {
+    var out = String((evt && evt.stdoutString) || '').trim();
+    if (evt && evt.returnValue === false) { return this.onTagSaveFailed(sender, evt); }
+    if (this.tagStep < this.tagCmds.length - 1) {
+      this.tagStep++;
+      this.sendTagStep();
+      return true;
+    }
+    if (!/OK$/.test(out)) { return this.onTagSaveFailed(sender, evt); }
+    this.tagBusy = false;
+    this.tagCmds = null;
+    this.setTagDisk(this.tagSnapshot);
+    // keep the text of what is on disk: the next write has the same layout
+    this.videosRaw = this.videosText();
+    if (this.shared) { this.shared.videosRaw = this.videosRaw; }
+    if (this.tagAgain || this.tagDirty) { this.startTagSave(); }
+    return true;
+  },
+
+  // the map of the tags in the file is shared by the panels: changed in place
+  setTagDisk: function (map) {
+    var disk = this.tagDisk, k;
+    if (!disk || !map) { return; }
+    for (k in disk) { if (disk.hasOwnProperty(k)) { delete disk[k]; } }
+    for (k in map) { if (map.hasOwnProperty(k)) { disk[k] = map[k]; } }
+  },
+
+  // The file could not be written: every video goes back to the tag the file has, on the tiles, in the preview and in the
+  // counters, so the screen shows what the screensaver will use.
+  onTagSaveFailed: function () {
+    var disk = this.tagDisk || {}, byId = {}, changed = false;
+    this.tagBusy = false;
+    this.tagCmds = null;
+    this.tagDirty = false;
+    this.tagAgain = false;
+    (this.assets || []).forEach(function (a) {
+      byId[a.id] = a;
+      if (a.timeOfDay !== disk[a.id]) {
+        if (disk[a.id] === undefined) { delete a.timeOfDay; } else { a.timeOfDay = disk[a.id]; }
+        changed = true;
+      }
+    });
+    if (this.destroyed) { return true; }
+    if (changed) {
+      this.$.grid.getClientControls().forEach(function (t) {
+        if (t.setTimeOfDay && byId[t.assetId]) { t.setTimeOfDay(byId[t.assetId].timeOfDay); }
+      });
+      this.refreshTod();
+      if (this.isChild && this.shared && this.shared.onChange) { this.shared.onChange(); } else { this.updateCount(); }
+      if (this.shared && this.shared.mainChange) { this.shared.mainChange(); }
+    }
+    this.showToast(st('solarTodFailed'));
+    return true;
+  },
+
   // OK / click on a badge: play exactly this variant
   playVariant: function (sender, evt) {
     if (!this.pvList || !this.pvList[evt.index]) { return true; }
@@ -1720,6 +1945,8 @@ var VideoSelectPanel = kind({
 
   previewHidden: function () {
     this.stopPreview();
+    this.pvAsset = null;
+    if (this.tagDirty) { this.stopJob('tagSave'); this.startTagSave(); }   // write the changed tags now
     this.showToast(I18n.t('toastHold'));
   },
 
@@ -1948,6 +2175,10 @@ var VideoSelectPanel = kind({
         disabled: disabled,
         thumbs: this.shared.thumbs,
         categoryImages: this.shared.categoryImages,
+        videosData: this.shared.videosData,
+        videosRaw: this.shared.videosRaw,
+        tagDisk: this.shared.tagDisk,
+        mainChange: this.bindSafely('refreshCounts'),   // the solar counts of this (main) panel
         onChange: this.bindSafely('nightChanged')
       };
       panels.pushPanel({
