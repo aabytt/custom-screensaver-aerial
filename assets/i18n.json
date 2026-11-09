@@ -166,7 +166,8 @@
   "fontDeleteYes": "حذف",
   "fontDeleteNo": "إلغاء",
   "fontDeleteTitle": "حذف الخط",
-  "fontClose": "إغلاق"
+  "fontClose": "إغلاق",
+  "solarTodFailed": "تعذر الحفظ في الملف"
  },
  "be-BY": {
   "uiLanguage": "Мова інтэрфейсу",
@@ -335,7 +336,8 @@
   "fontDeleteYes": "Выдаліць",
   "fontDeleteNo": "Скасаваць",
   "fontDeleteTitle": "Выдаліць шрыфт",
-  "fontClose": "Закрыць"
+  "fontClose": "Закрыць",
+  "solarTodFailed": "Не атрымалася захаваць у файл"
  },
  "ca-ES": {
   "uiLanguage": "Idioma de la interfície",
@@ -504,7 +506,8 @@
   "fontDeleteYes": "Elimina",
   "fontDeleteNo": "Cancel·la",
   "fontDeleteTitle": "Elimina la font",
-  "fontClose": "Tanca"
+  "fontClose": "Tanca",
+  "solarTodFailed": "No s’ha pogut desar al fitxer"
  },
  "cs-CZ": {
   "uiLanguage": "Jazyk rozhraní",
@@ -673,7 +676,8 @@
   "fontDeleteYes": "Smazat",
   "fontDeleteNo": "Zrušit",
   "fontDeleteTitle": "Smazat písmo",
-  "fontClose": "Zavřít"
+  "fontClose": "Zavřít",
+  "solarTodFailed": "Do souboru se nepodařilo uložit"
  },
  "da-DK": {
   "uiLanguage": "Grænsefladesprog",
@@ -842,7 +846,8 @@
   "fontDeleteYes": "Slet",
   "fontDeleteNo": "Annuller",
   "fontDeleteTitle": "Slet skrifttypen",
-  "fontClose": "Luk"
+  "fontClose": "Luk",
+  "solarTodFailed": "Kunne ikke gemme i fil"
  },
  "de-DE": {
   "uiLanguage": "Sprache der Oberfläche",
@@ -1011,7 +1016,8 @@
   "fontDeleteYes": "Löschen",
   "fontDeleteNo": "Abbrechen",
   "fontDeleteTitle": "Schrift löschen",
-  "fontClose": "Schließen"
+  "fontClose": "Schließen",
+  "solarTodFailed": "Speichern in Datei nicht möglich"
  },
  "el-GR": {
   "uiLanguage": "Γλώσσα διεπαφής",
@@ -1180,7 +1186,8 @@
   "fontDeleteYes": "Διαγραφή",
   "fontDeleteNo": "Ακύρωση",
   "fontDeleteTitle": "Διαγραφή γραμματοσειράς",
-  "fontClose": "Κλείσιμο"
+  "fontClose": "Κλείσιμο",
+  "solarTodFailed": "Αδυναμία αποθήκευσης στο αρχείο"
  },
  "en-AU": "en-US",
  "en-GB": "en-US",
@@ -1351,7 +1358,8 @@
   "fontDeleteYes": "Delete",
   "fontDeleteNo": "Cancel",
   "fontDeleteTitle": "Delete the font",
-  "fontClose": "Close"
+  "fontClose": "Close",
+  "solarTodFailed": "Could not save to file"
  },
  "es-ES": {
   "uiLanguage": "Idioma de la interfaz",
@@ -1520,7 +1528,8 @@
   "fontDeleteYes": "Eliminar",
   "fontDeleteNo": "Cancelar",
   "fontDeleteTitle": "Eliminar la fuente",
-  "fontClose": "Cerrar"
+  "fontClose": "Cerrar",
+  "solarTodFailed": "No se pudo guardar en el archivo"
  },
  "es-419": "es-ES",
  "fi-FI": {
@@ -1690,7 +1699,8 @@
   "fontDeleteYes": "Poista",
   "fontDeleteNo": "Peruuta",
   "fontDeleteTitle": "Poista fontti",
-  "fontClose": "Sulje"
+  "fontClose": "Sulje",
+  "solarTodFailed": "Tallennus tiedostoon epäonnistui"
  },
  "fr-CA": "fr-FR",
  "fr-FR": {
@@ -1860,7 +1870,8 @@
   "fontDeleteYes": "Supprimer",
   "fontDeleteNo": "Annuler",
   "fontDeleteTitle": "Supprimer la police",
-  "fontClose": "Fermer"
+  "fontClose": "Fermer",
+  "solarTodFailed": "Impossible d’enregistrer dans le fichier"
  },
  "he-IL": {
   "uiLanguage": "שפת הממשק",
@@ -2029,7 +2040,8 @@
   "fontDeleteYes": "מחק",
   "fontDeleteNo": "ביטול",
   "fontDeleteTitle": "מחק גופן",
-  "fontClose": "סגירה"
+  "fontClose": "סגירה",
+  "solarTodFailed": "לא ניתן היה לשמור לקובץ"
  },
  "hi-IN": {
   "uiLanguage": "इंटरफ़ेस की भाषा",
@@ -2198,7 +2210,8 @@
   "fontDeleteYes": "हटाएँ",
   "fontDeleteNo": "रद्द करें",
   "fontDeleteTitle": "फ़ॉन्ट हटाएँ",
-  "fontClose": "बंद करें"
+  "fontClose": "बंद करें",
+  "solarTodFailed": "फ़ाइल में सहेजा नहीं जा सका"
  },
  "hr-HR": {
   "uiLanguage": "Jezik sučelja",
@@ -2367,7 +2380,8 @@
   "fontDeleteYes": "Izbriši",
   "fontDeleteNo": "Odustani",
   "fontDeleteTitle": "Izbriši font",
-  "fontClose": "Zatvori"
+  "fontClose": "Zatvori",
+  "solarTodFailed": "Spremanje u datoteku nije uspjelo"
  },
  "hu-HU": {
   "uiLanguage": "A felület nyelve",
@@ -2536,7 +2550,8 @@
   "fontDeleteYes": "Törlés",
   "fontDeleteNo": "Mégse",
   "fontDeleteTitle": "Betűtípus törlése",
-  "fontClose": "Bezárás"
+  "fontClose": "Bezárás",
+  "solarTodFailed": "A fájlba mentés nem sikerült"
  },
  "id-ID": {
   "uiLanguage": "Bahasa antarmuka",
@@ -2705,7 +2720,8 @@
   "fontDeleteYes": "Hapus",
   "fontDeleteNo": "Batal",
   "fontDeleteTitle": "Hapus font",
-  "fontClose": "Tutup"
+  "fontClose": "Tutup",
+  "solarTodFailed": "Tidak dapat menyimpan ke file"
  },
  "it-IT": {
   "uiLanguage": "Lingua dell'interfaccia",
@@ -2874,7 +2890,8 @@
   "fontDeleteYes": "Elimina",
   "fontDeleteNo": "Annulla",
   "fontDeleteTitle": "Elimina il font",
-  "fontClose": "Chiudi"
+  "fontClose": "Chiudi",
+  "solarTodFailed": "Impossibile salvare nel file"
  },
  "ja-JP": {
   "uiLanguage": "インターフェースの言語",
@@ -3043,7 +3060,8 @@
   "fontDeleteYes": "削除",
   "fontDeleteNo": "キャンセル",
   "fontDeleteTitle": "フォントを削除",
-  "fontClose": "閉じる"
+  "fontClose": "閉じる",
+  "solarTodFailed": "ファイルに保存できませんでした"
  },
  "ko-KR": {
   "uiLanguage": "인터페이스 언어",
@@ -3212,7 +3230,8 @@
   "fontDeleteYes": "삭제",
   "fontDeleteNo": "취소",
   "fontDeleteTitle": "글꼴 삭제",
-  "fontClose": "닫기"
+  "fontClose": "닫기",
+  "solarTodFailed": "파일에 저장할 수 없습니다"
  },
  "mk-MK": {
   "uiLanguage": "Јазик на интерфејсот",
@@ -3381,7 +3400,8 @@
   "fontDeleteYes": "Избриши",
   "fontDeleteNo": "Откажи",
   "fontDeleteTitle": "Избриши фонт",
-  "fontClose": "Затвори"
+  "fontClose": "Затвори",
+  "solarTodFailed": "Не успеа зачувувањето во датотека"
  },
  "ms-MY": {
   "uiLanguage": "Bahasa antara muka",
@@ -3550,7 +3570,8 @@
   "fontDeleteYes": "Padam",
   "fontDeleteNo": "Batal",
   "fontDeleteTitle": "Padam fon",
-  "fontClose": "Tutup"
+  "fontClose": "Tutup",
+  "solarTodFailed": "Tidak dapat menyimpan ke fail"
  },
  "nl-NL": {
   "uiLanguage": "Interfacetaal",
@@ -3719,7 +3740,8 @@
   "fontDeleteYes": "Verwijderen",
   "fontDeleteNo": "Annuleren",
   "fontDeleteTitle": "Lettertype verwijderen",
-  "fontClose": "Sluiten"
+  "fontClose": "Sluiten",
+  "solarTodFailed": "Kon niet naar bestand opslaan"
  },
  "nb-NO": {
   "uiLanguage": "Grensesnittspråk",
@@ -3888,7 +3910,8 @@
   "fontDeleteYes": "Slett",
   "fontDeleteNo": "Avbryt",
   "fontDeleteTitle": "Slett skrifttypen",
-  "fontClose": "Lukk"
+  "fontClose": "Lukk",
+  "solarTodFailed": "Kunne ikke lagre til fil"
  },
  "pl-PL": {
   "uiLanguage": "Język interfejsu",
@@ -4057,7 +4080,8 @@
   "fontDeleteYes": "Usuń",
   "fontDeleteNo": "Anuluj",
   "fontDeleteTitle": "Usuń czcionkę",
-  "fontClose": "Zamknij"
+  "fontClose": "Zamknij",
+  "solarTodFailed": "Nie udało się zapisać do pliku"
  },
  "pt-BR": {
   "uiLanguage": "Idioma da interface",
@@ -4226,7 +4250,8 @@
   "fontDeleteYes": "Excluir",
   "fontDeleteNo": "Cancelar",
   "fontDeleteTitle": "Excluir a fonte",
-  "fontClose": "Fechar"
+  "fontClose": "Fechar",
+  "solarTodFailed": "Não foi possível salvar no arquivo"
  },
  "pt-PT": {
   "uiLanguage": "Idioma da interface",
@@ -4395,7 +4420,8 @@
   "fontDeleteYes": "Eliminar",
   "fontDeleteNo": "Cancelar",
   "fontDeleteTitle": "Eliminar o tipo de letra",
-  "fontClose": "Fechar"
+  "fontClose": "Fechar",
+  "solarTodFailed": "Não foi possível guardar no ficheiro"
  },
  "ro-RO": {
   "uiLanguage": "Limba interfeței",
@@ -4564,7 +4590,8 @@
   "fontDeleteYes": "Șterge",
   "fontDeleteNo": "Anulează",
   "fontDeleteTitle": "Șterge fontul",
-  "fontClose": "Închide"
+  "fontClose": "Închide",
+  "solarTodFailed": "Nu s-a putut salva în fișier"
  },
  "ru-RU": {
   "uiLanguage": "Язык интерфейса",
@@ -4733,7 +4760,8 @@
   "fontDeleteYes": "Удалить",
   "fontDeleteNo": "Отмена",
   "fontDeleteTitle": "Удалить шрифт",
-  "fontClose": "Закрыть"
+  "fontClose": "Закрыть",
+  "solarTodFailed": "Не удалось сохранить в файл"
  },
  "sk-SK": {
   "uiLanguage": "Jazyk rozhrania",
@@ -4902,7 +4930,8 @@
   "fontDeleteYes": "Odstrániť",
   "fontDeleteNo": "Zrušiť",
   "fontDeleteTitle": "Odstrániť písmo",
-  "fontClose": "Zavrieť"
+  "fontClose": "Zavrieť",
+  "solarTodFailed": "Do súboru sa nepodarilo uložiť"
  },
  "sl-SI": {
   "uiLanguage": "Jezik vmesnika",
@@ -5071,7 +5100,8 @@
   "fontDeleteYes": "Izbriši",
   "fontDeleteNo": "Prekliči",
   "fontDeleteTitle": "Izbriši pisavo",
-  "fontClose": "Zapri"
+  "fontClose": "Zapri",
+  "solarTodFailed": "Shranjevanje v datoteko ni uspelo"
  },
  "sv-SE": {
   "uiLanguage": "Gränssnittsspråk",
@@ -5240,7 +5270,8 @@
   "fontDeleteYes": "Ta bort",
   "fontDeleteNo": "Avbryt",
   "fontDeleteTitle": "Ta bort typsnittet",
-  "fontClose": "Stäng"
+  "fontClose": "Stäng",
+  "solarTodFailed": "Det gick inte att spara till fil"
  },
  "th-TH": {
   "uiLanguage": "ภาษาของอินเทอร์เฟซ",
@@ -5409,7 +5440,8 @@
   "fontDeleteYes": "ลบ",
   "fontDeleteNo": "ยกเลิก",
   "fontDeleteTitle": "ลบฟอนต์",
-  "fontClose": "ปิด"
+  "fontClose": "ปิด",
+  "solarTodFailed": "ไม่สามารถบันทึกลงไฟล์ได้"
  },
  "tr-TR": {
   "uiLanguage": "Arayüz dili",
@@ -5578,7 +5610,8 @@
   "fontDeleteYes": "Sil",
   "fontDeleteNo": "İptal",
   "fontDeleteTitle": "Yazı tipini sil",
-  "fontClose": "Kapat"
+  "fontClose": "Kapat",
+  "solarTodFailed": "Dosyaya kaydedilemedi"
  },
  "uk-UA": {
   "uiLanguage": "Мова інтерфейсу",
@@ -5747,7 +5780,8 @@
   "fontDeleteYes": "Видалити",
   "fontDeleteNo": "Скасувати",
   "fontDeleteTitle": "Видалити шрифт",
-  "fontClose": "Закрити"
+  "fontClose": "Закрити",
+  "solarTodFailed": "Не вдалося зберегти у файл"
  },
  "vi-VN": {
   "uiLanguage": "Ngôn ngữ giao diện",
@@ -5916,7 +5950,8 @@
   "fontDeleteYes": "Xóa",
   "fontDeleteNo": "Hủy",
   "fontDeleteTitle": "Xóa phông chữ",
-  "fontClose": "Đóng"
+  "fontClose": "Đóng",
+  "solarTodFailed": "Không thể lưu vào tệp"
  },
  "zh-CN": {
   "uiLanguage": "界面语言",
@@ -6085,7 +6120,8 @@
   "fontDeleteYes": "删除",
   "fontDeleteNo": "取消",
   "fontDeleteTitle": "删除字体",
-  "fontClose": "关闭"
+  "fontClose": "关闭",
+  "solarTodFailed": "无法保存到文件"
  },
  "zh-HK": "zh-TW",
  "zh-TW": {
@@ -6255,6 +6291,7 @@
   "fontDeleteYes": "刪除",
   "fontDeleteNo": "取消",
   "fontDeleteTitle": "刪除字型",
-  "fontClose": "關閉"
+  "fontClose": "關閉",
+  "solarTodFailed": "無法儲存至檔案"
  }
 }
