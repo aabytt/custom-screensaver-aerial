@@ -4,12 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       bump:
-        description: Тип версии
+        description: Version bump type
         type: choice
         default: patch
         options: [patch, minor, major]
       dry_run:
-        description: Только показать новую версию, без коммита
+        description: Only show the new version, do not commit
         type: boolean
         default: false
 
@@ -33,7 +33,7 @@ jobs:
           NEW=$(node -p "require('./package.json').version")
           echo "old=$OLD" >> "$GITHUB_OUTPUT"
           echo "new=$NEW" >> "$GITHUB_OUTPUT"
-          echo "### Версия: $OLD → $NEW" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Version: $OLD → $NEW" >> "$GITHUB_STEP_SUMMARY"
       - name: Commit and push
         if: ${{ !inputs.dry_run }}
         run: |
