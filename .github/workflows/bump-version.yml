@@ -8,6 +8,10 @@ on:
         type: choice
         default: patch
         options: [patch, minor, major]
+      dry_run:
+        description: Только показать новую версию, без коммита
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -20,13 +24,21 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm version ${{ inputs.bump }} --no-git-tag-version
-      - run: node tools/sync-version.js
-      - name: Commit and push
+      - name: Bump
+        id: v
         run: |
-          VERSION=$(node -p "require('./package.json').version")
+          OLD=$(node -p "require('./package.json').version")
+          npm version ${{ inputs.bump }} --no-git-tag-version
+          node tools/sync-version.js
+          NEW=$(node -p "require('./package.json').version")
+          echo "old=$OLD" >> "$GITHUB_OUTPUT"
+          echo "new=$NEW" >> "$GITHUB_OUTPUT"
+          echo "### Версия: $OLD → $NEW" >> "$GITHUB_STEP_SUMMARY"
+      - name: Commit and push
+        if: ${{ !inputs.dry_run }}
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add package.json package-lock.json appinfo.json
-          git commit -m "chore: bump version to $VERSION"
+          git commit -m "chore: bump version to ${{ steps.v.outputs.new }}"
           git push
