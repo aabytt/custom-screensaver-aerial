@@ -55,6 +55,7 @@ var ICONS = {
 	shield: '<path d="M12 2.8l7.5 2.9v6c0 4.7-3.1 8.4-7.5 9.5-4.4-1.1-7.5-4.8-7.5-9.5v-6z"/><path d="M8.6 12.2l2.5 2.5 4.4-4.9"/>',
 	chevron: '<path d="M9 5l7 7-7 7"/>',
 	uturn: '<path d="M7 20.5V10a5 5 0 0 1 10 0v9"/><path d="M13.5 15.5L17 19l3.5-3.5"/>',
+	restore: '<path d=\"M4 15.5V12a8.5 8.5 0 1 1 2.5 6\"/><path d=\"M1.2 12.8L4 15.6l2.8-2.8\"/><path d=\"M12.5 7.5V12l3 2\"/>',
 	translate: '<path d="M3 5.5h10M8 3.5v2M5 5.5c.6 3.4 3.2 6.2 6.5 7.7M11 5.5c-.7 3.6-3.4 6.5-7.5 8.5"/><path d="M12.5 21l4-10 4 10M14 17.5h5"/>'
 };
 
@@ -1137,7 +1138,7 @@ module.exports = kind({
 			title.set('content', I18n.t('applyTemp'));
 			info.set('content', I18n.t('applyTempInfo'));
 		}
-		if (icon) { icon.set('content', svgMarkup(this.applied ? 'uturn' : 'clock')); }
+		if (icon) { icon.set('content', svgMarkup(this.applied ? 'restore' : 'clock')); }
 		this.refit();
 	},
 	autostartOn: function () {
