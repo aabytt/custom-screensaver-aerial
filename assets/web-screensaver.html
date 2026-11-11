@@ -183,6 +183,11 @@ function fixUrl(url) {
 // Apply) this page leaves notifications alone, as nothing would switch them back on.
 var notifyCtl = typeof PalmServiceBridge !== "undefined";
 var notifyOff = false;
+// A timed-out disable may still take effect. Schedule an enable even if disable
+// could not be confirmed. The independent watcher restores notifications on exit.
+var notifyRestoreNeeded = false;
+var notifyQueue = Promise.resolve();
+var notifyPending = null;
 var watcherAlive = false;
 var WATCHER_STALE = 60; // seconds: a check can take a while when services are slow
 var closing = false;    // a key was pressed: no more disables or videos
@@ -192,15 +197,37 @@ function checkWatcher() {
         .then(function (w) { watcherAlive = Math.abs(Date.now() / 1000 - w.time) < WATCHER_STALE; })
         .catch(function () { watcherAlive = false; });
 }
-// done (optional) runs once the call is answered (or after 3 s), or at once if nothing was sent.
-// force sends a disable even if one was sent already.
+// Serialize opposite-state requests so a slow disable cannot race the enable.
+// A failed enable remains retryable; the independent watcher handles abrupt exits.
 function setNotifications(on, force, done) {
-    if (!notifyCtl || (notifyOff === !on && !force) || (!on && (closing || !watcherAlive))) {
+    if (!notifyCtl || (!on && (closing || !watcherAlive))) {
         if (done) done();
         return;
     }
-    notifyOff = !on;
-    luna("luna://com.webos.notification/" + (on ? "enable" : "disable")).then(done);
+    if (!on) notifyRestoreNeeded = true;
+    if (notifyPending === on && !force) {
+        if (done) notifyQueue.then(done);
+        return;
+    }
+    notifyPending = on;
+    notifyQueue = notifyQueue.then(function () {
+        // A key press may have closed the screen while a disable was queued.
+        if (!on && (closing || !watcherAlive)) return;
+        if (!force && (on ? (!notifyOff && !notifyRestoreNeeded) : notifyOff)) return;
+        return luna("luna://com.webos.notification/" + (on ? "enable" : "disable")).then(function (reply) {
+            if (reply && reply.returnValue === true) {
+                notifyOff = !on;
+                if (on) notifyRestoreNeeded = false;
+            } else {
+                console.error("Notification " + (on ? "enable" : "disable") + " was not confirmed");
+            }
+        });
+    }).catch(function (e) {
+        console.error("Notification service: " + e.message);
+    }).then(function () {
+        if (notifyPending === on) notifyPending = null;
+        if (done) done();
+    });
 }
 
 // Same fallbacks as screensaver-main.qml
@@ -303,8 +330,16 @@ function candidatesFor(night, again) {
 }
 
 // afterError: true when the video before failed to play
+var playbackAttempt = 0;
+var playbackErrorHandled = false;
+function handleVideoError(attempt) {
+    if (closing || clockMode || attempt !== playbackAttempt || playbackErrorHandled) return;
+    playbackErrorHandled = true;
+    setNotifications(true);
+    setTimeout(function () { playRandomVideo(true); }, 1000);
+}
 function playRandomVideo(afterError) {
-    if (closing) return;
+    if (closing || clockMode) return;
     var assets = playList.assets;
     var again = afterError !== true;
     var night = nightNow();
@@ -316,8 +351,15 @@ function playRandomVideo(afterError) {
         candidates = candidatesFor(false, again);
     }
     nightPlaying = night;
-    if (!candidates.length) return;
+    if (!candidates.length) {
+        // An exhausted playlist should show the moving OLED clock, not a black screen.
+        // The clock's periodic decoder check can retry when the video becomes available.
+        startClock();
+        return;
+    }
     randomIndex = candidates[Math.floor(Math.random() * candidates.length)];
+    var attempt = ++playbackAttempt;
+    playbackErrorHandled = false;
     stalledSeconds = 0;
     video.classList.remove("on", "fading");
     osd.classList.remove("fading");
@@ -326,7 +368,20 @@ function playRandomVideo(afterError) {
     document.getElementById("poi").textContent = "";
     setNotifications(false);
     video.src = fixUrl(pickSource(assets[randomIndex]));
-    video.play().catch(function () {});
+    var started;
+    try {
+        started = video.play();
+    } catch (e) {
+        console.error("Video play threw: " + (e && e.message || e));
+        handleVideoError(attempt);
+        return;
+    }
+    if (started && typeof started.catch === "function") {
+        started.catch(function (e) {
+            console.error("Video play rejected: " + (e && e.message || e));
+            handleVideoError(attempt);
+        });
+    }
 }
 
 video.addEventListener("playing", function () {
@@ -337,13 +392,10 @@ video.addEventListener("playing", function () {
     osd.style.opacity = osdOpacityNow();
 });
 video.addEventListener("ended", playRandomVideo);
-video.addEventListener("error", function () {
-    setNotifications(true);
-    setTimeout(function () { playRandomVideo(true); }, 1000);
-});
+video.addEventListener("error", function () { handleVideoError(playbackAttempt); });
 
 function checkStatus() {
-    if (randomIndex < 0) return;
+    if (clockMode || randomIndex < 0) return;
     var asset = playList.assets[randomIndex];
     if (video.currentTime > 2) {
         asset.viewed = true;
@@ -404,25 +456,41 @@ function luna(uri, params) {
     });
 }
 
-// Resolves to true if another app holds a video decoder. Live TV (type "tv") is skipped: LG
-// Channels and the home screen leave it running in the background with decoders reserved (#62),
-// and the screensaver's video plays next to it.
+// An unavailable or malformed decoder response is UNKNOWN, not confirmation that
+// the decoder is free. The clock rechecks periodically rather than steal another
+// app's decoder. Live TV reservations remain exempt (#62).
+var decoderStatus = "not checked";
 function videoDecoderInUse() {
     return luna("luna://com.webos.media/getActivePipelines").then(function (pipelines) {
-        return Array.isArray(pipelines) && pipelines.some(function (pipeline) {
-            return pipeline.type !== "tv" && (pipeline.resource || []).some(function (r) {
-                return /VDEC|HEVC|H264|MSVC|VP9|AV1/.test(r.resource);
-            });
+        if (!Array.isArray(pipelines)) {
+            decoderStatus = "unknown (query failed)";
+            return true;
+        }
+        var inUse = pipelines.some(function (pipeline) {
+            return pipeline && pipeline.type !== "tv" && Array.isArray(pipeline.resource) &&
+                pipeline.resource.some(function (r) {
+                    return r && /VDEC|HEVC|H264|MSVC|VP9|AV1/.test(r.resource);
+                });
         });
+        decoderStatus = inUse ? "in use" : "free";
+        return inUse;
     });
 }
 
 // screenmanager ends the screensaver when it sees fullscreen video, except for apps in manual
 // screensaver mode (and LG's videoads). webOS 26 does so within a second, despite the 1px trick.
 // The mode is kept in screenmanager's memory until it restarts, so it's set at every start.
+var manualModeStatus = "not checked";
 function setManualMode() {
     return luna("luna://com.webos.service.screenmanager/setScreenSaverMode",
-        { appId: "com.webos.app.screensaver", mode: "manual" });
+        { appId: "com.webos.app.screensaver", mode: "manual" }).then(function (reply) {
+            manualModeStatus = (reply && reply.returnValue === true) ? "confirmed" : "not confirmed";
+            if (manualModeStatus !== "confirmed") {
+                // The videoads path can still work, so report rather than block playback.
+                console.error("Manual screensaver mode was not confirmed");
+            }
+            return reply;
+        });
 }
 
 function moveClock() {
@@ -437,6 +505,8 @@ function moveClock() {
 
 // Shows the moving clock, and switches to video once the other app has released its decoder (#64)
 function startClock() {
+    if (clockMode) return;
+    video.classList.remove("on", "fading");
     clockMode = true;
     document.body.classList.add("clock");
     layoutOSD();
@@ -463,7 +533,8 @@ function updateDebug() {
     if (!settings.debug) return;
     var el = document.getElementById("debug");
     el.style.display = "block";
-    el.textContent = "Mode: " + (clockMode ? "clock (video decoder in use)" : "video") +
+    el.textContent = "Mode: " + (clockMode ? "clock" : "video") +
+        "\n Decoder: " + decoderStatus + ", manual mode: " + manualModeStatus +
         "\n Video " + randomIndex + " of " + playList.assets.length + (nightPlaying ? " (night playlist)" : "") +
         "\n Source Type: " + settings.sourceType + sourceAlt +
         "\n Try Other Source: " + settings.playLowerQuality +
