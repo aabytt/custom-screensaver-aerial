@@ -4,8 +4,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
 ## [3.0.4] - 2026-11-03
 ### Added
 - Night mode: a separate night playlist for set hours (e.g. 22 to 7, TV time), picked per video
@@ -144,7 +142,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2024-04-06
 - Initial (pre-)release.
 
-[Unreleased]: https://github.com/aabytt/custom-screensaver-aerial/compare/v3.0.4...HEAD
 [3.0.4]: https://github.com/aabytt/custom-screensaver-aerial/compare/v3.0.3...v3.0.4
 [3.0.3]: https://github.com/aabytt/custom-screensaver-aerial/compare/v3.0.2...v3.0.3
 [3.0.2]: https://github.com/aabytt/custom-screensaver-aerial/compare/v3.0.1...v3.0.2
