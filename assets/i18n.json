@@ -171,7 +171,17 @@
   "fontDeleteNo": "إلغاء",
   "fontDeleteTitle": "حذف الخط",
   "fontClose": "إغلاق",
-  "solarTodFailed": "تعذر الحفظ في الملف"
+  "solarTodFailed": "تعذر الحفظ في الملف",
+  "revertStock": "استعادة شاشة التوقف الأصلية",
+  "revertStockInfo": "يعيد شاشة توقف LG حتى تطبّق Aerial مرة أخرى",
+  "revertStockInfoAutostart": "تعود حتى إعادة التشغيل التالية: يطبّق التشغيل التلقائي Aerial مرة أخرى",
+  "revertTitle": "استعادة شاشة التوقف الأصلية؟",
+  "revertAutostartHint": "التشغيل التلقائي مفعّل، لذا ستعود Aerial عند إعادة التشغيل التالية. لإيقافها نهائيًا، أوقف التشغيل التلقائي أولًا.",
+  "revertConfirm": "استعادة",
+  "cancel": "إلغاء",
+  "testNeedsApplyTitle": "Aerial غير مطبّقة",
+  "testNeedsApply": "شاشة التوقف الأصلية لا تزال قيد الاستخدام، لذا سيعرض الاختبار تلك الشاشة. هل تريد تطبيق Aerial الآن وتشغيل الاختبار؟",
+  "testApplyAndRun": "تطبيق واختبار"
  },
  "be-BY": {
   "uiLanguage": "Мова інтэрфейсу",
@@ -345,7 +355,17 @@
   "fontDeleteNo": "Скасаваць",
   "fontDeleteTitle": "Выдаліць шрыфт",
   "fontClose": "Закрыць",
-  "solarTodFailed": "Не атрымалася захаваць у файл"
+  "solarTodFailed": "Не атрымалася захаваць у файл",
+  "revertStock": "Аднавіць стандартную застаўку",
+  "revertStockInfo": "Вяртае застаўку LG, пакуль вы зноў не ўжывяце Aerial",
+  "revertStockInfoAutostart": "Дзейнічае да наступнай перазагрузкі: Аўтазапуск зноў ужывае Aerial",
+  "revertTitle": "Аднавіць стандартную застаўку?",
+  "revertAutostartHint": "Аўтазапуск уключаны, таму Aerial вернецца пры наступнай перазагрузцы. Каб адключыць яго назаўсёды, спачатку выключыце Аўтазапуск.",
+  "revertConfirm": "Аднавіць",
+  "cancel": "Скасаваць",
+  "testNeedsApplyTitle": "Aerial не ўжыты",
+  "testNeedsApply": "Стандартная застаўка ўсё яшчэ ўстаноўлена, таму тэст пакажа менавіта яе. Ужыць Aerial зараз і запусціць тэст?",
+  "testApplyAndRun": "Ужыць і праверыць"
  },
  "ca-ES": {
   "uiLanguage": "Idioma de la interfície",
@@ -519,7 +539,17 @@
   "fontDeleteNo": "Cancel·la",
   "fontDeleteTitle": "Elimina la font",
   "fontClose": "Tanca",
-  "solarTodFailed": "No s’ha pogut desar al fitxer"
+  "solarTodFailed": "No s’ha pogut desar al fitxer",
+  "revertStock": "Restaura l'estalvi de pantalla original",
+  "revertStockInfo": "Torna a posar l'estalvi de pantalla de LG fins que tornis a aplicar Aerial",
+  "revertStockInfoAutostart": "Torna fins al proper reinici: l'Inici automàtic torna a aplicar Aerial",
+  "revertTitle": "Vols restaurar l'estalvi de pantalla original?",
+  "revertAutostartHint": "L'Inici automàtic està activat, així que Aerial tornarà al proper reinici. Per desactivar-lo definitivament, desactiva primer l'Inici automàtic.",
+  "revertConfirm": "Restaura",
+  "cancel": "Cancel·la",
+  "testNeedsApplyTitle": "Aerial no està aplicat",
+  "testNeedsApply": "L'estalvi de pantalla original continua actiu, així que la prova mostraria aquest. Vols aplicar Aerial ara i executar la prova?",
+  "testApplyAndRun": "Aplica i prova"
  },
  "cs-CZ": {
   "uiLanguage": "Jazyk rozhraní",
@@ -693,7 +723,17 @@
   "fontDeleteNo": "Zrušit",
   "fontDeleteTitle": "Smazat písmo",
   "fontClose": "Zavřít",
-  "solarTodFailed": "Do souboru se nepodařilo uložit"
+  "solarTodFailed": "Do souboru se nepodařilo uložit",
+  "revertStock": "Obnovit původní spořič obrazovky",
+  "revertStockInfo": "Vrátí spořič obrazovky LG, dokud znovu nepoužijete Aerial",
+  "revertStockInfoAutostart": "Platí do dalšího restartu: Automatické spuštění znovu použije Aerial",
+  "revertTitle": "Obnovit původní spořič obrazovky?",
+  "revertAutostartHint": "Automatické spuštění je zapnuté, takže se Aerial vrátí při dalším restartu. Chcete-li jej vypnout natrvalo, nejdřív vypněte Automatické spuštění.",
+  "revertConfirm": "Obnovit",
+  "cancel": "Zrušit",
+  "testNeedsApplyTitle": "Aerial není použit",
+  "testNeedsApply": "Původní spořič obrazovky je stále aktivní, takže by test zobrazil právě ten. Použít Aerial nyní a spustit test?",
+  "testApplyAndRun": "Použít a otestovat"
  },
  "da-DK": {
   "uiLanguage": "Grænsefladesprog",
@@ -867,7 +907,17 @@
   "fontDeleteNo": "Annuller",
   "fontDeleteTitle": "Slet skrifttypen",
   "fontClose": "Luk",
-  "solarTodFailed": "Kunne ikke gemme i fil"
+  "solarTodFailed": "Kunne ikke gemme i fil",
+  "revertStock": "Gendan standardpauseskærmen",
+  "revertStockInfo": "Sætter LG's pauseskærm tilbage, indtil du anvender Aerial igen",
+  "revertStockInfoAutostart": "Tilbage indtil næste genstart: Autostart anvender Aerial igen",
+  "revertTitle": "Gendan standardpauseskærmen?",
+  "revertAutostartHint": "Autostart er slået til, så Aerial vender tilbage ved næste genstart. Hvis du vil slå det fra permanent, skal du først slå Autostart fra.",
+  "revertConfirm": "Gendan",
+  "cancel": "Annuller",
+  "testNeedsApplyTitle": "Aerial er ikke anvendt",
+  "testNeedsApply": "Standardpauseskærmen er stadig aktiv, så testen ville vise den. Vil du anvende Aerial nu og køre testen?",
+  "testApplyAndRun": "Anvend og test"
  },
  "de-DE": {
   "uiLanguage": "Sprache der Oberfläche",
@@ -1041,7 +1091,17 @@
   "fontDeleteNo": "Abbrechen",
   "fontDeleteTitle": "Schrift löschen",
   "fontClose": "Schließen",
-  "solarTodFailed": "Speichern in Datei nicht möglich"
+  "solarTodFailed": "Speichern in Datei nicht möglich",
+  "revertStock": "Standard-Bildschirmschoner wiederherstellen",
+  "revertStockInfo": "Stellt den Bildschirmschoner von LG wieder her, bis du Aerial erneut anwendest",
+  "revertStockInfoAutostart": "Wiederhergestellt bis zum nächsten Neustart: Autostart wendet Aerial erneut an",
+  "revertTitle": "Standard-Bildschirmschoner wiederherstellen?",
+  "revertAutostartHint": "Autostart ist aktiviert, daher kehrt Aerial beim nächsten Neustart zurück. Um es dauerhaft zu deaktivieren, schalte zuerst Autostart aus.",
+  "revertConfirm": "Wiederherstellen",
+  "cancel": "Abbrechen",
+  "testNeedsApplyTitle": "Aerial ist nicht angewendet",
+  "testNeedsApply": "Der Standard-Bildschirmschoner ist noch aktiv, der Test würde also diesen zeigen. Aerial jetzt anwenden und den Test ausführen?",
+  "testApplyAndRun": "Anwenden und testen"
  },
  "el-GR": {
   "uiLanguage": "Γλώσσα διεπαφής",
@@ -1215,7 +1275,17 @@
   "fontDeleteNo": "Ακύρωση",
   "fontDeleteTitle": "Διαγραφή γραμματοσειράς",
   "fontClose": "Κλείσιμο",
-  "solarTodFailed": "Αδυναμία αποθήκευσης στο αρχείο"
+  "solarTodFailed": "Αδυναμία αποθήκευσης στο αρχείο",
+  "revertStock": "Επαναφορά προεπιλεγμένης προφύλαξης οθόνης",
+  "revertStockInfo": "Επαναφέρει την προφύλαξη οθόνης της LG μέχρι να εφαρμόσετε ξανά το Aerial",
+  "revertStockInfoAutostart": "Επαναφορά μέχρι την επόμενη επανεκκίνηση: η Αυτόματη εκκίνηση εφαρμόζει ξανά το Aerial",
+  "revertTitle": "Επαναφορά της προεπιλεγμένης προφύλαξης οθόνης;",
+  "revertAutostartHint": "Η Αυτόματη εκκίνηση είναι ενεργή, επομένως το Aerial θα επανέλθει στην επόμενη επανεκκίνηση. Για να το απενεργοποιήσετε οριστικά, απενεργοποιήστε πρώτα την Αυτόματη εκκίνηση.",
+  "revertConfirm": "Επαναφορά",
+  "cancel": "Ακύρωση",
+  "testNeedsApplyTitle": "Το Aerial δεν έχει εφαρμοστεί",
+  "testNeedsApply": "Η προεπιλεγμένη προφύλαξη οθόνης είναι ακόμα ενεργή, οπότε η δοκιμή θα εμφανίσει αυτήν. Να εφαρμοστεί το Aerial τώρα και να γίνει η δοκιμή;",
+  "testApplyAndRun": "Εφαρμογή και δοκιμή"
  },
  "en-AU": "en-US",
  "en-GB": "en-US",
@@ -1391,7 +1461,17 @@
   "fontDeleteNo": "Cancel",
   "fontDeleteTitle": "Delete the font",
   "fontClose": "Close",
-  "solarTodFailed": "Could not save to file"
+  "solarTodFailed": "Could not save to file",
+  "revertStock": "Restore stock screensaver",
+  "revertStockInfo": "Puts LG’s screensaver back until you apply Aerial again",
+  "revertStockInfoAutostart": "Back until the next reboot: Autostart applies Aerial again",
+  "revertTitle": "Restore the stock screensaver?",
+  "revertAutostartHint": "Autostart is on, so Aerial comes back at the next reboot. To turn it off for good, switch Autostart off first.",
+  "revertConfirm": "Restore",
+  "cancel": "Cancel",
+  "testNeedsApplyTitle": "Aerial is not applied",
+  "testNeedsApply": "The stock screensaver is still in place, so the test would show that one. Apply Aerial now and run the test?",
+  "testApplyAndRun": "Apply and test"
  },
  "es-ES": {
   "uiLanguage": "Idioma de la interfaz",
@@ -1565,7 +1645,17 @@
   "fontDeleteNo": "Cancelar",
   "fontDeleteTitle": "Eliminar la fuente",
   "fontClose": "Cerrar",
-  "solarTodFailed": "No se pudo guardar en el archivo"
+  "solarTodFailed": "No se pudo guardar en el archivo",
+  "revertStock": "Restaurar el protector de pantalla original",
+  "revertStockInfo": "Devuelve el protector de pantalla de LG hasta que vuelvas a aplicar Aerial",
+  "revertStockInfoAutostart": "Vuelve hasta el próximo reinicio: el Inicio automático aplica Aerial de nuevo",
+  "revertTitle": "¿Restaurar el protector de pantalla original?",
+  "revertAutostartHint": "El Inicio automático está activado, así que Aerial volverá en el próximo reinicio. Para desactivarlo definitivamente, desactiva primero el Inicio automático.",
+  "revertConfirm": "Restaurar",
+  "cancel": "Cancelar",
+  "testNeedsApplyTitle": "Aerial no está aplicado",
+  "testNeedsApply": "El protector de pantalla original sigue activo, así que la prueba mostraría ese. ¿Aplicar Aerial ahora y ejecutar la prueba?",
+  "testApplyAndRun": "Aplicar y probar"
  },
  "es-419": "es-ES",
  "fi-FI": {
@@ -1740,7 +1830,17 @@
   "fontDeleteNo": "Peruuta",
   "fontDeleteTitle": "Poista fontti",
   "fontClose": "Sulje",
-  "solarTodFailed": "Tallennus tiedostoon epäonnistui"
+  "solarTodFailed": "Tallennus tiedostoon epäonnistui",
+  "revertStock": "Palauta oletusnäytönsäästäjä",
+  "revertStockInfo": "Palauttaa LG:n näytönsäästäjän, kunnes otat Aerialin uudelleen käyttöön",
+  "revertStockInfoAutostart": "Palautettu seuraavaan uudelleenkäynnistykseen asti: Automaattinen käynnistys ottaa Aerialin takaisin käyttöön",
+  "revertTitle": "Palautetaanko oletusnäytönsäästäjä?",
+  "revertAutostartHint": "Automaattinen käynnistys on päällä, joten Aerial palaa seuraavassa uudelleenkäynnistyksessä. Jos haluat poistaa sen pysyvästi, kytke ensin Automaattinen käynnistys pois päältä.",
+  "revertConfirm": "Palauta",
+  "cancel": "Peruuta",
+  "testNeedsApplyTitle": "Aerial ei ole käytössä",
+  "testNeedsApply": "Oletusnäytönsäästäjä on yhä käytössä, joten testi näyttäisi sen. Otetaanko Aerial käyttöön nyt ja suoritetaanko testi?",
+  "testApplyAndRun": "Ota käyttöön ja testaa"
  },
  "fr-CA": "fr-FR",
  "fr-FR": {
@@ -1915,7 +2015,17 @@
   "fontDeleteNo": "Annuler",
   "fontDeleteTitle": "Supprimer la police",
   "fontClose": "Fermer",
-  "solarTodFailed": "Impossible d’enregistrer dans le fichier"
+  "solarTodFailed": "Impossible d’enregistrer dans le fichier",
+  "revertStock": "Rétablir l'écran de veille d'origine",
+  "revertStockInfo": "Remet l'écran de veille de LG jusqu'à ce que vous appliquiez à nouveau Aerial",
+  "revertStockInfoAutostart": "Rétabli jusqu'au prochain redémarrage : le Démarrage automatique applique à nouveau Aerial",
+  "revertTitle": "Rétablir l'écran de veille d'origine ?",
+  "revertAutostartHint": "Le Démarrage automatique est activé, Aerial reviendra donc au prochain redémarrage. Pour le désactiver définitivement, désactivez d'abord le Démarrage automatique.",
+  "revertConfirm": "Rétablir",
+  "cancel": "Annuler",
+  "testNeedsApplyTitle": "Aerial n'est pas appliqué",
+  "testNeedsApply": "L'écran de veille d'origine est toujours en place, le test afficherait donc celui-ci. Appliquer Aerial maintenant et lancer le test ?",
+  "testApplyAndRun": "Appliquer et tester"
  },
  "he-IL": {
   "uiLanguage": "שפת הממשק",
@@ -2089,7 +2199,17 @@
   "fontDeleteNo": "ביטול",
   "fontDeleteTitle": "מחק גופן",
   "fontClose": "סגירה",
-  "solarTodFailed": "לא ניתן היה לשמור לקובץ"
+  "solarTodFailed": "לא ניתן היה לשמור לקובץ",
+  "revertStock": "שחזור שומר המסך המקורי",
+  "revertStockInfo": "מחזיר את שומר המסך של LG עד שתחיל את Aerial שוב",
+  "revertStockInfoAutostart": "חוזר עד האתחול הבא: ההפעלה האוטומטית מחילה את Aerial שוב",
+  "revertTitle": "לשחזר את שומר המסך המקורי?",
+  "revertAutostartHint": "ההפעלה האוטומטית פעילה, ולכן Aerial יחזור באתחול הבא. כדי לכבות אותו לצמיתות, כבה קודם את ההפעלה האוטומטית.",
+  "revertConfirm": "שחזר",
+  "cancel": "ביטול",
+  "testNeedsApplyTitle": "Aerial לא הוחל",
+  "testNeedsApply": "שומר המסך המקורי עדיין פעיל, ולכן הבדיקה תציג אותו. להחיל את Aerial עכשיו ולהריץ את הבדיקה?",
+  "testApplyAndRun": "החל ובדוק"
  },
  "hi-IN": {
   "uiLanguage": "इंटरफ़ेस की भाषा",
@@ -2263,7 +2383,17 @@
   "fontDeleteNo": "रद्द करें",
   "fontDeleteTitle": "फ़ॉन्ट हटाएँ",
   "fontClose": "बंद करें",
-  "solarTodFailed": "फ़ाइल में सहेजा नहीं जा सका"
+  "solarTodFailed": "फ़ाइल में सहेजा नहीं जा सका",
+  "revertStock": "स्टॉक स्क्रीनसेवर वापस लाएँ",
+  "revertStockInfo": "Aerial दोबारा लागू करने तक LG का स्क्रीनसेवर वापस लगा देता है",
+  "revertStockInfoAutostart": "अगले रीबूट तक वापस: ऑटोस्टार्ट Aerial को दोबारा लागू कर देता है",
+  "revertTitle": "स्टॉक स्क्रीनसेवर वापस लाएँ?",
+  "revertAutostartHint": "ऑटोस्टार्ट चालू है, इसलिए अगले रीबूट पर Aerial वापस आ जाएगा। इसे हमेशा के लिए बंद करने के लिए पहले ऑटोस्टार्ट बंद करें।",
+  "revertConfirm": "वापस लाएँ",
+  "cancel": "रद्द करें",
+  "testNeedsApplyTitle": "Aerial लागू नहीं है",
+  "testNeedsApply": "स्टॉक स्क्रीनसेवर अभी भी लगा हुआ है, इसलिए टेस्ट में वही दिखेगा। अभी Aerial लागू करके टेस्ट चलाएँ?",
+  "testApplyAndRun": "लागू करें और टेस्ट करें"
  },
  "hr-HR": {
   "uiLanguage": "Jezik sučelja",
@@ -2437,7 +2567,17 @@
   "fontDeleteNo": "Odustani",
   "fontDeleteTitle": "Izbriši font",
   "fontClose": "Zatvori",
-  "solarTodFailed": "Spremanje u datoteku nije uspjelo"
+  "solarTodFailed": "Spremanje u datoteku nije uspjelo",
+  "revertStock": "Vrati izvorni čuvar zaslona",
+  "revertStockInfo": "Vraća LG-ov čuvar zaslona dok ponovno ne primijenite Aerial",
+  "revertStockInfoAutostart": "Vraćeno do sljedećeg ponovnog pokretanja: Automatsko pokretanje ponovno primjenjuje Aerial",
+  "revertTitle": "Vratiti izvorni čuvar zaslona?",
+  "revertAutostartHint": "Automatsko pokretanje je uključeno pa će se Aerial vratiti pri sljedećem ponovnom pokretanju. Da biste ga isključili zauvijek, prvo isključite Automatsko pokretanje.",
+  "revertConfirm": "Vrati",
+  "cancel": "Odustani",
+  "testNeedsApplyTitle": "Aerial nije primijenjen",
+  "testNeedsApply": "Izvorni čuvar zaslona i dalje je aktivan pa bi test prikazao njega. Primijeniti Aerial sada i pokrenuti test?",
+  "testApplyAndRun": "Primijeni i testiraj"
  },
  "hu-HU": {
   "uiLanguage": "A felület nyelve",
@@ -2611,7 +2751,17 @@
   "fontDeleteNo": "Mégse",
   "fontDeleteTitle": "Betűtípus törlése",
   "fontClose": "Bezárás",
-  "solarTodFailed": "A fájlba mentés nem sikerült"
+  "solarTodFailed": "A fájlba mentés nem sikerült",
+  "revertStock": "Eredeti képernyővédő visszaállítása",
+  "revertStockInfo": "Visszaállítja az LG képernyővédőjét, amíg újra nem alkalmazza az Aerialt",
+  "revertStockInfoAutostart": "Visszaállítva a következő újraindításig: az Automatikus indítás újra alkalmazza az Aerialt",
+  "revertTitle": "Visszaállítja az eredeti képernyővédőt?",
+  "revertAutostartHint": "Az Automatikus indítás be van kapcsolva, ezért az Aerial a következő újraindításkor visszatér. A végleges kikapcsoláshoz előbb kapcsolja ki az Automatikus indítást.",
+  "revertConfirm": "Visszaállítás",
+  "cancel": "Mégse",
+  "testNeedsApplyTitle": "Az Aerial nincs alkalmazva",
+  "testNeedsApply": "Az eredeti képernyővédő még érvényben van, ezért a teszt azt mutatná. Alkalmazza most az Aerialt, és futtassa le a tesztet?",
+  "testApplyAndRun": "Alkalmaz és tesztel"
  },
  "id-ID": {
   "uiLanguage": "Bahasa antarmuka",
@@ -2785,7 +2935,17 @@
   "fontDeleteNo": "Batal",
   "fontDeleteTitle": "Hapus font",
   "fontClose": "Tutup",
-  "solarTodFailed": "Tidak dapat menyimpan ke file"
+  "solarTodFailed": "Tidak dapat menyimpan ke file",
+  "revertStock": "Pulihkan screensaver bawaan",
+  "revertStockInfo": "Mengembalikan screensaver LG sampai Anda menerapkan Aerial lagi",
+  "revertStockInfoAutostart": "Kembali sampai reboot berikutnya: Mulai otomatis menerapkan Aerial lagi",
+  "revertTitle": "Pulihkan screensaver bawaan?",
+  "revertAutostartHint": "Mulai otomatis aktif, jadi Aerial akan kembali saat reboot berikutnya. Untuk menonaktifkannya secara permanen, matikan Mulai otomatis terlebih dahulu.",
+  "revertConfirm": "Pulihkan",
+  "cancel": "Batal",
+  "testNeedsApplyTitle": "Aerial belum diterapkan",
+  "testNeedsApply": "Screensaver bawaan masih aktif, jadi pengujian akan menampilkan screensaver itu. Terapkan Aerial sekarang dan jalankan pengujian?",
+  "testApplyAndRun": "Terapkan dan uji"
  },
  "it-IT": {
   "uiLanguage": "Lingua dell'interfaccia",
@@ -2959,7 +3119,17 @@
   "fontDeleteNo": "Annulla",
   "fontDeleteTitle": "Elimina il font",
   "fontClose": "Chiudi",
-  "solarTodFailed": "Impossibile salvare nel file"
+  "solarTodFailed": "Impossibile salvare nel file",
+  "revertStock": "Ripristina lo screensaver originale",
+  "revertStockInfo": "Ripristina lo screensaver di LG finché non applichi di nuovo Aerial",
+  "revertStockInfoAutostart": "Ripristinato fino al prossimo riavvio: l'Avvio automatico applica di nuovo Aerial",
+  "revertTitle": "Ripristinare lo screensaver originale?",
+  "revertAutostartHint": "L'Avvio automatico è attivo, quindi Aerial tornerà al prossimo riavvio. Per disattivarlo definitivamente, disattiva prima l'Avvio automatico.",
+  "revertConfirm": "Ripristina",
+  "cancel": "Annulla",
+  "testNeedsApplyTitle": "Aerial non è applicato",
+  "testNeedsApply": "Lo screensaver originale è ancora attivo, quindi il test mostrerebbe quello. Applicare Aerial ora ed eseguire il test?",
+  "testApplyAndRun": "Applica e testa"
  },
  "ja-JP": {
   "uiLanguage": "インターフェースの言語",
@@ -3133,7 +3303,17 @@
   "fontDeleteNo": "キャンセル",
   "fontDeleteTitle": "フォントを削除",
   "fontClose": "閉じる",
-  "solarTodFailed": "ファイルに保存できませんでした"
+  "solarTodFailed": "ファイルに保存できませんでした",
+  "revertStock": "標準のスクリーンセーバーに戻す",
+  "revertStockInfo": "Aerial を再度適用するまで、LG のスクリーンセーバーに戻します",
+  "revertStockInfoAutostart": "次回の再起動まで元に戻します。自動起動により Aerial が再び適用されます",
+  "revertTitle": "標準のスクリーンセーバーに戻しますか？",
+  "revertAutostartHint": "自動起動がオンのため、次回の再起動時に Aerial が復活します。完全にオフにするには、先に自動起動をオフにしてください。",
+  "revertConfirm": "元に戻す",
+  "cancel": "キャンセル",
+  "testNeedsApplyTitle": "Aerial は適用されていません",
+  "testNeedsApply": "標準のスクリーンセーバーがまだ設定されているため、テストではそちらが表示されます。今すぐ Aerial を適用してテストを実行しますか？",
+  "testApplyAndRun": "適用してテスト"
  },
  "ko-KR": {
   "uiLanguage": "인터페이스 언어",
@@ -3307,7 +3487,17 @@
   "fontDeleteNo": "취소",
   "fontDeleteTitle": "글꼴 삭제",
   "fontClose": "닫기",
-  "solarTodFailed": "파일에 저장할 수 없습니다"
+  "solarTodFailed": "파일에 저장할 수 없습니다",
+  "revertStock": "기본 화면 보호기 복원",
+  "revertStockInfo": "Aerial을 다시 적용할 때까지 LG 화면 보호기로 되돌립니다",
+  "revertStockInfoAutostart": "다음 재부팅 때까지 복원: 자동 시작이 Aerial을 다시 적용합니다",
+  "revertTitle": "기본 화면 보호기를 복원할까요?",
+  "revertAutostartHint": "자동 시작이 켜져 있어 다음 재부팅 시 Aerial이 다시 적용됩니다. 완전히 끄려면 먼저 자동 시작을 끄세요.",
+  "revertConfirm": "복원",
+  "cancel": "취소",
+  "testNeedsApplyTitle": "Aerial이 적용되지 않았습니다",
+  "testNeedsApply": "기본 화면 보호기가 아직 적용되어 있어 테스트에서 그 화면이 표시됩니다. 지금 Aerial을 적용하고 테스트를 실행할까요?",
+  "testApplyAndRun": "적용 후 테스트"
  },
  "mk-MK": {
   "uiLanguage": "Јазик на интерфејсот",
@@ -3481,7 +3671,17 @@
   "fontDeleteNo": "Откажи",
   "fontDeleteTitle": "Избриши фонт",
   "fontClose": "Затвори",
-  "solarTodFailed": "Не успеа зачувувањето во датотека"
+  "solarTodFailed": "Не успеа зачувувањето во датотека",
+  "revertStock": "Врати ја стандардната заштита на екранот",
+  "revertStockInfo": "Ја враќа заштитата на екранот на LG додека повторно не го примените Aerial",
+  "revertStockInfoAutostart": "Вратено до следниот рестарт: Автоматскиот старт повторно го применува Aerial",
+  "revertTitle": "Да се врати ли стандардната заштита на екранот?",
+  "revertAutostartHint": "Автоматскиот старт е вклучен, па Aerial ќе се врати при следниот рестарт. За да го исклучите засекогаш, прво исклучете го Автоматскиот старт.",
+  "revertConfirm": "Врати",
+  "cancel": "Откажи",
+  "testNeedsApplyTitle": "Aerial не е применет",
+  "testNeedsApply": "Стандардната заштита на екранот сè уште е активна, па тестот би ја прикажал неа. Да се примени ли Aerial сега и да се изврши тестот?",
+  "testApplyAndRun": "Примени и тестирај"
  },
  "ms-MY": {
   "uiLanguage": "Bahasa antara muka",
@@ -3655,7 +3855,17 @@
   "fontDeleteNo": "Batal",
   "fontDeleteTitle": "Padam fon",
   "fontClose": "Tutup",
-  "solarTodFailed": "Tidak dapat menyimpan ke fail"
+  "solarTodFailed": "Tidak dapat menyimpan ke fail",
+  "revertStock": "Pulihkan penyelamat skrin asal",
+  "revertStockInfo": "Memulangkan penyelamat skrin LG sehingga anda menggunakan Aerial semula",
+  "revertStockInfoAutostart": "Dipulihkan sehingga but semula seterusnya: Mula automatik menggunakan Aerial semula",
+  "revertTitle": "Pulihkan penyelamat skrin asal?",
+  "revertAutostartHint": "Mula automatik dihidupkan, jadi Aerial akan kembali pada but semula seterusnya. Untuk mematikannya secara kekal, matikan Mula automatik dahulu.",
+  "revertConfirm": "Pulihkan",
+  "cancel": "Batal",
+  "testNeedsApplyTitle": "Aerial belum digunakan",
+  "testNeedsApply": "Penyelamat skrin asal masih digunakan, jadi ujian akan memaparkannya. Gunakan Aerial sekarang dan jalankan ujian?",
+  "testApplyAndRun": "Guna dan uji"
  },
  "nl-NL": {
   "uiLanguage": "Interfacetaal",
@@ -3829,7 +4039,17 @@
   "fontDeleteNo": "Annuleren",
   "fontDeleteTitle": "Lettertype verwijderen",
   "fontClose": "Sluiten",
-  "solarTodFailed": "Kon niet naar bestand opslaan"
+  "solarTodFailed": "Kon niet naar bestand opslaan",
+  "revertStock": "Standaardschermbeveiliging herstellen",
+  "revertStockInfo": "Zet de schermbeveiliging van LG terug totdat je Aerial opnieuw toepast",
+  "revertStockInfoAutostart": "Hersteld tot de volgende herstart: Automatisch starten past Aerial opnieuw toe",
+  "revertTitle": "Standaardschermbeveiliging herstellen?",
+  "revertAutostartHint": "Automatisch starten staat aan, dus Aerial komt terug bij de volgende herstart. Zet eerst Automatisch starten uit om het definitief uit te schakelen.",
+  "revertConfirm": "Herstellen",
+  "cancel": "Annuleren",
+  "testNeedsApplyTitle": "Aerial is niet toegepast",
+  "testNeedsApply": "De standaardschermbeveiliging is nog actief, dus de test zou die tonen. Aerial nu toepassen en de test uitvoeren?",
+  "testApplyAndRun": "Toepassen en testen"
  },
  "nb-NO": {
   "uiLanguage": "Grensesnittspråk",
@@ -4003,7 +4223,17 @@
   "fontDeleteNo": "Avbryt",
   "fontDeleteTitle": "Slett skrifttypen",
   "fontClose": "Lukk",
-  "solarTodFailed": "Kunne ikke lagre til fil"
+  "solarTodFailed": "Kunne ikke lagre til fil",
+  "revertStock": "Gjenopprett standard skjermsparer",
+  "revertStockInfo": "Setter LGs skjermsparer tilbake til du bruker Aerial igjen",
+  "revertStockInfoAutostart": "Tilbake til neste omstart: Autostart bruker Aerial igjen",
+  "revertTitle": "Gjenopprette standard skjermsparer?",
+  "revertAutostartHint": "Autostart er på, så Aerial kommer tilbake ved neste omstart. Hvis du vil slå det av for godt, må du slå av Autostart først.",
+  "revertConfirm": "Gjenopprett",
+  "cancel": "Avbryt",
+  "testNeedsApplyTitle": "Aerial er ikke brukt",
+  "testNeedsApply": "Standard skjermsparer er fortsatt på plass, så testen ville vist den. Bruke Aerial nå og kjøre testen?",
+  "testApplyAndRun": "Bruk og test"
  },
  "pl-PL": {
   "uiLanguage": "Język interfejsu",
@@ -4177,7 +4407,17 @@
   "fontDeleteNo": "Anuluj",
   "fontDeleteTitle": "Usuń czcionkę",
   "fontClose": "Zamknij",
-  "solarTodFailed": "Nie udało się zapisać do pliku"
+  "solarTodFailed": "Nie udało się zapisać do pliku",
+  "revertStock": "Przywróć domyślny wygaszacz ekranu",
+  "revertStockInfo": "Przywraca wygaszacz ekranu LG, dopóki ponownie nie zastosujesz Aerial",
+  "revertStockInfoAutostart": "Przywrócony do następnego restartu: Autostart ponownie stosuje Aerial",
+  "revertTitle": "Przywrócić domyślny wygaszacz ekranu?",
+  "revertAutostartHint": "Autostart jest włączony, więc Aerial wróci przy następnym restarcie. Aby wyłączyć go na stałe, najpierw wyłącz Autostart.",
+  "revertConfirm": "Przywróć",
+  "cancel": "Anuluj",
+  "testNeedsApplyTitle": "Aerial nie jest zastosowany",
+  "testNeedsApply": "Domyślny wygaszacz ekranu nadal jest aktywny, więc test pokazałby właśnie jego. Zastosować Aerial teraz i uruchomić test?",
+  "testApplyAndRun": "Zastosuj i przetestuj"
  },
  "pt-BR": {
   "uiLanguage": "Idioma da interface",
@@ -4351,7 +4591,17 @@
   "fontDeleteNo": "Cancelar",
   "fontDeleteTitle": "Excluir a fonte",
   "fontClose": "Fechar",
-  "solarTodFailed": "Não foi possível salvar no arquivo"
+  "solarTodFailed": "Não foi possível salvar no arquivo",
+  "revertStock": "Restaurar a proteção de tela original",
+  "revertStockInfo": "Restaura a proteção de tela da LG até você aplicar o Aerial novamente",
+  "revertStockInfoAutostart": "Restaurada até a próxima reinicialização: o Início automático aplica o Aerial novamente",
+  "revertTitle": "Restaurar a proteção de tela original?",
+  "revertAutostartHint": "O Início automático está ativado, então o Aerial volta na próxima reinicialização. Para desativá-lo de vez, desative primeiro o Início automático.",
+  "revertConfirm": "Restaurar",
+  "cancel": "Cancelar",
+  "testNeedsApplyTitle": "O Aerial não está aplicado",
+  "testNeedsApply": "A proteção de tela original ainda está ativa, então o teste mostraria essa. Aplicar o Aerial agora e executar o teste?",
+  "testApplyAndRun": "Aplicar e testar"
  },
  "pt-PT": {
   "uiLanguage": "Idioma da interface",
@@ -4525,7 +4775,17 @@
   "fontDeleteNo": "Cancelar",
   "fontDeleteTitle": "Eliminar o tipo de letra",
   "fontClose": "Fechar",
-  "solarTodFailed": "Não foi possível guardar no ficheiro"
+  "solarTodFailed": "Não foi possível guardar no ficheiro",
+  "revertStock": "Restaurar o protetor de ecrã original",
+  "revertStockInfo": "Repõe o protetor de ecrã da LG até aplicar o Aerial novamente",
+  "revertStockInfoAutostart": "Reposto até ao próximo reinício: o Arranque automático aplica o Aerial novamente",
+  "revertTitle": "Restaurar o protetor de ecrã original?",
+  "revertAutostartHint": "O Arranque automático está ativado, por isso o Aerial volta no próximo reinício. Para o desativar definitivamente, desative primeiro o Arranque automático.",
+  "revertConfirm": "Restaurar",
+  "cancel": "Cancelar",
+  "testNeedsApplyTitle": "O Aerial não está aplicado",
+  "testNeedsApply": "O protetor de ecrã original ainda está ativo, por isso o teste mostraria esse. Aplicar o Aerial agora e executar o teste?",
+  "testApplyAndRun": "Aplicar e testar"
  },
  "ro-RO": {
   "uiLanguage": "Limba interfeței",
@@ -4699,7 +4959,17 @@
   "fontDeleteNo": "Anulează",
   "fontDeleteTitle": "Șterge fontul",
   "fontClose": "Închide",
-  "solarTodFailed": "Nu s-a putut salva în fișier"
+  "solarTodFailed": "Nu s-a putut salva în fișier",
+  "revertStock": "Restaurează screensaverul original",
+  "revertStockInfo": "Repune screensaverul LG până aplici din nou Aerial",
+  "revertStockInfoAutostart": "Restaurat până la următoarea repornire: Pornirea automată aplică din nou Aerial",
+  "revertTitle": "Restaurezi screensaverul original?",
+  "revertAutostartHint": "Pornirea automată este activată, așa că Aerial revine la următoarea repornire. Pentru a o dezactiva definitiv, dezactivează mai întâi Pornirea automată.",
+  "revertConfirm": "Restaurează",
+  "cancel": "Anulează",
+  "testNeedsApplyTitle": "Aerial nu este aplicat",
+  "testNeedsApply": "Screensaverul original este încă activ, deci testul l-ar afișa pe acesta. Aplici Aerial acum și rulezi testul?",
+  "testApplyAndRun": "Aplică și testează"
  },
  "ru-RU": {
   "uiLanguage": "Язык интерфейса",
@@ -4873,7 +5143,17 @@
   "fontDeleteNo": "Отмена",
   "fontDeleteTitle": "Удалить шрифт",
   "fontClose": "Закрыть",
-  "solarTodFailed": "Не удалось сохранить в файл"
+  "solarTodFailed": "Не удалось сохранить в файл",
+  "revertStock": "Восстановить стандартную заставку",
+  "revertStockInfo": "Возвращает заставку LG, пока вы снова не примените Aerial",
+  "revertStockInfoAutostart": "Действует до следующей перезагрузки: Автозапуск снова применяет Aerial",
+  "revertTitle": "Восстановить стандартную заставку?",
+  "revertAutostartHint": "Автозапуск включён, поэтому Aerial вернётся при следующей перезагрузке. Чтобы отключить его насовсем, сначала выключите Автозапуск.",
+  "revertConfirm": "Восстановить",
+  "cancel": "Отмена",
+  "testNeedsApplyTitle": "Aerial не применён",
+  "testNeedsApply": "Стандартная заставка всё ещё установлена, поэтому тест покажет именно её. Применить Aerial сейчас и запустить тест?",
+  "testApplyAndRun": "Применить и проверить"
  },
  "sk-SK": {
   "uiLanguage": "Jazyk rozhrania",
@@ -5047,7 +5327,17 @@
   "fontDeleteNo": "Zrušiť",
   "fontDeleteTitle": "Odstrániť písmo",
   "fontClose": "Zavrieť",
-  "solarTodFailed": "Do súboru sa nepodarilo uložiť"
+  "solarTodFailed": "Do súboru sa nepodarilo uložiť",
+  "revertStock": "Obnoviť pôvodný šetrič obrazovky",
+  "revertStockInfo": "Vráti šetrič obrazovky LG, kým znova nepoužijete Aerial",
+  "revertStockInfoAutostart": "Platí do ďalšieho reštartu: Automatické spustenie znova použije Aerial",
+  "revertTitle": "Obnoviť pôvodný šetrič obrazovky?",
+  "revertAutostartHint": "Automatické spustenie je zapnuté, takže sa Aerial vráti pri ďalšom reštarte. Ak ho chcete vypnúť natrvalo, najprv vypnite Automatické spustenie.",
+  "revertConfirm": "Obnoviť",
+  "cancel": "Zrušiť",
+  "testNeedsApplyTitle": "Aerial nie je použitý",
+  "testNeedsApply": "Pôvodný šetrič obrazovky je stále aktívny, takže by test zobrazil práve ten. Použiť Aerial teraz a spustiť test?",
+  "testApplyAndRun": "Použiť a otestovať"
  },
  "sl-SI": {
   "uiLanguage": "Jezik vmesnika",
@@ -5221,7 +5511,17 @@
   "fontDeleteNo": "Prekliči",
   "fontDeleteTitle": "Izbriši pisavo",
   "fontClose": "Zapri",
-  "solarTodFailed": "Shranjevanje v datoteko ni uspelo"
+  "solarTodFailed": "Shranjevanje v datoteko ni uspelo",
+  "revertStock": "Obnovi izvirni ohranjevalnik zaslona",
+  "revertStockInfo": "Povrne LG-jev ohranjevalnik zaslona, dokler znova ne uporabite Aerial",
+  "revertStockInfoAutostart": "Povrnjeno do naslednjega ponovnega zagona: Samodejni zagon znova uporabi Aerial",
+  "revertTitle": "Obnovim izvirni ohranjevalnik zaslona?",
+  "revertAutostartHint": "Samodejni zagon je vklopljen, zato se bo Aerial vrnil ob naslednjem ponovnem zagonu. Če ga želite izklopiti za vedno, najprej izklopite Samodejni zagon.",
+  "revertConfirm": "Obnovi",
+  "cancel": "Prekliči",
+  "testNeedsApplyTitle": "Aerial ni uporabljen",
+  "testNeedsApply": "Izvirni ohranjevalnik zaslona je še vedno aktiven, zato bi test prikazal tega. Uporabim Aerial zdaj in zaženem test?",
+  "testApplyAndRun": "Uporabi in testiraj"
  },
  "sv-SE": {
   "uiLanguage": "Gränssnittsspråk",
@@ -5395,7 +5695,17 @@
   "fontDeleteNo": "Avbryt",
   "fontDeleteTitle": "Ta bort typsnittet",
   "fontClose": "Stäng",
-  "solarTodFailed": "Det gick inte att spara till fil"
+  "solarTodFailed": "Det gick inte att spara till fil",
+  "revertStock": "Återställ standardskärmsläckaren",
+  "revertStockInfo": "Sätter tillbaka LG:s skärmsläckare tills du tillämpar Aerial igen",
+  "revertStockInfoAutostart": "Tillbaka till nästa omstart: Autostart tillämpar Aerial igen",
+  "revertTitle": "Återställa standardskärmsläckaren?",
+  "revertAutostartHint": "Autostart är på, så Aerial kommer tillbaka vid nästa omstart. Stäng av Autostart först om du vill stänga av det för gott.",
+  "revertConfirm": "Återställ",
+  "cancel": "Avbryt",
+  "testNeedsApplyTitle": "Aerial är inte tillämpat",
+  "testNeedsApply": "Standardskärmsläckaren är fortfarande aktiv, så testet skulle visa den. Tillämpa Aerial nu och köra testet?",
+  "testApplyAndRun": "Tillämpa och testa"
  },
  "th-TH": {
   "uiLanguage": "ภาษาของอินเทอร์เฟซ",
@@ -5569,7 +5879,17 @@
   "fontDeleteNo": "ยกเลิก",
   "fontDeleteTitle": "ลบฟอนต์",
   "fontClose": "ปิด",
-  "solarTodFailed": "ไม่สามารถบันทึกลงไฟล์ได้"
+  "solarTodFailed": "ไม่สามารถบันทึกลงไฟล์ได้",
+  "revertStock": "คืนค่าสกรีนเซฟเวอร์เดิม",
+  "revertStockInfo": "คืนสกรีนเซฟเวอร์ของ LG จนกว่าคุณจะใช้ Aerial อีกครั้ง",
+  "revertStockInfoAutostart": "คืนค่าจนถึงการรีบูตครั้งถัดไป: เริ่มอัตโนมัติจะใช้ Aerial อีกครั้ง",
+  "revertTitle": "คืนค่าสกรีนเซฟเวอร์เดิมหรือไม่?",
+  "revertAutostartHint": "เปิดเริ่มอัตโนมัติอยู่ Aerial จึงจะกลับมาเมื่อรีบูตครั้งถัดไป หากต้องการปิดถาวร ให้ปิดเริ่มอัตโนมัติก่อน",
+  "revertConfirm": "คืนค่า",
+  "cancel": "ยกเลิก",
+  "testNeedsApplyTitle": "ยังไม่ได้ใช้ Aerial",
+  "testNeedsApply": "สกรีนเซฟเวอร์เดิมยังใช้งานอยู่ การทดสอบจึงจะแสดงตัวนั้น ใช้ Aerial ตอนนี้แล้วเรียกใช้การทดสอบเลยไหม",
+  "testApplyAndRun": "ใช้และทดสอบ"
  },
  "tr-TR": {
   "uiLanguage": "Arayüz dili",
@@ -5743,7 +6063,17 @@
   "fontDeleteNo": "İptal",
   "fontDeleteTitle": "Yazı tipini sil",
   "fontClose": "Kapat",
-  "solarTodFailed": "Dosyaya kaydedilemedi"
+  "solarTodFailed": "Dosyaya kaydedilemedi",
+  "revertStock": "Orijinal ekran koruyucuyu geri yükle",
+  "revertStockInfo": "Aerial'ı yeniden uygulayana kadar LG'nin ekran koruyucusunu geri getirir",
+  "revertStockInfoAutostart": "Bir sonraki yeniden başlatmaya kadar geri yüklenir: Otomatik başlat, Aerial'ı yeniden uygular",
+  "revertTitle": "Orijinal ekran koruyucu geri yüklensin mi?",
+  "revertAutostartHint": "Otomatik başlat açık olduğundan Aerial bir sonraki yeniden başlatmada geri gelir. Tamamen kapatmak için önce Otomatik başlat'ı kapatın.",
+  "revertConfirm": "Geri yükle",
+  "cancel": "İptal",
+  "testNeedsApplyTitle": "Aerial uygulanmadı",
+  "testNeedsApply": "Orijinal ekran koruyucu hâlâ yerinde, bu yüzden test onu gösterir. Aerial şimdi uygulansın ve test çalıştırılsın mı?",
+  "testApplyAndRun": "Uygula ve test et"
  },
  "uk-UA": {
   "uiLanguage": "Мова інтерфейсу",
@@ -5917,7 +6247,17 @@
   "fontDeleteNo": "Скасувати",
   "fontDeleteTitle": "Видалити шрифт",
   "fontClose": "Закрити",
-  "solarTodFailed": "Не вдалося зберегти у файл"
+  "solarTodFailed": "Не вдалося зберегти у файл",
+  "revertStock": "Відновити стандартну заставку",
+  "revertStockInfo": "Повертає заставку LG, доки ви знову не застосуєте Aerial",
+  "revertStockInfoAutostart": "Діє до наступного перезавантаження: Автозапуск знову застосовує Aerial",
+  "revertTitle": "Відновити стандартну заставку?",
+  "revertAutostartHint": "Автозапуск увімкнено, тому Aerial повернеться після наступного перезавантаження. Щоб вимкнути його назавжди, спочатку вимкніть Автозапуск.",
+  "revertConfirm": "Відновити",
+  "cancel": "Скасувати",
+  "testNeedsApplyTitle": "Aerial не застосовано",
+  "testNeedsApply": "Стандартна заставка досі встановлена, тому тест покаже саме її. Застосувати Aerial зараз і запустити тест?",
+  "testApplyAndRun": "Застосувати й перевірити"
  },
  "vi-VN": {
   "uiLanguage": "Ngôn ngữ giao diện",
@@ -6091,7 +6431,17 @@
   "fontDeleteNo": "Hủy",
   "fontDeleteTitle": "Xóa phông chữ",
   "fontClose": "Đóng",
-  "solarTodFailed": "Không thể lưu vào tệp"
+  "solarTodFailed": "Không thể lưu vào tệp",
+  "revertStock": "Khôi phục trình bảo vệ màn hình gốc",
+  "revertStockInfo": "Đặt lại trình bảo vệ màn hình của LG cho đến khi bạn áp dụng Aerial lần nữa",
+  "revertStockInfoAutostart": "Khôi phục đến lần khởi động lại tiếp theo: Tự khởi động sẽ áp dụng lại Aerial",
+  "revertTitle": "Khôi phục trình bảo vệ màn hình gốc?",
+  "revertAutostartHint": "Tự khởi động đang bật nên Aerial sẽ quay lại ở lần khởi động lại tiếp theo. Để tắt hẳn, hãy tắt Tự khởi động trước.",
+  "revertConfirm": "Khôi phục",
+  "cancel": "Hủy",
+  "testNeedsApplyTitle": "Aerial chưa được áp dụng",
+  "testNeedsApply": "Trình bảo vệ màn hình gốc vẫn đang được dùng nên bài thử sẽ hiển thị nó. Áp dụng Aerial ngay và chạy thử?",
+  "testApplyAndRun": "Áp dụng và thử"
  },
  "zh-CN": {
   "uiLanguage": "界面语言",
@@ -6265,7 +6615,17 @@
   "fontDeleteNo": "取消",
   "fontDeleteTitle": "删除字体",
   "fontClose": "关闭",
-  "solarTodFailed": "无法保存到文件"
+  "solarTodFailed": "无法保存到文件",
+  "revertStock": "恢复默认屏保",
+  "revertStockInfo": "恢复 LG 屏保，直到你再次应用 Aerial",
+  "revertStockInfoAutostart": "恢复至下次重启：自动启动会再次应用 Aerial",
+  "revertTitle": "恢复默认屏保？",
+  "revertAutostartHint": "自动启动已开启，因此 Aerial 会在下次重启时恢复。若要彻底关闭，请先关闭自动启动。",
+  "revertConfirm": "恢复",
+  "cancel": "取消",
+  "testNeedsApplyTitle": "未应用 Aerial",
+  "testNeedsApply": "当前仍是默认屏保，测试将显示该屏保。现在应用 Aerial 并运行测试吗？",
+  "testApplyAndRun": "应用并测试"
  },
  "zh-HK": "zh-TW",
  "zh-TW": {
@@ -6440,6 +6800,16 @@
   "fontDeleteNo": "取消",
   "fontDeleteTitle": "刪除字型",
   "fontClose": "關閉",
-  "solarTodFailed": "無法儲存至檔案"
+  "solarTodFailed": "無法儲存至檔案",
+  "revertStock": "還原預設螢幕保護程式",
+  "revertStockInfo": "還原 LG 的螢幕保護程式，直到你再次套用 Aerial",
+  "revertStockInfoAutostart": "還原至下次重新開機：自動啟動會再次套用 Aerial",
+  "revertTitle": "還原預設螢幕保護程式？",
+  "revertAutostartHint": "自動啟動已開啟，因此 Aerial 會在下次重新開機時恢復。若要永久關閉，請先關閉自動啟動。",
+  "revertConfirm": "還原",
+  "cancel": "取消",
+  "testNeedsApplyTitle": "尚未套用 Aerial",
+  "testNeedsApply": "目前仍是預設螢幕保護程式，測試將顯示該程式。現在套用 Aerial 並執行測試嗎？",
+  "testApplyAndRun": "套用並測試"
  }
 }
