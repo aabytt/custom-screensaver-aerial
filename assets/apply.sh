@@ -37,7 +37,13 @@ NOTIFY_PIDFILE="/tmp/aerial-notify.pid"
 NOTIFY_HEARTBEAT="/tmp/aerial-watcher.json"
 SAM_WAIT=60   # seconds to wait for SAM at boot
 
-if [[ -f "$MOUNT_TARGET" ]]; then
+# webOS 4: the QML screensaver's PunchThrough shows no video there, only black under the OSD (#30),
+# so it gets the web screensaver, whose <video> takes WAM's own video path
+WEBOS_MAJOR="$(grep -o '"webos_release" *: *"[0-9]*' /var/run/nyx/os_info.json 2>/dev/null | grep -o '[0-9]*$' || true)"
+WEB_ONLY=
+[[ "$WEBOS_MAJOR" = 4 ]] && WEB_ONLY=1
+
+if [[ -z "$WEB_ONLY" && -f "$MOUNT_TARGET" ]]; then
     if ! findmnt "$MOUNT_TARGET"; then
         mount --bind "$QML_PATH" "$MOUNT_TARGET"
         echo "[+] Enabled succesfully" >&2
@@ -65,6 +71,14 @@ luna_call() {  # uri payload pattern
 }
 sam_call() {  # method payload pattern
     luna_call "$SAM/$1" "$2" "$3"
+}
+# Whether SAM is up. webOS 4 has no systemd: there SAM is up if it answers
+sam_up() {
+    if command -v systemctl >/dev/null 2>&1; then
+        systemctl is-active -q sam.service
+    else
+        sam_call getAppInfo "{\"id\":\"$APP_ID\"}" '"returnValue": *true'
+    fi
 }
 
 # Whether SAM's getAppInfo for app $1 matches $2, polling for up to 20 s: at boot SAM can still
@@ -144,7 +158,7 @@ sam_reload() {  # app pattern
 # that closes every running app, and on webOS 26 was reported to leave SAM's app registration
 # broken (#50).
 apply_web() {
-    if ! systemctl is-active -q sam.service; then
+    if ! sam_up; then
         # SAM isn't up yet: it reads the mounted manifest on its first scan
         return 0
     fi
@@ -176,7 +190,7 @@ undo_videoads_setup() {
     [[ -f "$VA_RESTORE_HOOK" ]] || return 0
     # At boot SAM and the settings service may still be starting
     for i in $(seq 1 $SAM_WAIT); do
-        systemctl is-active -q sam.service && break
+        sam_up && break
         sleep 1
     done
     # The hook unmounts a videoads copy itself, but fails on one with mounts inside it (this
@@ -299,7 +313,7 @@ mirror_videoads() {
     if ! va_mounted_current; then
         va_mount_copy || return 0
     fi
-    systemctl is-active -q sam.service || return 0
+    sam_up || return 0
     sam_call getAppInfo "{\"id\":\"$VA_ID\"}" "$VA_MAIN" && return 0
     if ! sam_reload "$VA_ID" "$VA_MAIN"; then
         umount -l "$VA_DIR" || true
@@ -323,7 +337,7 @@ undo_videoads_setup
 # launched, so replace the whole app directory with assets/, which holds a web app (appinfo.json +
 # web-screensaver.html) next to the settings, videos and locales it reads. The watcher switches
 # notifications back on after the screensaver (#46), and ends by itself if this is unmounted.
-if grep -q '"type" *: *"flutter"' "$APP_DIR/appinfo.json" 2>/dev/null || findmnt "$APP_DIR" >/dev/null; then
+if [[ -n "$WEB_ONLY" ]] || grep -q '"type" *: *"flutter"' "$APP_DIR/appinfo.json" 2>/dev/null || findmnt "$APP_DIR" >/dev/null; then
     if findmnt "$APP_DIR" >/dev/null && ! [[ "$ASSETS_DIR" -ef "$APP_DIR" ]]; then
         # Mounted, but not this assets/: installing an update can replace the app folder, and the
         # mount would keep serving the old one until a reboot. -l also takes mounts inside it along.
@@ -341,7 +355,7 @@ if grep -q '"type" *: *"flutter"' "$APP_DIR/appinfo.json" 2>/dev/null || findmnt
         start_watcher
         # Mounted already. Clear a block an earlier run may have left (SAM can report the web app
         # while it's blocked), then make SAM reread if it still has the Flutter manifest
-        if systemctl is-active -q sam.service; then
+        if sam_up; then
             release_block "$APP_ID" 1 || true
             if ! sam_call getAppInfo "{\"id\":\"$APP_ID\"}" '"type": *"web"'; then
                 apply_web
