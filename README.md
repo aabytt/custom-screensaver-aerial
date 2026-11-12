@@ -17,7 +17,7 @@ Aerial-style video screensaver for LG webOS TVs.
   <tr>
     <td><img src="https://github.com/user-attachments/assets/7ff537cb-48be-4a88-85ab-826492bbad79" width="100%"/></td>
     <td><img src="https://github.com/user-attachments/assets/497b9d26-3c4a-4c3c-8708-df79324f5cae" width="100%"/></td>
-    <td><img src="https://github.com/user-attachments/assets/b5082794-0ce5-4518-8a80-0d8967525444" width="100%"/></td>
+    <td><img src="https://github.com/user-attachments/assets/aa095d99-94ea-4567-acd7-ba352c6f5db2" width="100%"/></td>
   </tr>
   <tr>
     <td><img src="https://github.com/user-attachments/assets/e87586c6-4e00-47c6-8285-925c8e4fa646" width="100%"/></td>
