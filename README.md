@@ -15,14 +15,14 @@ Aerial-style video screensaver for LG webOS TVs.
 
 <table>
   <tr>
-    <td><img src="https://github.com/user-attachments/assets/7ff537cb-48be-4a88-85ab-826492bbad79" width="100%"/></td>
-    <td><img src="https://github.com/user-attachments/assets/497b9d26-3c4a-4c3c-8708-df79324f5cae" width="100%"/></td>
-    <td><img src="https://github.com/user-attachments/assets/aa095d99-94ea-4567-acd7-ba352c6f5db2" width="100%"/></td>
+    <td><img src="docs/screenshots/001.webp" width="100%"/></td>
+    <td><img src="docs/screenshots/002.webp" width="100%"/></td>
+    <td><img src="docs/screenshots/003.webp" width="100%"/></td>
   </tr>
   <tr>
-    <td><img src="https://github.com/user-attachments/assets/e87586c6-4e00-47c6-8285-925c8e4fa646" width="100%"/></td>
-    <td><img src="https://github.com/user-attachments/assets/422872d8-11f2-4789-abe8-da75e43cbea6" width="100%"/></td>
-    <td><img src="https://github.com/user-attachments/assets/e6621686-c463-46f3-8e14-e4927a88633b" width="100%"/></td>
+    <td><img src="docs/screenshots/004.webp" width="100%"/></td>
+    <td><img src="docs/screenshots/005.webp" width="100%"/></td>
+    <td><img src="docs/screenshots/006.webp" width="100%"/></td>
   </tr>
 </table>
 
