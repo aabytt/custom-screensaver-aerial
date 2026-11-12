@@ -2,9 +2,9 @@
 <img src="assets/icon130.png" alt="Aerial webOS logo" width="200">
 <br><h1>Aerial webOS screensaver (fork of <a href="https://github.com/webosbrew/custom-screensaver">custom-screensaver</a>)</h1>
 
-<a href="https://github.com/aabytt/custom-screensaver-aerial/releases/latest"><img src="https://img.shields.io/github/v/release/aabytt/custom-screensaver-aerial?style=flat-square" alt="Latest release"/></a>
-<a href="https://github.com/aabytt/custom-screensaver-aerial/releases"><img src="https://img.shields.io/github/downloads/aabytt/custom-screensaver-aerial/total?style=flat-square" alt="Downloads"/></a>
-<a href="https://deepwiki.com/aabytt/custom-screensaver-aerial"><img src="https://img.shields.io/badge/Ask-DeepWiki-5b7cfa?style=flat-square" alt="Ask DeepWiki"/></a>
+<a href="https://github.com/aabytt/custom-screensaver-aerial/releases/latest"><img src="https://img.shields.io/github/v/release/aabytt/custom-screensaver-aerial?style=plastic&logo=github" alt="Latest release"/></a>
+<a href="https://github.com/aabytt/custom-screensaver-aerial/releases"><img src="https://img.shields.io/github/downloads/aabytt/custom-screensaver-aerial/total?style=plastic&logo=github" alt="Downloads"/></a>
+<a href="https://deepwiki.com/aabytt/custom-screensaver-aerial"><img src="https://img.shields.io/badge/Ask_DeepWiki-007ec6?style=plastic&labelColor=black&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAPoAAAD6AG1e1JrAAACIUlEQVRYw%2B2XP2gUQRTGv7d3JhYWQawkIBaCVWzETos0gmAnVoKNTSoLK0E7EQQrC20sBVFBtLPQRgTBtBaKjYgIQUSxiJq7fT%2BLvCGPJZdNLt4dQj5Y3u7sznzfzLw%2Fs9IO%2FicANiniCujEfWdsQgBLxAbsbraPZcmBfcAt4DNwKQsZNfEUsAB8YRV12LfA6ZHuedg7AO7ed%2Fc%2BUBcbQhbiu%2B6wXIM6EnZWkszMJe2Ke0n6I2la0v51hFeSMLN6OwIK6jJwEBdUYb2MAxRSz6sY4geiahFgLe1Hwq6YWe3us8AN4FQQU4QM64SPY69Xyr43fADgNjAPXHb3peSsD4FDQ0VLEjAHvIhBPS6AHvA1bBO9JPAXcHFbIRtJ5yzwIQZ9CZwAusDJENIkLqsG8DpNyIZJwSUk9wLHgakcesC1JCCjiHm1kYDNOEjptCxpSVK/8f73OFLxPLAYM3oCzEX7MXf/lJbc/8kWpA4HgQdpYI9IWAbeh83whi84cHXL%2B58EPBoQhnmm94EzwE3gZ2p/Dhzdbhg%2BTaRr01x7ftb4/jBwFzjXrCvDpmLW9crVLNeR9CaapoGemb2TdCERW1tNaBNQ8jktwmozqwtpqRNtdWAjARYk39IS12ZWRX7vmJmA71nQZgi36gN7gCvAj5xc3P0jcH7kx7Ik5IC73wsh14GZsZySow5002l4Jr0b6%2Bm4eSyvpAn8lEzsx2QHo8RfUrlN%2BuPq4ksAAAAASUVORK5CYII%3D" alt="Ask DeepWiki"/></a>
 
 </div>
 
