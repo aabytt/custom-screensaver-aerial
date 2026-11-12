@@ -15,14 +15,14 @@ Aerial-style video screensaver for LG webOS TVs.
 
 <table>
   <tr>
-    <td><img src="docs/screenshots/001.webp" width="100%"/></td>
-    <td><img src="docs/screenshots/002.webp" width="100%"/></td>
-    <td><img src="docs/screenshots/003.webp" width="100%"/></td>
+    <td><a href="https://aabytt.github.io/aerial-preview/screenshots/001.webp"><img src="docs/screenshots/001.webp" width="100%"/></a></td>
+    <td><a href="https://aabytt.github.io/aerial-preview/screenshots/002.webp"><img src="docs/screenshots/002.webp" width="100%"/></a></td>
+    <td><a href="https://aabytt.github.io/aerial-preview/screenshots/003.webp"><img src="docs/screenshots/003.webp" width="100%"/></a></td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/004.webp" width="100%"/></td>
-    <td><img src="docs/screenshots/005.webp" width="100%"/></td>
-    <td><img src="docs/screenshots/006.webp" width="100%"/></td>
+    <td><a href="https://aabytt.github.io/aerial-preview/screenshots/004.webp"><img src="docs/screenshots/004.webp" width="100%"/></a></td>
+    <td><a href="https://aabytt.github.io/aerial-preview/screenshots/005.webp"><img src="docs/screenshots/005.webp" width="100%"/></a></td>
+    <td><a href="https://aabytt.github.io/aerial-preview/screenshots/006.webp"><img src="docs/screenshots/006.webp" width="100%"/></a></td>
   </tr>
 </table>
 
