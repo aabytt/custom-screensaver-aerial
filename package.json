@@ -4,6 +4,7 @@
     "main": "frontend/index.js",
     "moduleDir": "frontend",
     "scripts": {
+        "test": "node --test tests/*.test.cjs",
         "build": "enyo pack",
         "package": "ares-package dist/ -e enyo-ilib",
         "manifest": "tools/gen-manifest.js ${npm_package_name}.manifest.json",
