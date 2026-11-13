@@ -123,6 +123,7 @@ var SOLAR_STR = {
   solarCalculated: 'Times are calculated.', solarOffline: 'No network: the times are calculated, and fetched when it is back.',
   solarTagged: 'Tagged videos:',
   solarTodFailed: 'Could not save videos.json',
+  durH: 'h', durMin: 'min',
   reportClose: 'Close',
   solarCityNone: 'No city found', solarCityOffline: 'The city search needs the internet'
 };
@@ -130,6 +131,23 @@ function st(key) {
   var v;
   try { v = I18n.t(key); } catch (e) { v = null; }
   return (v && typeof v === 'string' && v !== key) ? v : (SOLAR_STR[key] || key);
+}
+
+// Playback time of a set of videos. `duration` (whole seconds) comes from videos.json. A video without it counts as 0, and a
+// time is shown only when it is above zero: no data, or nothing selected -> nothing is shown.
+function durationOf(a) {
+  var d = a ? Number(a.duration) : 0;
+  return d > 0 && isFinite(d) ? d : 0;
+}
+// 2429 -> "40 min", 5158 -> "1 h 26 min" (the units come from I18n keys durMin / durH, English by default)
+function formatTotal(sec) {
+  var m = Math.max(1, Math.round(sec / 60)), h = Math.floor(m / 60), r = m % 60;
+  if (!h) { return m + ' ' + st('durMin'); }
+  return h + ' ' + st('durH') + (r ? ' ' + r + ' ' + st('durMin') : '');
+}
+// "6 / 6" -> "6 / 6 \u00b7 40 min"; unchanged when no video is selected or none of the selected ones has a duration
+function withTime(text, sec, on) {
+  return on > 0 && sec > 0 ? text + ' \u00b7 ' + formatTotal(sec) : text;
 }
 
 // Whether the screensavers can play a video with the chosen format (same rules as pickSourceKey in
@@ -1115,14 +1133,14 @@ var VideoSelectPanel = kind({
 
   // {on, total} for a category ('' = everything)
   categoryStats: function (id) {
-    var total = 0, on = 0;
+    var total = 0, on = 0, sec = 0;
     this.assets.forEach(function (a) {
       if (!id || has(a.categories, id)) {
         total++;
-        if (!this.disabled[a.id]) { on++; }
+        if (!this.disabled[a.id]) { on++; sec += durationOf(a); }
       }
     }, this);
-    return {on: on, total: total};
+    return {on: on, total: total, sec: sec};
   },
 
   // categories that actually contain videos
@@ -1147,7 +1165,7 @@ var VideoSelectPanel = kind({
 
   infoText: function (id) {
     var s = this.categoryStats(id);
-    return s.on + ' / ' + s.total;
+    return withTime(s.on + ' / ' + s.total, s.sec, s.on);
   },
 
   // ---- first level: categories ----
@@ -1266,9 +1284,17 @@ var VideoSelectPanel = kind({
   },
 
   groupInfo: function (ids) {
-    var on = 0;
-    ids.forEach(function (id) { if (!this.disabled[id]) { on++; } }, this);
-    return on + ' / ' + ids.length;
+    var on = 0, sec = 0;
+    ids.forEach(function (id) { if (!this.disabled[id]) { on++; sec += this.durationById(id); } }, this);
+    return withTime(on + ' / ' + ids.length, sec, on);
+  },
+
+  durationById: function (id) {
+    if (!this.idMap) {
+      this.idMap = {};
+      this.assets.forEach(function (a) { this.idMap[a.id] = a; }, this);
+    }
+    return durationOf(this.idMap[id]);
   },
 
   renderTiles: function () {
@@ -2009,9 +2035,11 @@ var VideoSelectPanel = kind({
     if (this.mode === 'videos' && this.categoryId) {
       var cat = this.categoryStats(this.categoryId);
       text = I18n.t(night ? 'nightCountCategory' : 'countCategory', {on: cat.on, total: cat.total, allOn: all.on, allTotal: all.total});
+      text = withTime(text, cat.sec, cat.on);
     } else {
       text = I18n.t(all.on === 0 ? (night ? 'nightCountNone' : 'countNone') : (night ? 'nightCountAll' : 'countAll'),
         {on: all.on, total: all.total});
+      text = withTime(text, all.sec, all.on);
     }
     this.$.count.set('content', text);
   },
@@ -2138,12 +2166,12 @@ var VideoSelectPanel = kind({
   },
 
   updateNightInfo: function () {
-    var s = this.settings, ids = {}, on = 0, playable = 0, text;
+    var s = this.settings, ids = {}, on = 0, playable = 0, sec = 0, text;
     (Array.isArray(s.nightVideos) ? s.nightVideos : []).forEach(function (id) { ids[id] = true; });
     this.assets.forEach(function (a) {
       if (ids[a.id]) {
         on++;
-        if (playableWith(a, s)) { playable++; }
+        if (playableWith(a, s)) { playable++; sec += durationOf(a); }
       }
     });
     if (hourOr(s.nightStart, NIGHT_START) === hourOr(s.nightEnd, NIGHT_END)) {
@@ -2153,9 +2181,9 @@ var VideoSelectPanel = kind({
     } else if (!playable) {
       text = I18n.t('nightInfoNone');
     } else if (playable < on) {
-      text = I18n.t('nightInfoSome', {on: on, playable: playable});
+      text = withTime(I18n.t('nightInfoSome', {on: on, playable: playable}), sec, playable);
     } else {
-      text = I18n.t(on === 1 ? 'nightInfoOne' : 'nightInfo', {on: on});
+      text = withTime(I18n.t(on === 1 ? 'nightInfoOne' : 'nightInfo', {on: on}), sec, playable);
     }
     this.$.nightInfo.set('content', text);
   },
