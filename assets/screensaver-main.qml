@@ -370,7 +370,13 @@ WebOSWindow {
     }
     // read settings.osd (missing keys / unknown values fall back to the defaults)
     function applyOsdSettings() {
-        var f = osdFonts[osdGet("font", "segoe")] || osdFonts["segoe"]
+        var fontId = osdGet("font", "segoe")
+        var f = osdFonts[fontId]
+        // Qt's FontLoader supports TTF/OTF reliably; custom filenames must not add path segments.
+        if (!f && typeof fontId === "string" && /^custom:[A-Za-z0-9._-]+\.(ttf|otf)$/i.test(fontId))
+            f = {file: "fonts/custom/" + fontId.slice(7), spacing: 0}
+        if (!f)
+            f = osdFonts["segoe"]
         showTitle = !!osdGet("title", true)
         showPoi = !!osdGet("poi", true)
         showClock = !!osdGet("clock", true)
