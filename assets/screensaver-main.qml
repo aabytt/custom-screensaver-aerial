@@ -122,6 +122,12 @@ WebOSWindow {
         id : segoeUILight
         source : basePath + fontFile
     }
+    FontLoader {
+        id : fallbackSegoe
+        source : basePath + "fonts/SegoeUI-Light.ttf"
+    }
+    property string osdFontFamily : segoeUILight.status === FontLoader.Ready ? segoeUILight.name :
+                                   (fallbackSegoe.status === FontLoader.Ready ? fallbackSegoe.name : "Segoe UI")
     Timer {
         id : refreshOSD
         interval : 1000
@@ -224,7 +230,7 @@ WebOSWindow {
             visible : showTitle && !decoderHeld
             opacity : osdAlpha * protFade * protFadeText
             text : poi.strings[playList.assets[randomIndex].localizedNameKey]
-            font.family : segoeUILight.name
+            font.family : osdFontFamily
             font.bold : osdBold && !fauxBold
             font.letterSpacing : fontSpacing
             fontSizeMode : Text.Fit

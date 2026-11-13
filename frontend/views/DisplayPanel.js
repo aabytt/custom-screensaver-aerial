@@ -119,6 +119,9 @@ FONTS.forEach(function (f) { FONT_BY_ID[f.id] = f; });
 // face, so Bold text uses the outline for them.
 var CUSTOM_FILE = /^[A-Za-z0-9._-]+\.(ttf|otf|woff2?)$/i;
 function customLabel(file) { return file.replace(/\.(ttf|otf|woff2?)$/i, '').replace(/[_-]+/g, ' ').trim() || file; }
+function customFontSupported(file, release) {
+  return isWebScreensaver(release) ? CUSTOM_FILE.test(file) : /\.(ttf|otf)$/i.test(file);
+}
 function addCustomFont(file) {
   var id = 'custom:' + file, f = FONT_BY_ID[id], st;
   if (f) { return f; }
@@ -481,7 +484,8 @@ var DisplayPanel = kind({
     if ((key === 'placeAnchor' || key === 'clockAnchor') && !ANCHORS[v]) { v = DEFAULTS[key]; }
     if (key === 'font' && !FONT_BY_ID[v]) {
       // a custom font is registered when it is used, before the list of files has been read
-      if (/^custom:[A-Za-z0-9._-]+$/.test(String(v))) { addCustomFont(String(v).slice(7)); } else { v = DEFAULTS.font; }
+      var custom = /^custom:([A-Za-z0-9._-]+\.(ttf|otf|woff2?))$/i.exec(String(v));
+      if (custom && customFontSupported(custom[1], this.webosRelease)) { addCustomFont(custom[1]); } else { v = DEFAULTS.font; }
     }
     return v;
   },
@@ -561,12 +565,13 @@ var DisplayPanel = kind({
   },
 
   onFontList: function (sender, evt) {
-    var files = String((evt && evt.stdoutString) || '').split('\n').map(function (l) { return l.trim(); })
-        .filter(function (l) { return CUSTOM_FILE.test(l); }).sort(),
+    var self = this,
+      files = String((evt && evt.stdoutString) || '').split('\n').map(function (l) { return l.trim(); })
+        .filter(function (l) { return customFontSupported(l, self.webosRelease); }).sort(),
       known = FONTS.filter(function (f) { return f.custom; }).map(function (f) { return f.name; }),
       fresh = files.filter(function (f) { return known.indexOf(f) < 0; }),
       gone = known.filter(function (f) { return files.indexOf(f) < 0; }),
-      cur = this.settings.osd && this.settings.osd.font, self = this;
+      cur = this.settings.osd && this.settings.osd.font;
     if (this.destroyed) { return true; }
     if (!fresh.length && !gone.length) { return true; }
     fresh.forEach(addCustomFont);
@@ -594,7 +599,8 @@ var DisplayPanel = kind({
     this.$.fontQr.set('content', '');
     this.$.fontPopup.show();
     this.fontServerOn = true;
-    this.$.fontExec.send({command: 'sh ' + SettingsStore.assetsDir + '/font-server.sh start'});
+    this.$.fontExec.send({command: 'sh ' + SettingsStore.assetsDir + '/font-server.sh start' +
+      (isWebScreensaver(this.webosRelease) ? '' : ' ttf-only')});
     return true;
   },
 

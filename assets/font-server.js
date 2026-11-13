@@ -14,6 +14,7 @@ var http = require('http'), https = require('https'), fs = require('fs'), os = r
 var args = {}, i;
 for (i = 2; i < process.argv.length; i += 2) { args[process.argv[i].replace(/^--/, '')] = process.argv[i + 1]; }
 var PERSIST = args.persist, APPDIR = args.app, PORT = parseInt(args.port, 10) || 8765;
+var TTF_ONLY = args['ttf-only'] === '1';
 var INFO = '/tmp/aerial-fontserver.json';
 var MAX_BYTES = 12 * 1024 * 1024, IDLE_MS = 10 * 60 * 1000;
 var TOKEN = crypto.randomBytes(8).toString('hex');
@@ -47,19 +48,29 @@ function safeName(name, kind) {
 function save(name, buf) {
   var kind = sniff(buf), file;
   if (!kind) { throw new Error('This is not a TTF, OTF, WOFF or WOFF2 font file.'); }
+  if (TTF_ONLY && kind !== 'ttf' && kind !== 'otf') { throw new Error('This screensaver supports TTF and OTF fonts only.'); }
   if (buf.length > MAX_BYTES) { throw new Error('The file is larger than 12 MB.'); }
   file = safeName(name, kind);
   mkdirs(PERSIST);
   mkdirs(APPDIR);
   // the persistent copy first: it is the one that must not be lost
   fs.writeFileSync(path.join(PERSIST, file), buf);
-  try { fs.writeFileSync(path.join(APPDIR, file), buf); } catch (e) { console.error('app copy failed: ' + e.message); }
+  var appFile = path.join(APPDIR, file), tmpFile = path.join(APPDIR, '.' + file + '.' + process.pid + '.tmp');
+  try {
+    fs.writeFileSync(tmpFile, buf);
+    fs.renameSync(tmpFile, appFile);
+  } catch (e) {
+    try { fs.unlinkSync(tmpFile); } catch (ignore) {}
+    throw new Error('Font saved for the next screensaver apply, but the active app copy failed: ' + e.message);
+  }
   return file;
 }
 
 function list() {
   try {
-    return fs.readdirSync(PERSIST).filter(function (f) { return /\.(ttf|otf|woff2?)$/i.test(f); }).sort();
+    return fs.readdirSync(PERSIST).filter(function (f) {
+      return TTF_ONLY ? /\.(ttf|otf)$/i.test(f) : /\.(ttf|otf|woff2?)$/i.test(f);
+    }).sort();
   } catch (e) { return []; }
 }
 
@@ -111,9 +122,10 @@ var PAGE = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewpor
   'button,label.b{display:block;width:100%;box-sizing:border-box;text-align:center;margin-top:10px;padding:13px;border:0;border-radius:8px;background:#cf0652;color:#fff;font-size:17px}' +
   'input[type=file]{display:none}#msg{min-height:24px;margin-top:8px}.ok{color:#7ddc8a}.err{color:#ff8a8a}' +
   'ul{padding-left:20px;margin:6px 0}</style></head><body>' +
-  '<h1>Add a font</h1><p>For the clock and title on the screensaver. TTF, OTF, WOFF or WOFF2, up to 12 MB.</p>' +
+  '<h1>Add a font</h1><p>For the clock and title on the screensaver. ' +
+  (TTF_ONLY ? 'TTF or OTF, up to 12 MB.' : 'TTF, OTF, WOFF or WOFF2, up to 12 MB.') + '</p>' +
   '<div class="box"><b>From this phone</b><label class="b" for="f">Choose a font file</label>' +
-  '<input id="f" type="file" accept=".ttf,.otf,.woff,.woff2,font/*"></div>' +
+  '<input id="f" type="file" accept="' + (TTF_ONLY ? '.ttf,.otf' : '.ttf,.otf,.woff,.woff2,font/*') + '"></div>' +
   '<div class="box"><b>From a link</b><p>A direct link to the font file.</p>' +
   '<input id="u" type="url" placeholder="https://example.com/MyFont.ttf"><button id="go">Download</button></div>' +
   '<div id="msg"></div><div class="box"><b>On the TV</b><ul id="l"></ul>' +
@@ -184,7 +196,7 @@ function listen(port, triesLeft) {
   });
   server.listen(port, '0.0.0.0', function () {
     server.removeAllListeners('error');
-    fs.writeFileSync(INFO, JSON.stringify({pid: process.pid,
+    fs.writeFileSync(INFO, JSON.stringify({pid: process.pid, ttfOnly: TTF_ONLY,
       url: 'http://' + lanIp() + ':' + port + '/?t=' + TOKEN}));
     touch();
   });
