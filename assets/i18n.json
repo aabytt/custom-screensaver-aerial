@@ -181,7 +181,9 @@
   "cancel": "إلغاء",
   "testNeedsApplyTitle": "Aerial غير مطبّقة",
   "testNeedsApply": "شاشة التوقف الأصلية لا تزال قيد الاستخدام، لذا سيعرض الاختبار تلك الشاشة. هل تريد تطبيق Aerial الآن وتشغيل الاختبار؟",
-  "testApplyAndRun": "تطبيق واختبار"
+  "testApplyAndRun": "تطبيق واختبار",
+  "durH": "س",
+  "durMin": "د"
  },
  "be-BY": {
   "uiLanguage": "Мова інтэрфейсу",
@@ -365,7 +367,9 @@
   "cancel": "Скасаваць",
   "testNeedsApplyTitle": "Aerial не ўжыты",
   "testNeedsApply": "Стандартная застаўка ўсё яшчэ ўстаноўлена, таму тэст пакажа менавіта яе. Ужыць Aerial зараз і запусціць тэст?",
-  "testApplyAndRun": "Ужыць і праверыць"
+  "testApplyAndRun": "Ужыць і праверыць",
+  "durH": "г",
+  "durMin": "хв"
  },
  "ca-ES": {
   "uiLanguage": "Idioma de la interfície",
@@ -549,7 +553,9 @@
   "cancel": "Cancel·la",
   "testNeedsApplyTitle": "Aerial no està aplicat",
   "testNeedsApply": "L'estalvi de pantalla original continua actiu, així que la prova mostraria aquest. Vols aplicar Aerial ara i executar la prova?",
-  "testApplyAndRun": "Aplica i prova"
+  "testApplyAndRun": "Aplica i prova",
+  "durH": "h",
+  "durMin": "min"
  },
  "cs-CZ": {
   "uiLanguage": "Jazyk rozhraní",
@@ -733,7 +739,9 @@
   "cancel": "Zrušit",
   "testNeedsApplyTitle": "Aerial není použit",
   "testNeedsApply": "Původní spořič obrazovky je stále aktivní, takže by test zobrazil právě ten. Použít Aerial nyní a spustit test?",
-  "testApplyAndRun": "Použít a otestovat"
+  "testApplyAndRun": "Použít a otestovat",
+  "durH": "h",
+  "durMin": "min"
  },
  "da-DK": {
   "uiLanguage": "Grænsefladesprog",
@@ -917,7 +925,9 @@
   "cancel": "Annuller",
   "testNeedsApplyTitle": "Aerial er ikke anvendt",
   "testNeedsApply": "Standardpauseskærmen er stadig aktiv, så testen ville vise den. Vil du anvende Aerial nu og køre testen?",
-  "testApplyAndRun": "Anvend og test"
+  "testApplyAndRun": "Anvend og test",
+  "durH": "t",
+  "durMin": "min"
  },
  "de-DE": {
   "uiLanguage": "Sprache der Oberfläche",
@@ -1101,7 +1111,9 @@
   "cancel": "Abbrechen",
   "testNeedsApplyTitle": "Aerial ist nicht angewendet",
   "testNeedsApply": "Der Standard-Bildschirmschoner ist noch aktiv, der Test würde also diesen zeigen. Aerial jetzt anwenden und den Test ausführen?",
-  "testApplyAndRun": "Anwenden und testen"
+  "testApplyAndRun": "Anwenden und testen",
+  "durH": "Std.",
+  "durMin": "Min."
  },
  "el-GR": {
   "uiLanguage": "Γλώσσα διεπαφής",
@@ -1285,7 +1297,9 @@
   "cancel": "Ακύρωση",
   "testNeedsApplyTitle": "Το Aerial δεν έχει εφαρμοστεί",
   "testNeedsApply": "Η προεπιλεγμένη προφύλαξη οθόνης είναι ακόμα ενεργή, οπότε η δοκιμή θα εμφανίσει αυτήν. Να εφαρμοστεί το Aerial τώρα και να γίνει η δοκιμή;",
-  "testApplyAndRun": "Εφαρμογή και δοκιμή"
+  "testApplyAndRun": "Εφαρμογή και δοκιμή",
+  "durH": "ώρ.",
+  "durMin": "λεπτ."
  },
  "en-AU": "en-US",
  "en-GB": "en-US",
@@ -1471,7 +1485,9 @@
   "cancel": "Cancel",
   "testNeedsApplyTitle": "Aerial is not applied",
   "testNeedsApply": "The stock screensaver is still in place, so the test would show that one. Apply Aerial now and run the test?",
-  "testApplyAndRun": "Apply and test"
+  "testApplyAndRun": "Apply and test",
+  "durH": "h",
+  "durMin": "min"
  },
  "es-ES": {
   "uiLanguage": "Idioma de la interfaz",
@@ -1655,7 +1671,9 @@
   "cancel": "Cancelar",
   "testNeedsApplyTitle": "Aerial no está aplicado",
   "testNeedsApply": "El protector de pantalla original sigue activo, así que la prueba mostraría ese. ¿Aplicar Aerial ahora y ejecutar la prueba?",
-  "testApplyAndRun": "Aplicar y probar"
+  "testApplyAndRun": "Aplicar y probar",
+  "durH": "h",
+  "durMin": "min"
  },
  "es-419": "es-ES",
  "fi-FI": {
@@ -1840,7 +1858,9 @@
   "cancel": "Peruuta",
   "testNeedsApplyTitle": "Aerial ei ole käytössä",
   "testNeedsApply": "Oletusnäytönsäästäjä on yhä käytössä, joten testi näyttäisi sen. Otetaanko Aerial käyttöön nyt ja suoritetaanko testi?",
-  "testApplyAndRun": "Ota käyttöön ja testaa"
+  "testApplyAndRun": "Ota käyttöön ja testaa",
+  "durH": "t",
+  "durMin": "min"
  },
  "fr-CA": "fr-FR",
  "fr-FR": {
@@ -2025,7 +2045,9 @@
   "cancel": "Annuler",
   "testNeedsApplyTitle": "Aerial n'est pas appliqué",
   "testNeedsApply": "L'écran de veille d'origine est toujours en place, le test afficherait donc celui-ci. Appliquer Aerial maintenant et lancer le test ?",
-  "testApplyAndRun": "Appliquer et tester"
+  "testApplyAndRun": "Appliquer et tester",
+  "durH": "h",
+  "durMin": "min"
  },
  "he-IL": {
   "uiLanguage": "שפת הממשק",
@@ -2209,7 +2231,9 @@
   "cancel": "ביטול",
   "testNeedsApplyTitle": "Aerial לא הוחל",
   "testNeedsApply": "שומר המסך המקורי עדיין פעיל, ולכן הבדיקה תציג אותו. להחיל את Aerial עכשיו ולהריץ את הבדיקה?",
-  "testApplyAndRun": "החל ובדוק"
+  "testApplyAndRun": "החל ובדוק",
+  "durH": "שע׳",
+  "durMin": "דק׳"
  },
  "hi-IN": {
   "uiLanguage": "इंटरफ़ेस की भाषा",
@@ -2393,7 +2417,9 @@
   "cancel": "रद्द करें",
   "testNeedsApplyTitle": "Aerial लागू नहीं है",
   "testNeedsApply": "स्टॉक स्क्रीनसेवर अभी भी लगा हुआ है, इसलिए टेस्ट में वही दिखेगा। अभी Aerial लागू करके टेस्ट चलाएँ?",
-  "testApplyAndRun": "लागू करें और टेस्ट करें"
+  "testApplyAndRun": "लागू करें और टेस्ट करें",
+  "durH": "घं",
+  "durMin": "मि"
  },
  "hr-HR": {
   "uiLanguage": "Jezik sučelja",
@@ -2577,7 +2603,9 @@
   "cancel": "Odustani",
   "testNeedsApplyTitle": "Aerial nije primijenjen",
   "testNeedsApply": "Izvorni čuvar zaslona i dalje je aktivan pa bi test prikazao njega. Primijeniti Aerial sada i pokrenuti test?",
-  "testApplyAndRun": "Primijeni i testiraj"
+  "testApplyAndRun": "Primijeni i testiraj",
+  "durH": "h",
+  "durMin": "min"
  },
  "hu-HU": {
   "uiLanguage": "A felület nyelve",
@@ -2761,7 +2789,9 @@
   "cancel": "Mégse",
   "testNeedsApplyTitle": "Az Aerial nincs alkalmazva",
   "testNeedsApply": "Az eredeti képernyővédő még érvényben van, ezért a teszt azt mutatná. Alkalmazza most az Aerialt, és futtassa le a tesztet?",
-  "testApplyAndRun": "Alkalmaz és tesztel"
+  "testApplyAndRun": "Alkalmaz és tesztel",
+  "durH": "ó",
+  "durMin": "p"
  },
  "id-ID": {
   "uiLanguage": "Bahasa antarmuka",
@@ -2945,7 +2975,9 @@
   "cancel": "Batal",
   "testNeedsApplyTitle": "Aerial belum diterapkan",
   "testNeedsApply": "Screensaver bawaan masih aktif, jadi pengujian akan menampilkan screensaver itu. Terapkan Aerial sekarang dan jalankan pengujian?",
-  "testApplyAndRun": "Terapkan dan uji"
+  "testApplyAndRun": "Terapkan dan uji",
+  "durH": "j",
+  "durMin": "mnt"
  },
  "it-IT": {
   "uiLanguage": "Lingua dell'interfaccia",
@@ -3129,7 +3161,9 @@
   "cancel": "Annulla",
   "testNeedsApplyTitle": "Aerial non è applicato",
   "testNeedsApply": "Lo screensaver originale è ancora attivo, quindi il test mostrerebbe quello. Applicare Aerial ora ed eseguire il test?",
-  "testApplyAndRun": "Applica e testa"
+  "testApplyAndRun": "Applica e testa",
+  "durH": "h",
+  "durMin": "min"
  },
  "ja-JP": {
   "uiLanguage": "インターフェースの言語",
@@ -3313,7 +3347,9 @@
   "cancel": "キャンセル",
   "testNeedsApplyTitle": "Aerial は適用されていません",
   "testNeedsApply": "標準のスクリーンセーバーがまだ設定されているため、テストではそちらが表示されます。今すぐ Aerial を適用してテストを実行しますか？",
-  "testApplyAndRun": "適用してテスト"
+  "testApplyAndRun": "適用してテスト",
+  "durH": "時間",
+  "durMin": "分"
  },
  "ko-KR": {
   "uiLanguage": "인터페이스 언어",
@@ -3497,7 +3533,9 @@
   "cancel": "취소",
   "testNeedsApplyTitle": "Aerial이 적용되지 않았습니다",
   "testNeedsApply": "기본 화면 보호기가 아직 적용되어 있어 테스트에서 그 화면이 표시됩니다. 지금 Aerial을 적용하고 테스트를 실행할까요?",
-  "testApplyAndRun": "적용 후 테스트"
+  "testApplyAndRun": "적용 후 테스트",
+  "durH": "시간",
+  "durMin": "분"
  },
  "mk-MK": {
   "uiLanguage": "Јазик на интерфејсот",
@@ -3681,7 +3719,9 @@
   "cancel": "Откажи",
   "testNeedsApplyTitle": "Aerial не е применет",
   "testNeedsApply": "Стандардната заштита на екранот сè уште е активна, па тестот би ја прикажал неа. Да се примени ли Aerial сега и да се изврши тестот?",
-  "testApplyAndRun": "Примени и тестирај"
+  "testApplyAndRun": "Примени и тестирај",
+  "durH": "ч",
+  "durMin": "мин"
  },
  "ms-MY": {
   "uiLanguage": "Bahasa antara muka",
@@ -3865,7 +3905,9 @@
   "cancel": "Batal",
   "testNeedsApplyTitle": "Aerial belum digunakan",
   "testNeedsApply": "Penyelamat skrin asal masih digunakan, jadi ujian akan memaparkannya. Gunakan Aerial sekarang dan jalankan ujian?",
-  "testApplyAndRun": "Guna dan uji"
+  "testApplyAndRun": "Guna dan uji",
+  "durH": "j",
+  "durMin": "min"
  },
  "nl-NL": {
   "uiLanguage": "Interfacetaal",
@@ -4049,7 +4091,9 @@
   "cancel": "Annuleren",
   "testNeedsApplyTitle": "Aerial is niet toegepast",
   "testNeedsApply": "De standaardschermbeveiliging is nog actief, dus de test zou die tonen. Aerial nu toepassen en de test uitvoeren?",
-  "testApplyAndRun": "Toepassen en testen"
+  "testApplyAndRun": "Toepassen en testen",
+  "durH": "u",
+  "durMin": "min"
  },
  "nb-NO": {
   "uiLanguage": "Grensesnittspråk",
@@ -4233,7 +4277,9 @@
   "cancel": "Avbryt",
   "testNeedsApplyTitle": "Aerial er ikke brukt",
   "testNeedsApply": "Standard skjermsparer er fortsatt på plass, så testen ville vist den. Bruke Aerial nå og kjøre testen?",
-  "testApplyAndRun": "Bruk og test"
+  "testApplyAndRun": "Bruk og test",
+  "durH": "t",
+  "durMin": "min"
  },
  "pl-PL": {
   "uiLanguage": "Język interfejsu",
@@ -4417,7 +4463,9 @@
   "cancel": "Anuluj",
   "testNeedsApplyTitle": "Aerial nie jest zastosowany",
   "testNeedsApply": "Domyślny wygaszacz ekranu nadal jest aktywny, więc test pokazałby właśnie jego. Zastosować Aerial teraz i uruchomić test?",
-  "testApplyAndRun": "Zastosuj i przetestuj"
+  "testApplyAndRun": "Zastosuj i przetestuj",
+  "durH": "godz.",
+  "durMin": "min"
  },
  "pt-BR": {
   "uiLanguage": "Idioma da interface",
@@ -4601,7 +4649,9 @@
   "cancel": "Cancelar",
   "testNeedsApplyTitle": "O Aerial não está aplicado",
   "testNeedsApply": "A proteção de tela original ainda está ativa, então o teste mostraria essa. Aplicar o Aerial agora e executar o teste?",
-  "testApplyAndRun": "Aplicar e testar"
+  "testApplyAndRun": "Aplicar e testar",
+  "durH": "h",
+  "durMin": "min"
  },
  "pt-PT": {
   "uiLanguage": "Idioma da interface",
@@ -4785,7 +4835,9 @@
   "cancel": "Cancelar",
   "testNeedsApplyTitle": "O Aerial não está aplicado",
   "testNeedsApply": "O protetor de ecrã original ainda está ativo, por isso o teste mostraria esse. Aplicar o Aerial agora e executar o teste?",
-  "testApplyAndRun": "Aplicar e testar"
+  "testApplyAndRun": "Aplicar e testar",
+  "durH": "h",
+  "durMin": "min"
  },
  "ro-RO": {
   "uiLanguage": "Limba interfeței",
@@ -4969,7 +5021,9 @@
   "cancel": "Anulează",
   "testNeedsApplyTitle": "Aerial nu este aplicat",
   "testNeedsApply": "Screensaverul original este încă activ, deci testul l-ar afișa pe acesta. Aplici Aerial acum și rulezi testul?",
-  "testApplyAndRun": "Aplică și testează"
+  "testApplyAndRun": "Aplică și testează",
+  "durH": "h",
+  "durMin": "min"
  },
  "ru-RU": {
   "uiLanguage": "Язык интерфейса",
@@ -5153,7 +5207,9 @@
   "cancel": "Отмена",
   "testNeedsApplyTitle": "Aerial не применён",
   "testNeedsApply": "Стандартная заставка всё ещё установлена, поэтому тест покажет именно её. Применить Aerial сейчас и запустить тест?",
-  "testApplyAndRun": "Применить и проверить"
+  "testApplyAndRun": "Применить и проверить",
+  "durH": "ч",
+  "durMin": "мин"
  },
  "sk-SK": {
   "uiLanguage": "Jazyk rozhrania",
@@ -5337,7 +5393,9 @@
   "cancel": "Zrušiť",
   "testNeedsApplyTitle": "Aerial nie je použitý",
   "testNeedsApply": "Pôvodný šetrič obrazovky je stále aktívny, takže by test zobrazil práve ten. Použiť Aerial teraz a spustiť test?",
-  "testApplyAndRun": "Použiť a otestovať"
+  "testApplyAndRun": "Použiť a otestovať",
+  "durH": "h",
+  "durMin": "min"
  },
  "sl-SI": {
   "uiLanguage": "Jezik vmesnika",
@@ -5521,7 +5579,9 @@
   "cancel": "Prekliči",
   "testNeedsApplyTitle": "Aerial ni uporabljen",
   "testNeedsApply": "Izvirni ohranjevalnik zaslona je še vedno aktiven, zato bi test prikazal tega. Uporabim Aerial zdaj in zaženem test?",
-  "testApplyAndRun": "Uporabi in testiraj"
+  "testApplyAndRun": "Uporabi in testiraj",
+  "durH": "h",
+  "durMin": "min"
  },
  "sv-SE": {
   "uiLanguage": "Gränssnittsspråk",
@@ -5705,7 +5765,9 @@
   "cancel": "Avbryt",
   "testNeedsApplyTitle": "Aerial är inte tillämpat",
   "testNeedsApply": "Standardskärmsläckaren är fortfarande aktiv, så testet skulle visa den. Tillämpa Aerial nu och köra testet?",
-  "testApplyAndRun": "Tillämpa och testa"
+  "testApplyAndRun": "Tillämpa och testa",
+  "durH": "tim",
+  "durMin": "min"
  },
  "th-TH": {
   "uiLanguage": "ภาษาของอินเทอร์เฟซ",
@@ -5889,7 +5951,9 @@
   "cancel": "ยกเลิก",
   "testNeedsApplyTitle": "ยังไม่ได้ใช้ Aerial",
   "testNeedsApply": "สกรีนเซฟเวอร์เดิมยังใช้งานอยู่ การทดสอบจึงจะแสดงตัวนั้น ใช้ Aerial ตอนนี้แล้วเรียกใช้การทดสอบเลยไหม",
-  "testApplyAndRun": "ใช้และทดสอบ"
+  "testApplyAndRun": "ใช้และทดสอบ",
+  "durH": "ชม.",
+  "durMin": "นาที"
  },
  "tr-TR": {
   "uiLanguage": "Arayüz dili",
@@ -6073,7 +6137,9 @@
   "cancel": "İptal",
   "testNeedsApplyTitle": "Aerial uygulanmadı",
   "testNeedsApply": "Orijinal ekran koruyucu hâlâ yerinde, bu yüzden test onu gösterir. Aerial şimdi uygulansın ve test çalıştırılsın mı?",
-  "testApplyAndRun": "Uygula ve test et"
+  "testApplyAndRun": "Uygula ve test et",
+  "durH": "sa",
+  "durMin": "dk"
  },
  "uk-UA": {
   "uiLanguage": "Мова інтерфейсу",
@@ -6257,7 +6323,9 @@
   "cancel": "Скасувати",
   "testNeedsApplyTitle": "Aerial не застосовано",
   "testNeedsApply": "Стандартна заставка досі встановлена, тому тест покаже саме її. Застосувати Aerial зараз і запустити тест?",
-  "testApplyAndRun": "Застосувати й перевірити"
+  "testApplyAndRun": "Застосувати й перевірити",
+  "durH": "год",
+  "durMin": "хв"
  },
  "vi-VN": {
   "uiLanguage": "Ngôn ngữ giao diện",
@@ -6441,7 +6509,9 @@
   "cancel": "Hủy",
   "testNeedsApplyTitle": "Aerial chưa được áp dụng",
   "testNeedsApply": "Trình bảo vệ màn hình gốc vẫn đang được dùng nên bài thử sẽ hiển thị nó. Áp dụng Aerial ngay và chạy thử?",
-  "testApplyAndRun": "Áp dụng và thử"
+  "testApplyAndRun": "Áp dụng và thử",
+  "durH": "giờ",
+  "durMin": "phút"
  },
  "zh-CN": {
   "uiLanguage": "界面语言",
@@ -6625,7 +6695,9 @@
   "cancel": "取消",
   "testNeedsApplyTitle": "未应用 Aerial",
   "testNeedsApply": "当前仍是默认屏保，测试将显示该屏保。现在应用 Aerial 并运行测试吗？",
-  "testApplyAndRun": "应用并测试"
+  "testApplyAndRun": "应用并测试",
+  "durH": "小时",
+  "durMin": "分钟"
  },
  "zh-HK": "zh-TW",
  "zh-TW": {
@@ -6810,6 +6882,8 @@
   "cancel": "取消",
   "testNeedsApplyTitle": "尚未套用 Aerial",
   "testNeedsApply": "目前仍是預設螢幕保護程式，測試將顯示該程式。現在套用 Aerial 並執行測試嗎？",
-  "testApplyAndRun": "套用並測試"
+  "testApplyAndRun": "套用並測試",
+  "durH": "小時",
+  "durMin": "分鐘"
  }
 }
