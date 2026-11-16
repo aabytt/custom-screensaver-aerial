@@ -39,8 +39,8 @@ for (const [name, reply, expected, status] of [
   ['free pipelines', [], false, 'free'],
   ['decoder busy', [{ type: 'video', resource: [{ resource: 'VDEC HEVC' }] }], true, 'in use'],
   ['live TV exempt', [{ type: 'tv', resource: [{ resource: 'VDEC' }] }], false, 'free'],
-  ['query timed out', null, true, 'unknown (query failed)'],
-  ['service rejected query', { returnValue: false }, true, 'unknown (query failed)']
+  ['query timed out', null, false, 'unknown (query failed)'],
+  ['service rejected query', { returnValue: false }, false, 'unknown (query failed)']
 ]) {
   test('decoder: ' + name, async () => {
     const ctx = evaluate(decoder, { luna: () => Promise.resolve(reply) });

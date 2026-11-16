@@ -463,8 +463,8 @@ var decoderStatus = "not checked";
 function videoDecoderInUse() {
     return luna("luna://com.webos.media/getActivePipelines").then(function (pipelines) {
         if (!Array.isArray(pipelines)) {
-            decoderStatus = "unknown (query failed)";
-            return true;
+            decoderStatus = "unknown (query failed, trying playback)";
+            return false;
         }
         var inUse = pipelines.some(function (pipeline) {
             return pipeline && pipeline.type !== "tv" && Array.isArray(pipeline.resource) &&
