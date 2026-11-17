@@ -374,9 +374,9 @@ module.exports = kind({
 							titleRow('shield', {kind: Marquee.Text, name: 'protectionTitle'}),
 							{kind: BodyText, style: DESC_STYLE + ' white-space: nowrap; overflow: hidden; text-overflow: ellipsis;', name: 'protectionInfo', content: ''}
 						], ontap: 'openProtection'},
-						{kind: Item, components: [
-							titleRow('info', {kind: Marquee.Text, i18n: 'otherSettings'}),
-							{kind: BodyText, style: DESC_STYLE, i18n: 'otherSettingsInfo'}
+						{kind: Item, style: ICON_ITEM, components: [
+							iconComponent('info'),
+							{kind: Marquee.Text, style: 'flex: 1 1 auto; min-width: 0;', i18n: 'otherSettings'}
 						], ontap: 'openOtherSettings'},
 						{style: 'margin: 28px 0 0', components: [
 							{kind: Button, style: 'margin: 0', i18n: 'testRun', ontap: 'testRun'}

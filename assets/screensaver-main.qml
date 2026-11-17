@@ -488,12 +488,11 @@ WebOSWindow {
         anchors.right : parent.right
         anchors.margins : 25
         opacity : 0.7
-        font.family : name.font.family
+        font.family : "monospace"
         font.pixelSize : 26
-        color : name.color
-        style : name.style
-        styleColor : name.styleColor
-        fontSizeMode : name.fontSizeMode
+        color : "white"
+        style : Text.Raised
+        styleColor : "black"
     }
     // Clock-only mode notice: bottom center, shown for 5 s (0.5 s fade in + 4 s hold + 0.5 s fade out)
     Text {
