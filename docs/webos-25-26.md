@@ -10,7 +10,8 @@ uses the same settings, videos and locales. Notes:
 - The TV ends the screensaver when it sees full-screen video, within a second on webOS 26. Apps in
   "manual" screensaver mode are exempt, so the screensaver puts itself in that mode
   (`com.webos.service.screenmanager/setScreenSaverMode`) every time it starts. The mode is only
-  kept in memory, so nothing has to be undone.
+  kept in memory, so nothing has to be undone. This is limited to webOS 10/11; webOS 4 uses the
+  web screensaver for video rendering but keeps the system's automatic screensaver mode.
 - Where the TV has LG's own video screensaver (`com.webos.app.videoads`), a copy of the web
   screensaver is mounted over it too: LG's TVs launch that one instead of the regular screensaver
   when LG's conditions for its video screensaver ads hold. LG's settings and blocked app list are

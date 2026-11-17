@@ -41,7 +41,13 @@ SAM_WAIT=60   # seconds to wait for SAM at boot
 # so it gets the web screensaver, whose <video> takes WAM's own video path
 WEBOS_MAJOR="$(grep -o '"webos_release" *: *"[0-9]*' /var/run/nyx/os_info.json 2>/dev/null | grep -o '[0-9]*$' || true)"
 WEB_ONLY=
-[[ "$WEBOS_MAJOR" = 4 ]] && WEB_ONLY=1
+MANUAL_SCREENSAVER_MODE=true
+if [[ "$WEBOS_MAJOR" = 4 ]]; then
+    WEB_ONLY=1
+    # webOS 4 needs the web page for video rendering, but keeps its automatic idle mode.
+    MANUAL_SCREENSAVER_MODE=false
+fi
+printf '{"manualScreenSaverMode":%s}\n' "$MANUAL_SCREENSAVER_MODE" > "$ASSETS_DIR/web-screensaver-config.json"
 
 if [[ -z "$WEB_ONLY" && -f "$MOUNT_TARGET" ]]; then
     if ! findmnt "$MOUNT_TARGET"; then

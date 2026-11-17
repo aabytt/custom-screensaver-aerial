@@ -418,12 +418,23 @@ function videoDecoderInUse() {
     });
 }
 
-// screenmanager ends the screensaver when it sees fullscreen video, except for apps in manual
-// screensaver mode (and LG's videoads). webOS 26 does so within a second, despite the 1px trick.
+// On webOS 10/11, screenmanager ends the screensaver when it sees fullscreen video, except for
+// apps in manual mode (and LG's videoads). It can do so within a second, despite the 1px trick.
 // The mode is kept in screenmanager's memory until it restarts, so it's set at every start.
 function setManualMode() {
     return luna("luna://com.webos.service.screenmanager/setScreenSaverMode",
         { appId: "com.webos.app.screensaver", mode: "manual" });
+}
+
+function configureScreenSaverMode() {
+    return loadJSONData(basePath + "web-screensaver-config.json")
+        .then(function (config) {
+            return config.manualScreenSaverMode === false ? null : setManualMode();
+        })
+        .catch(function (e) {
+            console.error(e.message);
+            return setManualMode();
+        });
 }
 
 function moveClock() {
@@ -505,7 +516,7 @@ loadJSONData(basePath + "settings.json")
             loadJSONData(basePath + "locales/" + settings.localeLang + ".json").catch(function () { return { strings: {} }; }),
             videoDecoderInUse(),
             checkWatcher(),
-            setManualMode()
+            configureScreenSaverMode()
         ]);
     })
     .then(function (r) {
