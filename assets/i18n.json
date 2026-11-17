@@ -1,5 +1,6 @@
 {
  "ar-AE": {
+  "languageTranslationNotice": "العديد من الترجمات أُنجزت بمساعدة الترجمة الآلية أو الذكاء الاصطناعي وقد لا تكون دقيقة تمامًا. إذا كانت هذه لغتك الأم ولاحظت مشكلة، يُرجى فتح بلاغ لمساعدتنا على التحسين.",
   "apply": "تطبيق",
   "applyInfo": "يطبق Aerial الآن ويفعّل بدء التشغيل التلقائي.",
   "unapply": "إلغاء تطبيق Aerial",
@@ -193,6 +194,7 @@
   "aboutVersion": "الإصدار {version} · ترخيص MIT",
   "aboutText": "هل أعجبك Aerial؟ أضف نجمة للمشروع، وانضم إلى مجتمع OpenLGTV، أو ادعم التطوير.",
   "aboutDiscord": "Discord الخاص بـ OpenLGTV",
+  "aboutTelegram": "نقاشات تيليجرام",
   "aboutDonate": "تبرع",
   "qrError": "تعذر إنشاء رمز QR. يمكنك إدخال عنوان URL الظاهر أدناه.",
   "protWarningOff": "سيتم إيقاف اللوحة خلال {seconds} ثانية",
@@ -239,6 +241,7 @@
   "testLaunchUnconfirmed": "تم رفض طلب شاشة التوقف أو لم يتم تأكيده. تحقق من معلومات التصحيح والسجلات."
  },
  "be-BY": {
+  "languageTranslationNotice": "Многія пераклады зроблены з дапамогай машыннага перакладу або штучнага інтэлекту і могуць быць недасканалымі. Калі гэта ваша родная мова і вы заўважылі праблему, стварыце, калі ласка, issue, каб дапамагчы нам палепшыць пераклад.",
   "apply": "Ужыць",
   "applyInfo": "Уключае Aerial зараз і аўтаматычны запуск.",
   "unapply": "Адключыць Aerial",
@@ -432,6 +435,7 @@
   "aboutVersion": "Версія {version} · Ліцэнзія MIT",
   "aboutText": "Падабаецца Aerial? Пастаўце праекту зорку, далучыцеся да супольнасці OpenLGTV або падтрымайце распрацоўку.",
   "aboutDiscord": "Discord OpenLGTV",
+  "aboutTelegram": "Абмеркаванні ў Telegram",
   "aboutDonate": "Ахвяраваць",
   "qrError": "Не атрымалася стварыць QR-код. Можна ўвесці URL, паказаны ніжэй.",
   "protWarningOff": "Панэль выключыцца праз {seconds} с",
@@ -478,6 +482,7 @@
   "testLaunchUnconfirmed": "Запыт на застаўку адхілены або не пацверджаны. Праверце адладачную інфармацыю і журналы."
  },
  "ca-ES": {
+  "languageTranslationNotice": "Moltes traduccions s’han fet amb ajuda de traducció automàtica o d’intel·ligència artificial i poden ser imperfectes. Si ets parlant nadiu i detectes algun problema, obre una incidència per ajudar-nos a millorar.",
   "apply": "Aplica",
   "applyInfo": "Activa Aerial ara i n’habilita l’inici automàtic.",
   "unapply": "Desactiva Aerial",
@@ -671,6 +676,7 @@
   "aboutVersion": "Versió {version} · Llicència MIT",
   "aboutText": "T'agrada Aerial? Dona una estrella al projecte, uneix-te a la comunitat OpenLGTV o dona suport al desenvolupament.",
   "aboutDiscord": "Discord d'OpenLGTV",
+  "aboutTelegram": "Discussions a Telegram",
   "aboutDonate": "Fes una donació",
   "qrError": "No s'ha pogut generar el codi QR. Pots introduir l'URL que es mostra a continuació.",
   "protWarningOff": "El panell s'apagarà d'aquí a {seconds} segons",
@@ -717,6 +723,7 @@
   "testLaunchUnconfirmed": "Sol·licitud de l’estalvi de pantalla rebutjada o sense confirmar. Consulta la informació de depuració i els registres."
  },
  "cs-CZ": {
+  "languageTranslationNotice": "Mnoho překladů vzniklo s pomocí strojového překladu nebo umělé inteligence a nemusí být dokonalé. Pokud jste rodilý mluvčí a všimnete si problému, založte prosím issue a pomozte nám překlad zlepšit.",
   "apply": "Použít",
   "applyInfo": "Nyní aktivuje Aerial a povolí automatické spuštění.",
   "unapply": "Deaktivovat Aerial",
@@ -910,6 +917,7 @@
   "aboutVersion": "Verze {version} · Licence MIT",
   "aboutText": "Líbí se vám Aerial? Přidejte projektu hvězdičku, připojte se ke komunitě OpenLGTV nebo podpořte vývoj.",
   "aboutDiscord": "Discord OpenLGTV",
+  "aboutTelegram": "Diskuse na Telegramu",
   "aboutDonate": "Přispět",
   "qrError": "QR kód se nepodařilo vytvořit. Můžete zadat níže uvedenou adresu URL.",
   "protWarningOff": "Panel se vypne za {seconds} sekund",
@@ -956,6 +964,7 @@
   "testLaunchUnconfirmed": "Požadavek na spořič obrazovky byl zamítnut nebo nepotvrzen. Zkontrolujte ladicí informace a protokoly."
  },
  "da-DK": {
+  "languageTranslationNotice": "Mange oversættelser er lavet med hjælp fra maskinoversættelse eller kunstig intelligens og kan være upræcise. Hvis du har sproget som modersmål og opdager et problem, må du gerne oprette et issue og hjælpe os med at forbedre dem.",
   "apply": "Anvend",
   "applyInfo": "Aktiverer Aerial nu og ved automatisk start.",
   "unapply": "Deaktiver Aerial",
@@ -1149,6 +1158,7 @@
   "aboutVersion": "Version {version} · MIT-licens",
   "aboutText": "Kan du lide Aerial? Giv projektet en stjerne, deltag i OpenLGTV-fællesskabet eller støt udviklingen.",
   "aboutDiscord": "OpenLGTV Discord",
+  "aboutTelegram": "Diskussioner på Telegram",
   "aboutDonate": "Donér",
   "qrError": "QR-koden kunne ikke oprettes. Du kan indtaste URL'en nedenfor.",
   "protWarningOff": "Panelet slukkes om {seconds} sekunder",
@@ -1195,6 +1205,7 @@
   "testLaunchUnconfirmed": "Anmodningen om pauseskærm blev afvist eller ikke bekræftet. Tjek fejlfindingsoplysninger og logfiler."
  },
  "de-DE": {
+  "languageTranslationNotice": "Viele Übersetzungen wurden mit maschineller Übersetzung oder KI erstellt und können Fehler enthalten. Wenn du Muttersprachler bist und ein Problem bemerkst, erstelle bitte ein Issue, um uns bei der Verbesserung zu helfen.",
   "apply": "Anwenden",
   "applyInfo": "Aktiviert Aerial jetzt und beim automatischen Start.",
   "unapply": "Aerial deaktivieren",
@@ -1388,6 +1399,7 @@
   "aboutVersion": "Version {version} · MIT-Lizenz",
   "aboutText": "Gefällt dir Aerial? Gib dem Projekt einen Stern, tritt der OpenLGTV-Community bei oder unterstütze die Entwicklung.",
   "aboutDiscord": "OpenLGTV-Discord",
+  "aboutTelegram": "Diskussionen auf Telegram",
   "aboutDonate": "Spenden",
   "qrError": "Der QR-Code konnte nicht erstellt werden. Du kannst die unten angezeigte URL eingeben.",
   "protWarningOff": "Das Panel wird in {seconds} Sekunden ausgeschaltet",
@@ -1434,6 +1446,7 @@
   "testLaunchUnconfirmed": "Bildschirmschoner-Anfrage abgelehnt oder nicht bestätigt. Debug-Informationen und Protokolle prüfen."
  },
  "el-GR": {
+  "languageTranslationNotice": "Πολλές μεταφράσεις έχουν γίνει με τη βοήθεια μηχανικής μετάφρασης ή τεχνητής νοημοσύνης και ενδέχεται να μην είναι τέλειες. Αν είστε φυσικός ομιλητής και εντοπίσετε κάποιο πρόβλημα, ανοίξτε ένα issue για να μας βοηθήσετε να τις βελτιώσουμε.",
   "apply": "Εφαρμογή",
   "applyInfo": "Ενεργοποιεί το Aerial τώρα και την αυτόματη εκκίνησή του.",
   "unapply": "Απενεργοποίηση Aerial",
@@ -1627,6 +1640,7 @@
   "aboutVersion": "Έκδοση {version} · Άδεια MIT",
   "aboutText": "Σας αρέσει το Aerial; Βάλτε ένα αστέρι στο έργο, συμμετάσχετε στην κοινότητα OpenLGTV ή υποστηρίξτε την ανάπτυξη.",
   "aboutDiscord": "Discord OpenLGTV",
+  "aboutTelegram": "Συζητήσεις στο Telegram",
   "aboutDonate": "Δωρεά",
   "qrError": "Δεν ήταν δυνατή η δημιουργία του κωδικού QR. Μπορείτε να πληκτρολογήσετε τη διεύθυνση URL παρακάτω.",
   "protWarningOff": "Η οθόνη θα σβήσει σε {seconds} δευτερόλεπτα",
@@ -1675,6 +1689,7 @@
  "en-AU": "en-US",
  "en-GB": "en-US",
  "en-US": {
+  "languageTranslationNotice": "Many translations are machine- or AI-assisted and may be imperfect. If you are a native speaker and notice a problem, please open an issue to help us improve.",
   "apply": "Apply",
   "applyInfo": "Applies Aerial now and enables it to start automatically.",
   "unapply": "Unapply Aerial",
@@ -1786,6 +1801,7 @@
   "aboutVersion": "Version {version} · MIT License",
   "aboutText": "Enjoying Aerial? Star the project, join the OpenLGTV community, or support development.",
   "aboutDiscord": "OpenLGTV Discord",
+  "aboutTelegram": "Telegram discussions",
   "aboutDonate": "Donate",
   "qrError": "Could not generate the QR code. You can enter the URL shown below.",
   "protection": "Panel protection",
@@ -1914,6 +1930,7 @@
   "qrHint": "Scan with your phone camera"
  },
  "es-ES": {
+  "languageTranslationNotice": "Muchas traducciones se han realizado con ayuda de traducción automática o inteligencia artificial y pueden contener errores. Si eres hablante nativo y encuentras algún problema, abre una incidencia para ayudarnos a mejorar.",
   "apply": "Aplicar",
   "applyInfo": "Activa Aerial ahora y habilita su inicio automático.",
   "unapply": "Desactivar Aerial",
@@ -2107,6 +2124,7 @@
   "aboutVersion": "Versión {version} · Licencia MIT",
   "aboutText": "¿Te gusta Aerial? Da una estrella al proyecto, únete a la comunidad OpenLGTV o apoya su desarrollo.",
   "aboutDiscord": "Discord de OpenLGTV",
+  "aboutTelegram": "Discusiones en Telegram",
   "aboutDonate": "Donar",
   "qrError": "No se pudo generar el código QR. Puedes introducir la URL que aparece abajo.",
   "protWarningOff": "El panel se apagará en {seconds} segundos",
@@ -2154,6 +2172,7 @@
  },
  "es-419": "es-ES",
  "fi-FI": {
+  "languageTranslationNotice": "Monet käännökset on tehty konekäännöksen tai tekoälyn avulla, ja niissä voi olla virheitä. Jos olet äidinkielinen puhuja ja huomaat ongelman, avaa ilmoitus auttaaksesi meitä parantamaan käännöksiä.",
   "apply": "Ota käyttöön",
   "applyInfo": "Ottaa Aerialin käyttöön nyt ja käynnistää sen automaattisesti.",
   "unapply": "Poista Aerial käytöstä",
@@ -2347,6 +2366,7 @@
   "aboutVersion": "Versio {version} · MIT-lisenssi",
   "aboutText": "Pidätkö Aerialista? Anna projektille tähti, liity OpenLGTV-yhteisöön tai tue kehitystä.",
   "aboutDiscord": "OpenLGTV Discord",
+  "aboutTelegram": "Keskustelut Telegramissa",
   "aboutDonate": "Lahjoita",
   "qrError": "QR-koodin luominen epäonnistui. Voit kirjoittaa alla näkyvän URL-osoitteen.",
   "protWarningOff": "Paneeli sammuu {seconds} sekunnin kuluttua",
@@ -2394,6 +2414,7 @@
  },
  "fr-CA": "fr-FR",
  "fr-FR": {
+  "languageTranslationNotice": "De nombreuses traductions ont été réalisées avec l’aide de la traduction automatique ou de l’IA et peuvent être imparfaites. Si vous êtes locuteur natif et remarquez un problème, veuillez ouvrir une issue pour nous aider à les améliorer.",
   "apply": "Appliquer",
   "applyInfo": "Active Aerial maintenant et au démarrage automatique.",
   "unapply": "Désactiver Aerial",
@@ -2587,6 +2608,7 @@
   "aboutVersion": "Version {version} · Licence MIT",
   "aboutText": "Aerial vous plaît ? Ajoutez une étoile au projet, rejoignez la communauté OpenLGTV ou soutenez son développement.",
   "aboutDiscord": "Discord OpenLGTV",
+  "aboutTelegram": "Discussions sur Telegram",
   "aboutDonate": "Faire un don",
   "qrError": "Impossible de générer le code QR. Vous pouvez saisir l’URL affichée ci-dessous.",
   "protWarningOff": "La dalle s’éteindra dans {seconds} secondes",
@@ -2633,6 +2655,7 @@
   "testLaunchUnconfirmed": "Demande de l’économiseur d’écran rejetée ou non confirmée. Consultez les informations de débogage et les journaux."
  },
  "he-IL": {
+  "languageTranslationNotice": "תרגומים רבים נעשו בסיוע תרגום מכונה או בינה מלאכותית ועשויים להיות לא מדויקים. אם זו שפת האם שלך ושמת לב לבעיה, נשמח אם תפתחו דיווח כדי לעזור לנו להשתפר.",
   "apply": "החל",
   "applyInfo": "מפעיל את Aerial כעת ומאפשר הפעלה אוטומטית.",
   "unapply": "בטל את Aerial",
@@ -2826,6 +2849,7 @@
   "aboutVersion": "גרסה {version} · רישיון MIT",
   "aboutText": "נהניתם מ-Aerial? תנו לפרויקט כוכב, הצטרפו לקהילת OpenLGTV או תמכו בפיתוח.",
   "aboutDiscord": "Discord של OpenLGTV",
+  "aboutTelegram": "דיונים בטלגרם",
   "aboutDonate": "תרומה",
   "qrError": "לא ניתן ליצור את קוד ה-QR. אפשר להזין את כתובת ה-URL שמופיעה למטה.",
   "protWarningOff": "הלוח יכבה בעוד {seconds} שניות",
@@ -2872,6 +2896,7 @@
   "testLaunchUnconfirmed": "בקשת שומר המסך נדחתה או לא אושרה. בדקו את פרטי הניפוי והיומנים."
  },
  "hi-IN": {
+  "languageTranslationNotice": "कई अनुवाद मशीन अनुवाद या एआई की सहायता से किए गए हैं और उनमें कमियाँ हो सकती हैं। यदि यह आपकी मातृभाषा है और आपको कोई समस्या दिखे, तो कृपया एक इश्यू खोलें ताकि हम सुधार कर सकें।",
   "apply": "लागू करें",
   "applyInfo": "Aerial को अभी लागू करता है और स्वचालित प्रारंभ सक्षम करता है।",
   "unapply": "Aerial हटाएं",
@@ -3065,6 +3090,7 @@
   "aboutVersion": "संस्करण {version} · MIT लाइसेंस",
   "aboutText": "Aerial पसंद आया? प्रोजेक्ट को स्टार दें, OpenLGTV समुदाय में शामिल हों या विकास में सहयोग करें।",
   "aboutDiscord": "OpenLGTV Discord",
+  "aboutTelegram": "Telegram पर चर्चाएँ",
   "aboutDonate": "दान करें",
   "qrError": "QR कोड नहीं बनाया जा सका। आप नीचे दिखाया गया URL दर्ज कर सकते हैं।",
   "protWarningOff": "पैनल {seconds} सेकंड में बंद हो जाएगा",
@@ -3111,6 +3137,7 @@
   "testLaunchUnconfirmed": "स्क्रीनसेवर अनुरोध अस्वीकृत या अपुष्ट रहा। डिबग जानकारी और लॉग जाँचें।"
  },
  "hr-HR": {
+  "languageTranslationNotice": "Mnogi su prijevodi izrađeni uz pomoć strojnog prevođenja ili umjetne inteligencije i mogu biti nesavršeni. Ako vam je ovo materinski jezik i primijetite problem, otvorite prijavu kako biste nam pomogli poboljšati prijevode.",
   "apply": "Primijeni",
   "applyInfo": "Sada aktivira Aerial i omogućuje automatsko pokretanje.",
   "unapply": "Isključi Aerial",
@@ -3304,6 +3331,7 @@
   "aboutVersion": "Verzija {version} · Licenca MIT",
   "aboutText": "Sviđa vam se Aerial? Označite projekt zvjezdicom, pridružite se zajednici OpenLGTV ili podržite razvoj.",
   "aboutDiscord": "OpenLGTV Discord",
+  "aboutTelegram": "Razgovori na Telegramu",
   "aboutDonate": "Donirajte",
   "qrError": "Nije moguće izraditi QR kod. Možete upisati URL prikazan u nastavku.",
   "protWarningOff": "Ploča će se isključiti za {seconds} sekundi",
@@ -3350,6 +3378,7 @@
   "testLaunchUnconfirmed": "Zahtjev za čuvar zaslona odbijen ili nepotvrđen. Provjerite informacije o otklanjanju pogrešaka i zapisnike."
  },
  "hu-HU": {
+  "languageTranslationNotice": "Sok fordítás gépi fordítás vagy mesterséges intelligencia segítségével készült, ezért pontatlan lehet. Ha ez az anyanyelved, és hibát észlelsz, kérjük, nyiss egy hibajegyet, hogy segíts a javításban.",
   "apply": "Alkalmazás",
   "applyInfo": "Most aktiválja az Aerialt és engedélyezi az automatikus indítást.",
   "unapply": "Aerial kikapcsolása",
@@ -3543,6 +3572,7 @@
   "aboutVersion": "Verzió: {version} · MIT licenc",
   "aboutText": "Tetszik az Aerial? Jelöld csillaggal a projektet, csatlakozz az OpenLGTV közösséghez, vagy támogasd a fejlesztést.",
   "aboutDiscord": "OpenLGTV Discord",
+  "aboutTelegram": "Beszélgetések a Telegramon",
   "aboutDonate": "Adományozás",
   "qrError": "Nem sikerült létrehozni a QR-kódot. Megadhatod az alább látható URL-t.",
   "protWarningOff": "A panel {seconds} másodperc múlva kikapcsol",
@@ -3589,6 +3619,7 @@
   "testLaunchUnconfirmed": "A képernyővédő kérése elutasítva vagy nincs megerősítve. Ellenőrizze a hibakeresési adatokat és a naplókat."
  },
  "id-ID": {
+  "languageTranslationNotice": "Banyak terjemahan dibuat dengan bantuan terjemahan mesin atau AI dan mungkin kurang sempurna. Jika Anda penutur asli dan menemukan masalah, silakan buka issue untuk membantu kami memperbaikinya.",
   "apply": "Terapkan",
   "applyInfo": "Menerapkan Aerial sekarang dan mengaktifkan mulai otomatis.",
   "unapply": "Nonaktifkan Aerial",
@@ -3782,6 +3813,7 @@
   "aboutVersion": "Versi {version} · Lisensi MIT",
   "aboutText": "Suka Aerial? Beri bintang pada proyek, bergabunglah dengan komunitas OpenLGTV, atau dukung pengembangannya.",
   "aboutDiscord": "Discord OpenLGTV",
+  "aboutTelegram": "Diskusi di Telegram",
   "aboutDonate": "Donasi",
   "qrError": "Tidak dapat membuat kode QR. Anda dapat memasukkan URL yang ditampilkan di bawah.",
   "protWarningOff": "Panel akan mati dalam {seconds} detik",
@@ -3828,6 +3860,7 @@
   "testLaunchUnconfirmed": "Permintaan screensaver ditolak atau belum dikonfirmasi. Periksa informasi debug dan log."
  },
  "it-IT": {
+  "languageTranslationNotice": "Molte traduzioni sono state realizzate con l’aiuto della traduzione automatica o dell’IA e potrebbero essere imperfette. Se sei madrelingua e noti un problema, apri una segnalazione per aiutarci a migliorarle.",
   "apply": "Applica",
   "applyInfo": "Attiva Aerial ora e ne abilita l’avvio automatico.",
   "unapply": "Disattiva Aerial",
@@ -4021,6 +4054,7 @@
   "aboutVersion": "Versione {version} · Licenza MIT",
   "aboutText": "Ti piace Aerial? Aggiungi una stella al progetto, unisciti alla community OpenLGTV o sostieni lo sviluppo.",
   "aboutDiscord": "Discord OpenLGTV",
+  "aboutTelegram": "Discussioni su Telegram",
   "aboutDonate": "Fai una donazione",
   "qrError": "Impossibile generare il codice QR. Puoi inserire l'URL mostrato qui sotto.",
   "protWarningOff": "Il pannello si spegnerà tra {seconds} secondi",
@@ -4067,6 +4101,7 @@
   "testLaunchUnconfirmed": "Richiesta dello screensaver rifiutata o non confermata. Controlla le informazioni di debug e i log."
  },
  "ja-JP": {
+  "languageTranslationNotice": "多くの翻訳には機械翻訳やAIが使用されており、不正確な場合があります。母語話者の方で問題にお気づきの場合は、改善のためにIssueを作成してください。",
   "apply": "適用",
   "applyInfo": "Aerialを今すぐ適用し、自動起動を有効にします。",
   "unapply": "Aerialを解除",
@@ -4260,6 +4295,7 @@
   "aboutVersion": "バージョン {version} · MITライセンス",
   "aboutText": "Aerialを気に入ったら、プロジェクトにスターを付けたり、OpenLGTVコミュニティに参加したり、開発を支援したりできます。",
   "aboutDiscord": "OpenLGTV Discord",
+  "aboutTelegram": "Telegramでの議論",
   "aboutDonate": "寄付する",
   "qrError": "QRコードを生成できませんでした。下に表示されたURLを入力してください。",
   "protWarningOff": "パネルは{seconds}秒後にオフになります",
@@ -4306,6 +4342,7 @@
   "testLaunchUnconfirmed": "スクリーンセーバーのリクエストが拒否されたか、確認できませんでした。デバッグ情報とログを確認してください。"
  },
  "ko-KR": {
+  "languageTranslationNotice": "많은 번역이 기계 번역이나 AI의 도움으로 작성되어 부정확할 수 있습니다. 원어민이시고 문제를 발견하셨다면 개선할 수 있도록 이슈를 등록해 주세요.",
   "apply": "적용",
   "applyInfo": "지금 Aerial을 적용하고 자동 시작을 활성화합니다.",
   "unapply": "Aerial 해제",
@@ -4499,6 +4536,7 @@
   "aboutVersion": "버전 {version} · MIT 라이선스",
   "aboutText": "Aerial이 마음에 드시나요? 프로젝트에 별을 남기고, OpenLGTV 커뮤니티에 참여하거나, 개발을 후원해 주세요.",
   "aboutDiscord": "OpenLGTV Discord",
+  "aboutTelegram": "Telegram 토론",
   "aboutDonate": "후원하기",
   "qrError": "QR 코드를 만들 수 없습니다. 아래에 표시된 URL을 입력해 주세요.",
   "protWarningOff": "패널이 {seconds}초 후에 꺼집니다",
@@ -4545,6 +4583,7 @@
   "testLaunchUnconfirmed": "화면 보호기 요청이 거부되었거나 확인되지 않았습니다. 디버그 정보와 로그를 확인하세요."
  },
  "mk-MK": {
+  "languageTranslationNotice": "Многу преводи се направени со помош на машински превод или вештачка интелигенција и може да не се совршени. Ако ви е ова мајчин јазик и забележите проблем, отворете пријава за да ни помогнете да ги подобриме.",
   "apply": "Примени",
   "applyInfo": "Го активира Aerial сега и овозможува автоматско стартување.",
   "unapply": "Исклучи Aerial",
@@ -4738,6 +4777,7 @@
   "aboutVersion": "Верзија {version} · Лиценца MIT",
   "aboutText": "Ви се допаѓа Aerial? Означете го проектот со ѕвезда, придружете се на заедницата OpenLGTV или поддржете го развојот.",
   "aboutDiscord": "Discord OpenLGTV",
+  "aboutTelegram": "Дискусии на Telegram",
   "aboutDonate": "Донирајте",
   "qrError": "Не може да се создаде QR-кодот. Може да ја внесете URL-адресата прикажана подолу.",
   "protWarningOff": "Панелот ќе се исклучи за {seconds} секунди",
@@ -4784,6 +4824,7 @@
   "testLaunchUnconfirmed": "Барањето за чувар на екранот е одбиено или непотврдено. Проверете ги информациите за дебагирање и дневниците."
  },
  "ms-MY": {
+  "languageTranslationNotice": "Banyak terjemahan dibuat dengan bantuan terjemahan mesin atau AI dan mungkin tidak sempurna. Jika anda penutur asli dan menemui masalah, sila buka isu untuk membantu kami menambah baik terjemahan.",
   "apply": "Terapkan",
   "applyInfo": "Menerapkan Aerial sekarang dan membolehkan mula automatik.",
   "unapply": "Nyahaktifkan Aerial",
@@ -4977,6 +5018,7 @@
   "aboutVersion": "Versi {version} · Lesen MIT",
   "aboutText": "Suka Aerial? Berikan bintang kepada projek, sertai komuniti OpenLGTV atau sokong pembangunan.",
   "aboutDiscord": "Discord OpenLGTV",
+  "aboutTelegram": "Perbincangan di Telegram",
   "aboutDonate": "Derma",
   "qrError": "Tidak dapat menjana kod QR. Anda boleh memasukkan URL yang dipaparkan di bawah.",
   "protWarningOff": "Panel akan dimatikan dalam {seconds} saat",
@@ -5023,6 +5065,7 @@
   "testLaunchUnconfirmed": "Permintaan penyelamat skrin ditolak atau tidak disahkan. Semak maklumat nyahpepijat dan log."
  },
  "nl-NL": {
+  "languageTranslationNotice": "Veel vertalingen zijn gemaakt met behulp van machinevertaling of AI en kunnen fouten bevatten. Als je een moedertaalspreker bent en een probleem opmerkt, open dan een issue om ons te helpen de vertalingen te verbeteren.",
   "apply": "Toepassen",
   "applyInfo": "Activeert Aerial nu en schakelt automatisch starten in.",
   "unapply": "Aerial uitschakelen",
@@ -5218,6 +5261,7 @@
   "aboutVersion": "Versie {version} · MIT-licentie",
   "aboutText": "Bevalt Aerial? Geef het project een ster, word lid van de OpenLGTV-community of steun de ontwikkeling.",
   "aboutDiscord": "OpenLGTV Discord",
+  "aboutTelegram": "Discussies op Telegram",
   "aboutDonate": "Doneren",
   "qrError": "De QR-code kon niet worden gemaakt. Je kunt de URL hieronder invoeren.",
   "protWarningOff": "Het paneel wordt over {seconds} seconden uitgeschakeld",
@@ -5262,6 +5306,7 @@
   "qrHint": "Scan met de camera van je telefoon"
  },
  "nb-NO": {
+  "languageTranslationNotice": "Mange oversettelser er laget med hjelp av maskinoversettelse eller KI og kan inneholde feil. Hvis du har språket som morsmål og oppdager et problem, kan du gjerne opprette en sak for å hjelpe oss med å forbedre oversettelsene.",
   "apply": "Bruk",
   "applyInfo": "Aktiverer Aerial nå og ved automatisk oppstart.",
   "unapply": "Deaktiver Aerial",
@@ -5455,6 +5500,7 @@
   "aboutVersion": "Versjon {version} · MIT-lisens",
   "aboutText": "Liker du Aerial? Gi prosjektet en stjerne, bli med i OpenLGTV-fellesskapet eller støtt utviklingen.",
   "aboutDiscord": "OpenLGTV Discord",
+  "aboutTelegram": "Diskusjoner på Telegram",
   "aboutDonate": "Doner",
   "qrError": "Kunne ikke opprette QR-koden. Du kan skrive inn URL-en som vises nedenfor.",
   "protWarningOff": "Panelet slås av om {seconds} sekunder",
@@ -5501,6 +5547,7 @@
   "testLaunchUnconfirmed": "Forespørselen om skjermsparer ble avvist eller ikke bekreftet. Sjekk feilsøkingsinformasjon og logger."
  },
  "pl-PL": {
+  "languageTranslationNotice": "Wiele tłumaczeń powstało przy pomocy tłumaczenia maszynowego lub sztucznej inteligencji i może zawierać błędy. Jeśli jesteś rodzimym użytkownikiem języka i zauważysz problem, otwórz zgłoszenie, aby pomóc nam je poprawić.",
   "apply": "Zastosuj",
   "applyInfo": "Włącza Aerial teraz i uruchamianie automatyczne.",
   "unapply": "Wyłącz Aerial",
@@ -5694,6 +5741,7 @@
   "aboutVersion": "Wersja {version} · Licencja MIT",
   "aboutText": "Podoba Ci się Aerial? Dodaj projekt do ulubionych, dołącz do społeczności OpenLGTV lub wesprzyj rozwój.",
   "aboutDiscord": "Discord OpenLGTV",
+  "aboutTelegram": "Dyskusje na Telegramie",
   "aboutDonate": "Wesprzyj",
   "qrError": "Nie udało się wygenerować kodu QR. Możesz wpisać adres URL widoczny poniżej.",
   "protWarningOff": "Panel wyłączy się za {seconds} s",
@@ -5740,6 +5788,7 @@
   "testLaunchUnconfirmed": "Żądanie wygaszacza ekranu odrzucone lub niepotwierdzone. Sprawdź informacje debugowania i dzienniki."
  },
  "pt-BR": {
+  "languageTranslationNotice": "Muitas traduções foram feitas com ajuda de tradução automática ou IA e podem conter erros. Se você é falante nativo e encontrar algum problema, abra uma issue para nos ajudar a melhorar.",
   "apply": "Aplicar",
   "applyInfo": "Ativa o Aerial agora e habilita a inicialização automática.",
   "unapply": "Desativar Aerial",
@@ -5933,6 +5982,7 @@
   "aboutVersion": "Versão {version} · Licença MIT",
   "aboutText": "Gostou do Aerial? Dê uma estrela ao projeto, participe da comunidade OpenLGTV ou apoie o desenvolvimento.",
   "aboutDiscord": "Discord do OpenLGTV",
+  "aboutTelegram": "Discussões no Telegram",
   "aboutDonate": "Doar",
   "qrError": "Não foi possível gerar o código QR. Você pode digitar a URL exibida abaixo.",
   "protWarningOff": "O painel será desligado em {seconds} segundos",
@@ -5979,6 +6029,7 @@
   "testLaunchUnconfirmed": "Solicitação da proteção de tela rejeitada ou não confirmada. Verifique as informações de depuração e os logs."
  },
  "pt-PT": {
+  "languageTranslationNotice": "Muitas traduções foram feitas com a ajuda de tradução automática ou IA e podem conter erros. Se é falante nativo e detetar algum problema, abra uma issue para nos ajudar a melhorar.",
   "apply": "Aplicar",
   "applyInfo": "Ativa o Aerial agora e permite o arranque automático.",
   "unapply": "Desativar Aerial",
@@ -6172,6 +6223,7 @@
   "aboutVersion": "Versão {version} · Licença MIT",
   "aboutText": "Gosta do Aerial? Dê uma estrela ao projeto, junte-se à comunidade OpenLGTV ou apoie o desenvolvimento.",
   "aboutDiscord": "Discord OpenLGTV",
+  "aboutTelegram": "Discussões no Telegram",
   "aboutDonate": "Fazer um donativo",
   "qrError": "Não foi possível gerar o código QR. Pode introduzir o URL apresentado abaixo.",
   "protWarningOff": "O painel será desligado dentro de {seconds} segundos",
@@ -6218,6 +6270,7 @@
   "testLaunchUnconfirmed": "Pedido do protetor de ecrã rejeitado ou não confirmado. Verifique as informações de depuração e os registos."
  },
  "ro-RO": {
+  "languageTranslationNotice": "Multe traduceri au fost realizate cu ajutorul traducerii automate sau al inteligenței artificiale și pot fi imperfecte. Dacă sunteți vorbitor nativ și observați o problemă, vă rugăm să deschideți un tichet pentru a ne ajuta să le îmbunătățim.",
   "apply": "Aplică",
   "applyInfo": "Activează Aerial acum și permite pornirea automată.",
   "unapply": "Dezactivează Aerial",
@@ -6411,6 +6464,7 @@
   "aboutVersion": "Versiunea {version} · Licență MIT",
   "aboutText": "Îți place Aerial? Adaugă o stea proiectului, alătură-te comunității OpenLGTV sau susține dezvoltarea.",
   "aboutDiscord": "Discord OpenLGTV",
+  "aboutTelegram": "Discuții pe Telegram",
   "aboutDonate": "Donează",
   "qrError": "Codul QR nu a putut fi generat. Poți introduce URL-ul afișat mai jos.",
   "protWarningOff": "Panoul se va opri în {seconds} secunde",
@@ -6457,6 +6511,7 @@
   "testLaunchUnconfirmed": "Cererea pentru screensaver a fost respinsă sau neconfirmată. Verifică informațiile de depanare și jurnalele."
  },
  "ru-RU": {
+  "languageTranslationNotice": "Многие переводы выполнены с помощью машинного перевода или ИИ и могут быть неточными. Если этот язык для вас родной и вы заметили проблему, пожалуйста, создайте issue, чтобы помочь нам улучшить переводы.",
   "apply": "Применить",
   "applyInfo": "Включает Aerial сейчас и разрешает автоматический запуск.",
   "unapply": "Отключить Aerial",
@@ -6650,6 +6705,7 @@
   "aboutVersion": "Версия {version} · Лицензия MIT",
   "aboutText": "Нравится Aerial? Поставьте проекту звезду, присоединитесь к сообществу OpenLGTV или поддержите разработку.",
   "aboutDiscord": "Discord OpenLGTV",
+  "aboutTelegram": "Обсуждения в Telegram",
   "aboutDonate": "Поддержать",
   "qrError": "Не удалось создать QR-код. Можно ввести URL, указанный ниже.",
   "protWarningOff": "Панель выключится через {seconds} с",
@@ -6696,6 +6752,7 @@
   "testLaunchUnconfirmed": "Запрос заставки отклонён или не подтверждён. Проверьте отладочную информацию и журналы."
  },
  "sk-SK": {
+  "languageTranslationNotice": "Mnohé preklady vznikli s pomocou strojového prekladu alebo umelej inteligencie a nemusia byť dokonalé. Ak ste rodený hovoriaci a všimnete si problém, vytvorte hlásenie, aby ste nám pomohli preklady zlepšiť.",
   "apply": "Použiť",
   "applyInfo": "Aktivuje Aerial teraz a povolí automatické spustenie.",
   "unapply": "Deaktivovať Aerial",
@@ -6889,6 +6946,7 @@
   "aboutVersion": "Verzia {version} · Licencia MIT",
   "aboutText": "Páči sa vám Aerial? Pridajte projektu hviezdičku, pripojte sa ku komunite OpenLGTV alebo podporte vývoj.",
   "aboutDiscord": "Discord OpenLGTV",
+  "aboutTelegram": "Diskusie na Telegrame",
   "aboutDonate": "Prispieť",
   "qrError": "QR kód sa nepodarilo vytvoriť. Môžete zadať nižšie uvedenú URL adresu.",
   "protWarningOff": "Panel sa vypne o {seconds} sekúnd",
@@ -6935,6 +6993,7 @@
   "testLaunchUnconfirmed": "Požiadavka na šetrič obrazovky bola zamietnutá alebo nepotvrdená. Skontrolujte ladiace informácie a protokoly."
  },
  "sl-SI": {
+  "languageTranslationNotice": "Številni prevodi so nastali s pomočjo strojnega prevajanja ali umetne inteligence in so lahko nenatančni. Če ste materni govorec in opazite težavo, odprite prijavo in nam pomagajte izboljšati prevode.",
   "apply": "Uporabi",
   "applyInfo": "Zdaj aktivira Aerial in omogoči samodejni zagon.",
   "unapply": "Izklopi Aerial",
@@ -7128,6 +7187,7 @@
   "aboutVersion": "Različica {version} · Licenca MIT",
   "aboutText": "Vam je Aerial všeč? Dodajte projektu zvezdico, pridružite se skupnosti OpenLGTV ali podprite razvoj.",
   "aboutDiscord": "OpenLGTV Discord",
+  "aboutTelegram": "Razgovori na Telegramu",
   "aboutDonate": "Doniraj",
   "qrError": "Kode QR ni bilo mogoče ustvariti. Vnesete lahko spodnji URL.",
   "protWarningOff": "Plošča se bo izklopila čez {seconds} sekund",
@@ -7174,6 +7234,7 @@
   "testLaunchUnconfirmed": "Zahteva za ohranjevalnik zaslona je bila zavrnjena ali nepotrjena. Preverite podatke za odpravljanje napak in dnevnike."
  },
  "sv-SE": {
+  "languageTranslationNotice": "Många översättningar har gjorts med hjälp av maskinöversättning eller AI och kan innehålla fel. Om du har språket som modersmål och upptäcker ett problem får du gärna öppna ett ärende för att hjälpa oss att förbättra översättningarna.",
   "apply": "Använd",
   "applyInfo": "Aktiverar Aerial nu och vid automatisk start.",
   "unapply": "Inaktivera Aerial",
@@ -7367,6 +7428,7 @@
   "aboutVersion": "Version {version} · MIT-licens",
   "aboutText": "Gillar du Aerial? Ge projektet en stjärna, gå med i OpenLGTV-communityn eller stöd utvecklingen.",
   "aboutDiscord": "OpenLGTV Discord",
+  "aboutTelegram": "Diskussioner på Telegram",
   "aboutDonate": "Donera",
   "qrError": "Det gick inte att skapa QR-koden. Du kan ange webbadressen som visas nedan.",
   "protWarningOff": "Panelen stängs av om {seconds} sekunder",
@@ -7413,6 +7475,7 @@
   "testLaunchUnconfirmed": "Begäran om skärmsläckare avvisades eller bekräftades inte. Kontrollera felsökningsinformation och loggar."
  },
  "th-TH": {
+  "languageTranslationNotice": "คำแปลจำนวนมากจัดทำโดยอาศัยการแปลด้วยเครื่องหรือ AI และอาจไม่สมบูรณ์ หากคุณเป็นเจ้าของภาษาและพบปัญหา โปรดเปิด issue เพื่อช่วยให้เราปรับปรุงคำแปล",
   "apply": "นำไปใช้",
   "applyInfo": "ใช้ Aerial ทันทีและเปิดการเริ่มต้นอัตโนมัติ",
   "unapply": "ปิดใช้งาน Aerial",
@@ -7606,6 +7669,7 @@
   "aboutVersion": "เวอร์ชัน {version} · สัญญาอนุญาต MIT",
   "aboutText": "ชอบ Aerial ไหม ให้ดาวโครงการ เข้าร่วมชุมชน OpenLGTV หรือสนับสนุนการพัฒนาได้",
   "aboutDiscord": "Discord ของ OpenLGTV",
+  "aboutTelegram": "การสนทนาบน Telegram",
   "aboutDonate": "บริจาค",
   "qrError": "สร้าง QR code ไม่ได้ คุณสามารถป้อน URL ที่แสดงด้านล่าง",
   "protWarningOff": "แผงจะปิดในอีก {seconds} วินาที",
@@ -7652,6 +7716,7 @@
   "testLaunchUnconfirmed": "คำขอโปรแกรมรักษาหน้าจอถูกปฏิเสธหรือไม่ได้รับการยืนยัน ตรวจสอบข้อมูลดีบักและบันทึก"
  },
  "tr-TR": {
+  "languageTranslationNotice": "Birçok çeviri makine çevirisi veya yapay zekâ yardımıyla yapılmıştır ve kusurlu olabilir. Ana dili konuşuruysanız ve bir sorun fark ederseniz, geliştirmemize yardımcı olmak için lütfen bir issue açın.",
   "apply": "Uygula",
   "applyInfo": "Aerial’i şimdi uygular ve otomatik başlamasını etkinleştirir.",
   "unapply": "Aerial’i devre dışı bırak",
@@ -7845,6 +7910,7 @@
   "aboutVersion": "Sürüm {version} · MIT Lisansı",
   "aboutText": "Aerial'ı beğendiniz mi? Projeye yıldız verin, OpenLGTV topluluğuna katılın veya geliştirmeyi destekleyin.",
   "aboutDiscord": "OpenLGTV Discord",
+  "aboutTelegram": "Telegram tartışmaları",
   "aboutDonate": "Bağış yap",
   "qrError": "QR kodu oluşturulamadı. Aşağıda gösterilen URL'yi girebilirsiniz.",
   "protWarningOff": "Panel {seconds} saniye içinde kapanacak",
@@ -7891,6 +7957,7 @@
   "testLaunchUnconfirmed": "Ekran koruyucu isteği reddedildi veya doğrulanmadı. Hata ayıklama bilgilerini ve günlükleri kontrol edin."
  },
  "uk-UA": {
+  "languageTranslationNotice": "Багато перекладів створено за допомогою машинного перекладу або ШІ, тому вони можуть бути неточними. Якщо ця мова для вас рідна і ви помітили проблему, будь ласка, створіть issue, щоб допомогти нам покращити переклади.",
   "apply": "Застосувати",
   "applyInfo": "Вмикає Aerial зараз і дозволяє автоматичний запуск.",
   "unapply": "Вимкнути Aerial",
@@ -8084,6 +8151,7 @@
   "aboutVersion": "Версія {version} · Ліцензія MIT",
   "aboutText": "Подобається Aerial? Позначте проєкт зіркою, приєднайтеся до спільноти OpenLGTV або підтримайте розробку.",
   "aboutDiscord": "Discord OpenLGTV",
+  "aboutTelegram": "Обговорення в Telegram",
   "aboutDonate": "Підтримати",
   "qrError": "Не вдалося створити QR-код. Можна ввести URL-адресу, показану нижче.",
   "protWarningOff": "Панель вимкнеться за {seconds} с",
@@ -8130,6 +8198,7 @@
   "testLaunchUnconfirmed": "Запит заставки відхилено або не підтверджено. Перевірте налагоджувальну інформацію та журнали."
  },
  "vi-VN": {
+  "languageTranslationNotice": "Nhiều bản dịch được thực hiện với sự hỗ trợ của dịch máy hoặc AI và có thể chưa hoàn hảo. Nếu bạn là người bản ngữ và nhận thấy vấn đề, vui lòng tạo một issue để giúp chúng tôi cải thiện.",
   "apply": "Áp dụng",
   "applyInfo": "Áp dụng Aerial ngay và bật tự động khởi động.",
   "unapply": "Tắt Aerial",
@@ -8323,6 +8392,7 @@
   "aboutVersion": "Phiên bản {version} · Giấy phép MIT",
   "aboutText": "Bạn thích Aerial? Hãy đánh dấu sao cho dự án, tham gia cộng đồng OpenLGTV hoặc hỗ trợ phát triển.",
   "aboutDiscord": "Discord OpenLGTV",
+  "aboutTelegram": "Thảo luận trên Telegram",
   "aboutDonate": "Quyên góp",
   "qrError": "Không thể tạo mã QR. Bạn có thể nhập URL hiển thị bên dưới.",
   "protWarningOff": "Màn hình sẽ tắt sau {seconds} giây",
@@ -8369,6 +8439,7 @@
   "testLaunchUnconfirmed": "Yêu cầu trình bảo vệ màn hình bị từ chối hoặc chưa được xác nhận. Hãy kiểm tra thông tin gỡ lỗi và nhật ký."
  },
  "zh-CN": {
+  "languageTranslationNotice": "许多翻译借助了机器翻译或人工智能，可能存在不准确之处。如果您是母语使用者并发现问题，请提交一个 issue，帮助我们改进。",
   "apply": "应用",
   "applyInfo": "立即启用 Aerial 并允许自动启动。",
   "unapply": "停用 Aerial",
@@ -8562,6 +8633,7 @@
   "aboutVersion": "版本 {version} · MIT 许可",
   "aboutText": "喜欢 Aerial 吗？欢迎为项目加星、加入 OpenLGTV 社区，或支持开发。",
   "aboutDiscord": "OpenLGTV Discord",
+  "aboutTelegram": "Telegram 讨论",
   "aboutDonate": "捐赠",
   "qrError": "无法生成二维码。你可以输入下方显示的 URL。",
   "protWarningOff": "面板将在 {seconds} 秒后关闭",
@@ -8609,6 +8681,7 @@
  },
  "zh-HK": "zh-TW",
  "zh-TW": {
+  "languageTranslationNotice": "許多翻譯借助了機器翻譯或人工智慧，可能不夠精確。如果您是母語使用者並發現問題，請提交一個 issue，協助我們改進。",
   "apply": "套用",
   "applyInfo": "立即啟用 Aerial 並允許自動啟動。",
   "unapply": "停用 Aerial",
@@ -8802,6 +8875,7 @@
   "aboutVersion": "版本 {version} · MIT 授權",
   "aboutText": "喜歡 Aerial 嗎？歡迎為專案加星、加入 OpenLGTV 社群，或支持開發。",
   "aboutDiscord": "OpenLGTV Discord",
+  "aboutTelegram": "Telegram 討論",
   "aboutDonate": "捐款",
   "qrError": "無法產生 QR 碼。您可以輸入下方顯示的 URL。",
   "protWarningOff": "面板將於 {seconds} 秒後關閉",

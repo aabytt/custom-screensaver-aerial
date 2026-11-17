@@ -16,6 +16,7 @@ var LINKS = {
   project: 'https://github.com/aabytt/custom-screensaver-aerial',
   discord: 'https://discord.com/invite/xWqRVEm',
   webosbrew: 'https://repo.webosbrew.org/',
+  telegram: 'https://t.me/aerial_webos',
   donate: 'https://github.com/aabytt/custom-screensaver-aerial#donate'
 };
 
@@ -30,11 +31,11 @@ var ICONS = {
 };
 
 function iconMarkup(name) {
-  if (name === 'github' || name === 'discord' || name === 'webosbrew') {
+  if (name === 'github' || name === 'discord' || name === 'webosbrew' || name === 'telegram') {
     return '<img src="assets/icons/' + name + '.svg" width="100%" height="100%" alt="" />';
   }
-  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" ' +
-    'stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' + ICONS[name] + '</svg>';
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="#fff">' +
+    ICONS[name] + '</svg>';
 }
 
 function tr(key, fallback) {
@@ -106,6 +107,7 @@ module.exports = kind({
         linkItem('projectLink', 'github'),
         linkItem('discordLink', 'discord'),
         linkItem('brewLink', 'webosbrew'),
+        linkItem('telegramLink', 'telegram'),
         linkItem('donateLink', 'donate'),
         {style: FOOTER, components: [
           {name: 'aboutFooter', style: 'flex: 1 1 auto; min-width: 0; margin-right: 24px; font-size: 22px; color: ' + Theme.MUTED + ';'},
@@ -150,6 +152,7 @@ module.exports = kind({
     this.setupLink(this.$.projectLink, 'GitHub', 'aabytt/custom-screensaver-aerial', LINKS.project);
     this.setupLink(this.$.discordLink, tr('aboutDiscord', 'OpenLGTV Discord'), tr('aboutDiscordSub', 'Community and help'), LINKS.discord);
     this.setupLink(this.$.brewLink, tr('aboutBrew', 'Homebrew Repository'), 'repo.webosbrew.org', LINKS.webosbrew);
+    this.setupLink(this.$.telegramLink, tr('aboutTelegram', 'Telegram discussions'), '@aerial_webos', LINKS.telegram);
     this.setupLink(this.$.donateLink, tr('aboutDonate', 'Support'), tr('aboutDonateSub', 'Support development'), LINKS.donate);
 
     this.$.aboutFooter.set('content', tr('aboutFooter', 'Select a link to get a QR code for your phone'));
@@ -220,6 +223,7 @@ var LINKS = {
   project: 'https://github.com/aabytt/custom-screensaver-aerial',
   discord: 'https://discord.com/invite/xWqRVEm',
   webosbrew: 'https://repo.webosbrew.org/',
+  telegram: 'https://t.me/aerial_webos',
   donate: 'https://github.com/aabytt/custom-screensaver-aerial#donate'
 };
 
@@ -234,11 +238,11 @@ var ICONS = {
 };
 
 function iconMarkup(name) {
-  if (name === 'github' || name === 'discord' || name === 'webosbrew') {
+  if (name === 'github' || name === 'discord' || name === 'webosbrew' || name === 'telegram') {
     return '<img src="assets/icons/' + name + '.svg" width="100%" height="100%" alt="" />';
   }
-  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" ' +
-    'stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' + ICONS[name] + '</svg>';
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="#fff">' +
+    ICONS[name] + '</svg>';
 }
 
 function tr(key, fallback) {
@@ -310,6 +314,7 @@ module.exports = kind({
         linkItem('projectLink', 'github'),
         linkItem('discordLink', 'discord'),
         linkItem('brewLink', 'webosbrew'),
+        linkItem('telegramLink', 'telegram'),
         linkItem('donateLink', 'donate'),
         {style: FOOTER, components: [
           {name: 'aboutFooter', style: 'flex: 1 1 auto; min-width: 0; margin-right: 24px; font-size: 22px; color: ' + Theme.MUTED + ';'},
@@ -354,6 +359,7 @@ module.exports = kind({
     this.setupLink(this.$.projectLink, 'GitHub', 'aabytt/custom-screensaver-aerial', LINKS.project);
     this.setupLink(this.$.discordLink, tr('aboutDiscord', 'OpenLGTV Discord'), tr('aboutDiscordSub', 'Community and help'), LINKS.discord);
     this.setupLink(this.$.brewLink, tr('aboutBrew', 'Homebrew Repository'), 'repo.webosbrew.org', LINKS.webosbrew);
+    this.setupLink(this.$.telegramLink, tr('aboutTelegram', 'Telegram discussions'), '@aerial_webos', LINKS.telegram);
     this.setupLink(this.$.donateLink, tr('aboutDonate', 'Support'), tr('aboutDonateSub', 'Support development'), LINKS.donate);
 
     this.$.aboutFooter.set('content', tr('aboutFooter', 'Select a link to get a QR code for your phone'));
