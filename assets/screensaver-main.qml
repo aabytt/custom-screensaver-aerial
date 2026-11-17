@@ -576,18 +576,27 @@ WebOSWindow {
     // which QML Service reports as onCallFailure with an empty response, so
     // com.webos.service.videooutput/getStatus (object response) is used instead.
     function decide(held) {
-        if (decoderDecided)
+        // Once playback has been allowed, ignore late decoder responses.
+        if (decoderDecided && !decoderHeld)
             return
+        var firstDecision = !decoderDecided
         decoderDecided = true
         decoderCheckTimeout.stop()
         decoderHeld = held
         if (held) {
-            notificationsService.set('enable')
-            osd.visible = true
-            fadeInOsd.running = true
-            clockOnlyMsgAnim.start()
-        } else
+            // A failed/timed-out query must not leave clock-only mode permanent.
+            // Keep the decoder guard in place until a free response arrives.
+            decoderRecheck.start()
+            if (firstDecision) {
+                notificationsService.set('enable')
+                osd.visible = true
+                fadeInOsd.running = true
+                clockOnlyMsgAnim.start()
+            }
+        } else {
+            decoderRecheck.stop()
             playRandomVideo()
+        }
     }
     Service {
         id : decoderCheck
@@ -601,6 +610,17 @@ WebOSWindow {
         // Unknown means the decoder may be held: never risk the other app's playback
         onCallFailure : decide(true)
         onError : decide(true)
+    }
+    Timer {
+        id : decoderRecheck
+        interval : 10000
+        repeat : true
+        onTriggered : {
+            // Check again in case the other app released its decoder.
+            // Preserve clock-only mode on failures/timeouts.
+            decoderCheckTimeout.restart()
+            decoderCheck.callService({})
+        }
     }
     Timer {
         id : decoderCheckTimeout
