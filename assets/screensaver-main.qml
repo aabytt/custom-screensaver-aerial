@@ -263,7 +263,7 @@ WebOSWindow {
         Behavior on opacity { NumberAnimation { duration : 1000 } }
         anchors.horizontalCenter : parent.horizontalCenter
         anchors.bottom : parent.bottom
-        anchors.bottomMargin : 50
+        anchors.bottomMargin : 3
         width : parent.width - 160
         horizontalAlignment : Text.AlignHCenter
         wrapMode : Text.WordWrap
