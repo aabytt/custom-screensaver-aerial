@@ -1,88 +1,82 @@
 <div align="center">
 <img src="assets/icon130.png" alt="Aerial webOS logo" width="200">
 <br><h1>Aerial webOS screensaver (fork of <a href="https://github.com/webosbrew/custom-screensaver">custom-screensaver</a>)</h1>
-   
-<a href="https://github.com/aabytt/custom-screensaver-aerial/releases/latest"><img src="https://img.shields.io/github/v/release/aabytt/custom-screensaver-aerial?style=flat-square" alt="Latest release"/></a>
-<a href="https://github.com/aabytt/custom-screensaver-aerial/releases"><img src="https://img.shields.io/github/downloads/aabytt/custom-screensaver-aerial/total?style=flat-square" alt="Downloads"/></a>
 
+<a href="https://github.com/aabytt/custom-screensaver-aerial/releases/latest"><img src="https://img.shields.io/github/v/release/aabytt/custom-screensaver-aerial?style=plastic&logo=github" alt="Latest release"/></a>
+<a href="https://github.com/aabytt/custom-screensaver-aerial/releases"><img src="https://img.shields.io/github/downloads/aabytt/custom-screensaver-aerial/total?style=plastic&logo=github" alt="Downloads"/></a>
+<a href="https://repo.webosbrew.org/apps/org.aabytt.webos.custom-screensaver-aerial/"><img src="https://img.shields.io/badge/Homebrew_Channel-cf0652?style=plastic&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjAiIGhlaWdodD0iMTYwIiB2aWV3Qm94PSIwIDAgNDIuMzMzIDQyLjMzMyI+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNC4wOSAxLjAwNylzY2FsZSguOTAyMDEpIj48cGF0aCBkPSJNMzEuMTExIDEzLjg0MnM1LjQ2MS0xLjY0MSA1LjUwNCAzLjk0M2MuMDQzIDUuNTg1LTIuNzI3IDMuNzE3LTUuODc3IDQuMTY4IiBzdHlsZT0iZmlsbDpub25lO2ZpbGwtcnVsZTpldmVub2RkO3N0cm9rZTojZmZmO3N0cm9rZS13aWR0aDoyLjQ7c3Ryb2tlLWxpbmVjYXA6YnV0dDtzdHJva2UtbGluZWpvaW46bWl0ZXI7c3Ryb2tlLW1pdGVybGltaXQ6NDtzdHJva2UtZGFzaGFycmF5Om5vbmU7c3Ryb2tlLW9wYWNpdHk6MSIvPjxwYXRoIGQ9Im02Ljg0IDEzLjI3OCA3LjA4My0zLjI5NyA0LjgyNi41NyA1LjA0NyAyLjA1OSA1Ljk1OS0uMTIuOTgzIDkuNDYzLS40MDEgMTAuOTU1LTIuMjg1IDMuMzQ4LTUuOTQxLjU3Mi0xMC45NjYuMDk3LTMuNDY4LTEuODktLjg0My01LjA0OHoiIHN0eWxlPSJmaWxsOiNmZmY7ZmlsbC1vcGFjaXR5Oi4xNDI0Nzg7ZmlsbC1ydWxlOmV2ZW5vZGQ7c3Ryb2tlOm5vbmU7c3Ryb2tlLXdpZHRoOi4yNjQ1ODNweDtzdHJva2UtbGluZWNhcDpidXR0O3N0cm9rZS1saW5lam9pbjptaXRlcjtzdHJva2Utb3BhY2l0eToxIi8+PHBhdGggZD0iTTI5Ljc1NSAxMS45NmMtOC4wOTYgMS44MjItMTAuMjIyLTMuMzczLTE2LjQyLTIuMDQ1cy03LjMyIDEuMzItNy4zMiAxLjMyIiBzdHlsZT0iZmlsbDpub25lO2ZpbGwtb3BhY2l0eTouMTQyNDc4O2ZpbGwtcnVsZTpldmVub2RkO3N0cm9rZTojZmZmO3N0cm9rZS13aWR0aDo0Ljk2NTtzdHJva2UtbGluZWNhcDpidXR0O3N0cm9rZS1saW5lam9pbjptaXRlcjtzdHJva2UtbWl0ZXJsaW1pdDo0O3N0cm9rZS1kYXNoYXJyYXk6bm9uZTtzdHJva2Utb3BhY2l0eToxIi8+PHBhdGggZD0iTTMwLjMwMiA2LjkyN2MuMjc4IDguNDguODI0IDE3LjIyMyAwIDI0LjYzNS0uMzM1IDMuMDE1LTIuNTE0IDQuODE3LTUuNDc0IDUuNDc1LTQuMjYyLjk0Ny04LjUzOSAxLjAxNC0xMi44MzQgMC0yLjk1MS0uNjk3LTUuMTA2LTIuNDY0LTUuNDc0LTUuNDc1LTEuMDAyLTguMTktLjUtMTYuNDEyIDAtMjQuNjM1IiBzdHlsZT0iZmlsbDpub25lO2ZpbGwtb3BhY2l0eTouNTQwMzM3O3N0cm9rZTojZmZmO3N0cm9rZS13aWR0aDoyLjQ7c3Ryb2tlLWxpbmVjYXA6cm91bmQ7c3Ryb2tlLWxpbmVqb2luOm1pdGVyO3N0cm9rZS1taXRlcmxpbWl0OjQ7c3Ryb2tlLWRhc2hhcnJheTpub25lO3N0cm9rZS1vcGFjaXR5OjEiLz48Y2lyY2xlIGN4PSIxMi44NDkiIGN5PSIxOC4yNDkiIHI9IjIuMDM1IiBzdHlsZT0ib3BhY2l0eTouNDIzMDE7ZmlsbDojZmZmO2ZpbGwtb3BhY2l0eToxO3N0cm9rZTpub25lO3N0cm9rZS13aWR0aDoxLjY5NTk5O3N0cm9rZS1saW5lY2FwOnJvdW5kO3N0cm9rZS1saW5lam9pbjptaXRlcjtzdHJva2UtbWl0ZXJsaW1pdDo0O3N0cm9rZS1kYXNoYXJyYXk6bm9uZTtzdHJva2Utb3BhY2l0eToxIi8+PGNpcmNsZSBjeD0iMTguOTI0IiBjeT0iMTYuOTU3IiByPSIxLjQyMyIgc3R5bGU9ImZpbGw6I2ZmZjtmaWxsLW9wYWNpdHk6MTtzdHJva2U6bm9uZTtzdHJva2Utd2lkdGg6LjcxNTkzNztzdHJva2UtbGluZWNhcDpyb3VuZDtzdHJva2UtbGluZWpvaW46bWl0ZXI7c3Ryb2tlLW1pdGVybGltaXQ6NDtzdHJva2UtZGFzaGFycmF5Om5vbmU7c3Ryb2tlLW9wYWNpdHk6MSIvPjxjaXJjbGUgY3g9IjE4LjEyNCIgY3k9IjI5Ljg5NiIgcj0iMi41NjEiIHN0eWxlPSJvcGFjaXR5Oi42MDQwNjk7ZmlsbDojZmZmO2ZpbGwtb3BhY2l0eToxO3N0cm9rZTpub25lO3N0cm9rZS13aWR0aDoxLjU3NjY2O3N0cm9rZS1saW5lY2FwOnJvdW5kO3N0cm9rZS1saW5lam9pbjptaXRlcjtzdHJva2UtbWl0ZXJsaW1pdDo0O3N0cm9rZS1kYXNoYXJyYXk6bm9uZTtzdHJva2Utb3BhY2l0eToxIi8+PGNpcmNsZSBjeD0iMjQuOTAzIiBjeT0iMjkuMzA1IiByPSIxLjA1MSIgc3R5bGU9Im9wYWNpdHk6LjYwNDA2OTtmaWxsOiNmZmY7ZmlsbC1vcGFjaXR5OjE7c3Ryb2tlOm5vbmU7c3Ryb2tlLXdpZHRoOjEuMDY1O3N0cm9rZS1saW5lY2FwOnJvdW5kO3N0cm9rZS1saW5lam9pbjptaXRlcjtzdHJva2UtbWl0ZXJsaW1pdDo0O3N0cm9rZS1kYXNoYXJyYXk6bm9uZTtzdHJva2Utb3BhY2l0eToxIi8+PGNpcmNsZSBjeD0iMjQuMTEzIiBjeT0iMjIuMDg4IiByPSIzLjQyMSIgc3R5bGU9ImZpbGw6I2ZmZjtmaWxsLW9wYWNpdHk6MTtzdHJva2U6bm9uZTtzdHJva2Utd2lkdGg6Mi45Mzk1NDtzdHJva2UtbGluZWNhcDpyb3VuZDtzdHJva2UtbGluZWpvaW46bWl0ZXI7c3Ryb2tlLW1pdGVybGltaXQ6NDtzdHJva2UtZGFzaGFycmF5Om5vbmU7c3Ryb2tlLW9wYWNpdHk6MSIvPjxjaXJjbGUgY3g9IjEyLjMyNyIgY3k9IjI2LjExMSIgcj0iMS40NzkiIHN0eWxlPSJvcGFjaXR5Oi45MDMwNTg7ZmlsbDojZmZmO2ZpbGwtb3BhY2l0eToxO3N0cm9rZTpub25lO3N0cm9rZS13aWR0aDoxLjA2NTtzdHJva2UtbGluZWNhcDpyb3VuZDtzdHJva2UtbGluZWpvaW46bWl0ZXI7c3Ryb2tlLW1pdGVybGltaXQ6NDtzdHJva2UtZGFzaGFycmF5Om5vbmU7c3Ryb2tlLW9wYWNpdHk6MSIvPjxjaXJjbGUgY3g9IjE3LjQ5NSIgY3k9IjIzLjg3NCIgcj0iMS43ODkiIHN0eWxlPSJvcGFjaXR5Oi42MDQwNjk7ZmlsbDojZmZmO2ZpbGwtb3BhY2l0eToxO3N0cm9rZTpub25lO3N0cm9rZS13aWR0aDoxLjgxMzE2O3N0cm9rZS1saW5lY2FwOnJvdW5kO3N0cm9rZS1saW5lam9pbjptaXRlcjtzdHJva2UtbWl0ZXJsaW1pdDo0O3N0cm9rZS1kYXNoYXJyYXk6bm9uZTtzdHJva2Utb3BhY2l0eToxIi8+PC9nPjwvc3ZnPg==" alt="Homebrew Channel"/></a>
+<a href="https://deepwiki.com/aabytt/custom-screensaver-aerial"><img src="https://img.shields.io/badge/Ask_DeepWiki-007ec6?style=plastic&labelColor=black&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAPoAAAD6AG1e1JrAAACIUlEQVRYw%2B2XP2gUQRTGv7d3JhYWQawkIBaCVWzETos0gmAnVoKNTSoLK0E7EQQrC20sBVFBtLPQRgTBtBaKjYgIQUSxiJq7fT%2BLvCGPJZdNLt4dQj5Y3u7sznzfzLw%2Fs9IO%2FicANiniCujEfWdsQgBLxAbsbraPZcmBfcAt4DNwKQsZNfEUsAB8YRV12LfA6ZHuedg7AO7ed%2Fc%2BUBcbQhbiu%2B6wXIM6EnZWkszMJe2Ke0n6I2la0v51hFeSMLN6OwIK6jJwEBdUYb2MAxRSz6sY4geiahFgLe1Hwq6YWe3us8AN4FQQU4QM64SPY69Xyr43fADgNjAPXHb3peSsD4FDQ0VLEjAHvIhBPS6AHvA1bBO9JPAXcHFbIRtJ5yzwIQZ9CZwAusDJENIkLqsG8DpNyIZJwSUk9wLHgakcesC1JCCjiHm1kYDNOEjptCxpSVK/8f73OFLxPLAYM3oCzEX7MXf/lJbc/8kWpA4HgQdpYI9IWAbeh83whi84cHXL%2B58EPBoQhnmm94EzwE3gZ2p/Dhzdbhg%2BTaRr01x7ftb4/jBwFzjXrCvDpmLW9crVLNeR9CaapoGemb2TdCERW1tNaBNQ8jktwmozqwtpqRNtdWAjARYk39IS12ZWRX7vmJmA71nQZgi36gN7gCvAj5xc3P0jcH7kx7Ik5IC73wsh14GZsZySow5002l4Jr0b6%2Bm4eSyvpAn8lEzsx2QHo8RfUrlN%2BuPq4ksAAAAASUVORK5CYII%3D" alt="Ask DeepWiki"/></a>
 
 </div>
 
+Aerial-style video screensaver for LG webOS TVs.
+
+## Screenshots
+
+<table>
+  <tr>
+    <td><a href="https://aabytt.github.io/aerial-preview/screenshots/001.webp"><img src="docs/screenshots/001.webp" width="100%"/></a></td>
+    <td><a href="https://aabytt.github.io/aerial-preview/screenshots/002.webp"><img src="docs/screenshots/002.webp" width="100%"/></a></td>
+    <td><a href="https://aabytt.github.io/aerial-preview/screenshots/003.webp"><img src="docs/screenshots/003.webp" width="100%"/></a></td>
+  </tr>
+  <tr>
+    <td><a href="https://aabytt.github.io/aerial-preview/screenshots/004.webp"><img src="docs/screenshots/004.webp" width="100%"/></a></td>
+    <td><a href="https://aabytt.github.io/aerial-preview/screenshots/005.webp"><img src="docs/screenshots/005.webp" width="100%"/></a></td>
+    <td><a href="https://aabytt.github.io/aerial-preview/screenshots/006.webp"><img src="docs/screenshots/006.webp" width="100%"/></a></td>
+  </tr>
+</table>
+
+## Features
 
 * [330+ videos](https://aabytt.github.io/aerial-preview/) from different sources (Apple Aerials, Amazon FireOS, Jetson Creative, Robin Fourcade)
 * 40+ locales for OSD
 * Source type selection (FullHD/4k SDR or Dolby Vision)
-* Requires root and Homebrew channel
-* Compatible with webOS 5 (2020), webOS 6 (2021), webOS 22 (7.x), webOS 23 (8.x), webOS 25 (10.x), webOS 26 (11.x)
+* Playlist editor
+* Night mode: a separate playlist for the night hours
+* Autostart registration
+* Temporary apply
+* Launch screensaver immediately for testing
+
+## Requirements
+
+* A rooted LG TV with the [Homebrew Channel](https://www.webosbrew.org/) installed
+* webOS 5 (2020), webOS 6 (2021), webOS 22 (7.x), webOS 23 (8.x), webOS 25 (10.x) or webOS 26 (11.x)
+
+> [!WARNING]
+> The app replaces the original webOS screensaver. Use at your own risk.
+
+## Installation
+
+The app should be available in the Homebrew Channel. Otherwise, download the `.ipk` from
+[Releases](https://github.com/aabytt/custom-screensaver-aerial/releases/latest) and install it on your TV
+with your preferred tool (e.g. webOS Dev Manager or `ares-install`).
 
 ## Compatibility
 
-See the [compatibility table](COMPATIBILITY.md) for tested TVs, or [submit your own report](https://github.com/aabytt/custom-screensaver-aerial/issues/new?template=compatibility.yml).
-Tap `Version` field in the app to read your TV details.
+See the [compatibility table](COMPATIBILITY.md) for tested TVs, or
+[submit your own report](https://github.com/aabytt/custom-screensaver-aerial/issues/new?template=compatibility.yml).
+Tap the `Version` field in the app to read your TV details.
 
-Disclaimer
----------------
-- App replaces original webOS screensaver. Use at your own risk. 
+webOS 25 and 26 use a different implementation of the screensaver. See
+[webOS 25 and 26 notes](docs/webos-25-26.md) for how it works and for upgrade instructions.
 
-webOS 25 and 26 (10.x/11.x)
----------------------------
-The stock screensaver is a Flutter app on these TVs and QML apps can't be launched, so
-`apply.sh` uses a web version of the screensaver instead (`assets/web-screensaver.html`). It
-uses the same settings, videos and locales. Notes:
+## Donate
 
-- Applying makes the app manager reread the screensaver (`blockSystemApp` + `releaseBlockSystemApp`,
-  or else a failed dev install of a file that isn't an ipk). The app manager is never restarted, so
-  running apps stay open. If neither works, the stock screensaver is kept and applying reports it.
-- The TV ends the screensaver when it sees full-screen video, within a second on webOS 26. Apps in
-  "manual" screensaver mode are exempt, so the screensaver puts itself in that mode
-  (`com.webos.service.screenmanager/setScreenSaverMode`) every time it starts. The mode is only
-  kept in memory, so nothing has to be undone.
-- Where the TV has LG's own video screensaver (`com.webos.app.videoads`), a copy of the web
-  screensaver is mounted over it too: LG's TVs launch that one instead of the regular screensaver
-  when LG's conditions for its video screensaver ads hold. LG's settings and blocked app list are
-  left alone, and a `videoads` that a debloat tool blocked is skipped.
-- Set text opacity to 0 to hide the on-screen text, e.g. to avoid burn-in on OLED TVs.
-- If another app has a paused video, the screensaver shows a clock that moves every minute
-  instead of video, so that app keeps its video decoder and playback can resume. It switches to
-  video once that app has released the decoder.
-- Any system notification ends the screensaver, and the TV shows one ("Dolby Vision") when an HDR
-  video starts. So, like the QML screensaver, it switches notifications off while each video
-  starts and back on after 2 seconds; one arriving meanwhile is dropped. A switch-off outlives
-  the screensaver (even a Quick Start power-off), so `assets/videoads-flag.sh` runs as the systemd
-  unit `aerial-notify` and switches notifications back on every 5 seconds while the screensaver
-  isn't running (which would also undo a switch-off by any other app). The screensaver only
-  switches them off while that watcher is running, so after updating Aerial press Apply once.
-
-Aerial 3.0.2 ran the screensaver on webOS 26 as `videoads`, with the LG Channels setting
-`isVideoScreenSaverEnabled` switched on and a watcher (`aerial-videoads-flag`) keeping it on. The
-first apply of a newer version runs its restore hook
-(`/var/lib/webosbrew/init.d/49-aerial-videoads-restore`), which stops that watcher and puts the
-setting and the `videoads` block back.
-
-Features
---------
-
-* Apply Aerial now and enable autostart, or restore the stock screensaver
-* Launch screensaver immediately for testing
-* Optional update notices and an About panel with scannable links
-* Playlist editor
-* Night mode: a separate playlist for the night hours
-
-Installation
-------------
-This should be downloadable in Homebrew Channel. Otherwise, there's an `ipk` in
-GitHub releases to the right. You are on your own here.
-
-Donate
-------------
 Looking for more sources or cool new features? Your support would mean the world!
-* [YooMoney](https://yoomoney.ru/to/4100115685800097)
+Donations are entirely optional and don't affect support or access to any features.
 
-Screenshots
-------------
-   <img src="https://github.com/user-attachments/assets/7ff537cb-48be-4a88-85ab-826492bbad79" width="480"/>
-   <img src="https://github.com/user-attachments/assets/497b9d26-3c4a-4c3c-8708-df79324f5cae" width="480"/>
-   <img src="https://github.com/user-attachments/assets/b5082794-0ce5-4518-8a80-0d8967525444" width="480"/>
-   <img src="https://github.com/user-attachments/assets/e87586c6-4e00-47c6-8285-925c8e4fa646" width="480"/>
-   <img src="https://github.com/user-attachments/assets/422872d8-11f2-4789-abe8-da75e43cbea6" width="480"/>
-   <img src="https://github.com/user-attachments/assets/e6621686-c463-46f3-8e14-e4927a88633b" width="480"/>
+**USDT (Tether), network: TRC-20 (Tron)**
+
+`THKrpAfuQ8rbrjjMuvuLii7dcbUD6dVW93`
+
+<details>
+<summary>Show QR code</summary>
+
+<img src="https://github.com/user-attachments/assets/0117dfbf-ada3-4eb0-9315-ff43fede1357" alt="USDT TRC-20 QR code" width="160">
+
+</details>
+
+> ⚠️ Send USDT on the **TRC-20** network only. Transfers on other networks (ERC-20, BEP-20, etc.) will be lost.
+
+Other options:
+* [YooMoney](https://yoomoney.ru/to/4100115685800097)
