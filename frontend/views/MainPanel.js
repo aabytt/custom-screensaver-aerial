@@ -451,6 +451,7 @@ module.exports = kind({
 			]},
 		{kind: LunaService, name: 'applyStatus', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onApplyStatus', onError: 'onApplyStatus'},
 		{kind: LunaService, name: 'exec', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onExec', onError: 'onExec'},
+		{kind: LunaService, name: 'testExec', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onTestExec', onError: 'onTestExec'},
 		{kind: LunaService, name: 'init', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onInit', onError: 'onInit'},
 		{kind: LunaService, name: 'restore', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec'},
 		{kind: LunaService, name: 'sysinfo', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onSysInfo', onError: 'onSysInfo'},
@@ -1194,7 +1195,11 @@ module.exports = kind({
 		this.exec('mkdir -p /var/lib/webosbrew/init.d && ln -sf ' + applyPath + ' ' + linkPath + ' && ' + applyPath, 'apply');
 	},
 	doTestRun: function () {
-		this.exec("luna-send -n 1 'luna://com.webos.service.tvpower/power/turnOnScreenSaver' '{}'");
+		// Request acceptance is not proof that the screensaver launched or video started.
+		this.setResult(I18n.t('processing'));
+		this.$.testExec.send({
+			command: "luna-send -n 1 -f 'luna://com.webos.service.tvpower/power/turnOnScreenSaver' '{}'"
+		});
 	},
 	exec: function (command, kind) {
 		console.info(command);
@@ -1203,6 +1208,15 @@ module.exports = kind({
 		this.$.exec.send({
 			command: command
 		});
+	},
+	onTestExec: function (sender, evt) {
+		console.info('Screensaver test:', evt);
+		// Homebrew exec success only means the shell ran. Inspect the Luna response too.
+		// Even an accepted request cannot prove that Aerial video is visible on screen.
+		var accepted = !!(evt && evt.returnValue &&
+
+			/"returnValue"\s*:\s*true\b/.test(String(evt.stdoutString || '')));
+		this.setResult(I18n.t(accepted ? 'testLaunchAccepted' : 'testLaunchUnconfirmed'));
 	},
 	onExec: function (sender, evt) {
 		var err, kind = this.execKind, runTest = this.pendingTest;

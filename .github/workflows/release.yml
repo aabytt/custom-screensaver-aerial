@@ -13,11 +13,14 @@ on:
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
     - uses: actions/checkout@v2
       with:
         submodules: recursive
+        fetch-depth: 0
 
     - name: Use Node.js 14.x
       uses: actions/setup-node@v1
@@ -30,6 +33,21 @@ jobs:
     - run: echo RELEASE_FILENAME_IPK=`ls *.ipk` >> $GITHUB_ENV
     - run: npm run manifest
 
+    - name: Generate release notes
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        TAG="${GITHUB_REF_NAME}"
+        PREV=$(git describe --tags --abbrev=0 "${TAG}^" 2>/dev/null || true)
+        echo "PREV_TAG=${PREV}" >> $GITHUB_ENV
+        if [ -n "$PREV" ]; then
+          gh api "repos/${GITHUB_REPOSITORY}/releases/generate-notes" \
+            -f tag_name="$TAG" -f previous_tag_name="$PREV" --jq .body > notes.md
+        else
+          gh api "repos/${GITHUB_REPOSITORY}/releases/generate-notes" \
+            -f tag_name="$TAG" --jq .body > notes.md
+        fi
+
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -38,6 +56,7 @@ jobs:
       with:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
+        body_path: notes.md
         draft: false
         prerelease: true
 
@@ -62,3 +81,25 @@ jobs:
         asset_path: ${{github.workspace}}/org.aabytt.webos.custom-screensaver-aerial.manifest.json
         asset_name: org.aabytt.webos.custom-screensaver-aerial.manifest.json
         asset_content_type: application/json
+
+    - name: Update CHANGELOG.md
+      run: |
+        TAG="${GITHUB_REF_NAME}"
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git fetch origin main
+        git checkout -B main origin/main
+        {
+          echo "## [${TAG#v}] - $(date -u +%F)"
+          echo
+          sed 's/^## /### /' notes.md | cat -s
+          echo
+        } > section.md
+        awk 'FNR==NR{s=s $0 "\n"; next} !d && /^## \[/ {printf "%s", s; d=1} {print}' section.md CHANGELOG.md > CHANGELOG.new
+        mv CHANGELOG.new CHANGELOG.md
+        if [ -n "$PREV_TAG" ]; then
+          echo "[${TAG#v}]: https://github.com/${GITHUB_REPOSITORY}/compare/${PREV_TAG}...${TAG}" >> CHANGELOG.md
+        fi
+        git add CHANGELOG.md
+        git commit -m "docs: changelog for ${TAG}"
+        git push origin main

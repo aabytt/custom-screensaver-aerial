@@ -8,8 +8,15 @@ Tested your TV? [Submit a report](https://github.com/aabytt/custom-screensaver-a
 | TV model | webOS | Firmware | Aerial | Idle | Test | SDR | DV | UI | Status | Issue |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 43UR81006LJ | webOS 25 (10) · 10.3.0 | 33.31.10 | 3.0.4 | ✅ | ✅ | ✅ | 🚫 | ✅ | ✅ Works | [#80](../../issues/80) |
+| OLED55C1RLA | webOS 6 · 6.5.0 | 03.51.15 | 3.0.4 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ Works | [#90](../../issues/90) |
+| OLED55C39LC | webOS 25 (10) · 10.3.1 | 33.31.68 | 3.0.4 | ✅ | ✅ | ➖ | ➖ | ✅ | ✅ Works | [#95](../../issues/95) |
+| OLED55CX3LA | webOS 5 · 5.6.2 | 04.64.00 | 3.0.4 | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ Not working | [#85](../../issues/85) |
+| OLED65C22LB | webOS 25 (10) · 10.3.1 | 33.31.68 | 3.0.4 | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ Not working | [#97](../../issues/97) |
 | OLED65C36LC | webOS 26 (11) · 11.2.0 | 43.21.71 | 3.0.4 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ Works | [#84](../../issues/84) |
 | OLED65CXRLA | webOS 5 · 5.3.0 | 04.30.58 | 3.0.4 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ Works | [#79](../../issues/79) |
+| OLED65G64LW.DDRQLJP | webOS 26 (11) · 11.2.0 | 43.21.98 | 3.0.4 | ✅ | ✅ | ➖ | ✅ | ✅ | ✅ Works | [#87](../../issues/87) |
+| OLED65G69LS | webOS 26 (11) · 11.2.0 | 43.21.79 | 3.0.4 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ Works | [#96](../../issues/96) |
+| OLED77B46LA.AMAQLJD | webOS 25 (10) · 10.3.2 | 33.31.75 | 3.0.4 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ Works | [#88](../../issues/88) |
 <!-- COMPAT:END -->
 **Idle**: screensaver starts on idle · **Test**: starts from the in-app test · **SDR / DV**: SDR / Dolby Vision playback · **UI**: UI and settings
 
