@@ -229,7 +229,14 @@
   "fontPhoneSaveFailed": "تعذر حفظ الخط: {error}",
   "fontPhoneRequestFailed": "تعذرت معالجة الطلب: {error}",
   "durH": "س",
-  "durMin": "د"
+  "durMin": "د",
+  "aboutDiscordSub": "المجتمع والمساعدة",
+  "aboutBrew": "مستودع Homebrew",
+  "aboutDonateSub": "دعم التطوير",
+  "aboutFooter": "اختر رابطًا للحصول على رمز QR لهاتفك",
+  "qrHint": "امسح الرمز بكاميرا هاتفك",
+  "testLaunchAccepted": "تم قبول طلب التشغيل؛ لم يتم التحقق من تشغيل Aerial.",
+  "testLaunchUnconfirmed": "تم رفض طلب شاشة التوقف أو لم يتم تأكيده. تحقق من معلومات التصحيح والسجلات."
  },
  "be-BY": {
   "apply": "Ужыць",
@@ -461,7 +468,14 @@
   "fontPhoneSaveFailed": "Не атрымалася захаваць шрыфт: {error}",
   "fontPhoneRequestFailed": "Не атрымалася апрацаваць запыт: {error}",
   "durH": "г",
-  "durMin": "хв"
+  "durMin": "хв",
+  "aboutDiscordSub": "Супольнасць і дапамога",
+  "aboutBrew": "Рэпазітарый Homebrew",
+  "aboutDonateSub": "Падтрымаць распрацоўку",
+  "aboutFooter": "Выберыце спасылку, каб атрымаць QR-код для тэлефона",
+  "qrHint": "Навядзіце камеру тэлефона",
+  "testLaunchAccepted": "Запыт на запуск прыняты; прайграванне Aerial не пацверджана.",
+  "testLaunchUnconfirmed": "Запыт на застаўку адхілены або не пацверджаны. Праверце адладачную інфармацыю і журналы."
  },
  "ca-ES": {
   "apply": "Aplica",
@@ -693,7 +707,14 @@
   "fontPhoneSaveFailed": "No s'ha pogut desar la font: {error}",
   "fontPhoneRequestFailed": "No s'ha pogut processar la sol·licitud: {error}",
   "durH": "h",
-  "durMin": "min"
+  "durMin": "min",
+  "aboutDiscordSub": "Comunitat i ajuda",
+  "aboutBrew": "Repositori de Homebrew",
+  "aboutDonateSub": "Dona suport al desenvolupament",
+  "aboutFooter": "Selecciona un enllaç per obtenir un codi QR per al telèfon",
+  "qrHint": "Escaneja amb la càmera del telèfon",
+  "testLaunchAccepted": "Sol·licitud d’inici acceptada; la reproducció d’Aerial no s’ha verificat.",
+  "testLaunchUnconfirmed": "Sol·licitud de l’estalvi de pantalla rebutjada o sense confirmar. Consulta la informació de depuració i els registres."
  },
  "cs-CZ": {
   "apply": "Použít",
@@ -925,7 +946,14 @@
   "fontPhoneSaveFailed": "Písmo se nepodařilo uložit: {error}",
   "fontPhoneRequestFailed": "Požadavek se nepodařilo zpracovat: {error}",
   "durH": "h",
-  "durMin": "min"
+  "durMin": "min",
+  "aboutDiscordSub": "Komunita a nápověda",
+  "aboutBrew": "Repozitář Homebrew",
+  "aboutDonateSub": "Podpořit vývoj",
+  "aboutFooter": "Vyberte odkaz a získejte QR kód pro telefon",
+  "qrHint": "Naskenujte fotoaparátem telefonu",
+  "testLaunchAccepted": "Požadavek na spuštění přijat; přehrávání Aerial nebylo ověřeno.",
+  "testLaunchUnconfirmed": "Požadavek na spořič obrazovky byl zamítnut nebo nepotvrzen. Zkontrolujte ladicí informace a protokoly."
  },
  "da-DK": {
   "apply": "Anvend",
@@ -1157,7 +1185,14 @@
   "fontPhoneSaveFailed": "Skrifttypen kunne ikke gemmes: {error}",
   "fontPhoneRequestFailed": "Anmodningen kunne ikke behandles: {error}",
   "durH": "t",
-  "durMin": "min"
+  "durMin": "min",
+  "aboutDiscordSub": "Fællesskab og hjælp",
+  "aboutBrew": "Homebrew-repository",
+  "aboutDonateSub": "Støt udviklingen",
+  "aboutFooter": "Vælg et link for at få en QR-kode til din telefon",
+  "qrHint": "Scan med telefonens kamera",
+  "testLaunchAccepted": "Startanmodning accepteret; afspilning af Aerial er ikke verificeret.",
+  "testLaunchUnconfirmed": "Anmodningen om pauseskærm blev afvist eller ikke bekræftet. Tjek fejlfindingsoplysninger og logfiler."
  },
  "de-DE": {
   "apply": "Anwenden",
@@ -1389,7 +1424,14 @@
   "fontPhoneSaveFailed": "Die Schrift konnte nicht gespeichert werden: {error}",
   "fontPhoneRequestFailed": "Die Anfrage konnte nicht verarbeitet werden: {error}",
   "durH": "Std.",
-  "durMin": "Min."
+  "durMin": "Min.",
+  "aboutDiscordSub": "Community und Hilfe",
+  "aboutBrew": "Homebrew-Repository",
+  "aboutDonateSub": "Entwicklung unterstützen",
+  "aboutFooter": "Link auswählen, um einen QR-Code für das Handy zu erhalten",
+  "qrHint": "Mit der Handykamera scannen",
+  "testLaunchAccepted": "Startanfrage akzeptiert; Aerial-Wiedergabe nicht überprüft.",
+  "testLaunchUnconfirmed": "Bildschirmschoner-Anfrage abgelehnt oder nicht bestätigt. Debug-Informationen und Protokolle prüfen."
  },
  "el-GR": {
   "apply": "Εφαρμογή",
@@ -1621,7 +1663,14 @@
   "fontPhoneSaveFailed": "Δεν ήταν δυνατή η αποθήκευση της γραμματοσειράς: {error}",
   "fontPhoneRequestFailed": "Δεν ήταν δυνατή η επεξεργασία του αιτήματος: {error}",
   "durH": "ώρ.",
-  "durMin": "λεπτ."
+  "durMin": "λεπτ.",
+  "aboutDiscordSub": "Κοινότητα και βοήθεια",
+  "aboutBrew": "Αποθετήριο Homebrew",
+  "aboutDonateSub": "Υποστήριξη της ανάπτυξης",
+  "aboutFooter": "Επιλέξτε έναν σύνδεσμο για να λάβετε κωδικό QR για το τηλέφωνό σας",
+  "qrHint": "Σαρώστε με την κάμερα του τηλεφώνου",
+  "testLaunchAccepted": "Το αίτημα εκκίνησης έγινε αποδεκτό· η αναπαραγωγή του Aerial δεν επαληθεύτηκε.",
+  "testLaunchUnconfirmed": "Το αίτημα προφύλαξης οθόνης απορρίφθηκε ή δεν επιβεβαιώθηκε. Ελέγξτε τις πληροφορίες εντοπισμού σφαλμάτων και τα αρχεία καταγραφής."
  },
  "en-AU": "en-US",
  "en-GB": "en-US",
@@ -1857,7 +1906,12 @@
   "testNeedsApply": "The stock screensaver is still in place, so the test would show that one. Apply Aerial now and run the test?",
   "testApplyAndRun": "Apply and test",
   "durH": "h",
-  "durMin": "min"
+  "durMin": "min",
+  "aboutDiscordSub": "Community and help",
+  "aboutBrew": "Homebrew Repository",
+  "aboutDonateSub": "Support development",
+  "aboutFooter": "Select a link to get a QR code for your phone",
+  "qrHint": "Scan with your phone camera"
  },
  "es-ES": {
   "apply": "Aplicar",
@@ -2089,7 +2143,14 @@
   "fontPhoneSaveFailed": "No se pudo guardar la fuente: {error}",
   "fontPhoneRequestFailed": "No se pudo procesar la solicitud: {error}",
   "durH": "h",
-  "durMin": "min"
+  "durMin": "min",
+  "aboutDiscordSub": "Comunidad y ayuda",
+  "aboutBrew": "Repositorio de Homebrew",
+  "aboutDonateSub": "Apoyar el desarrollo",
+  "aboutFooter": "Elige un enlace para obtener un código QR para tu teléfono",
+  "qrHint": "Escanea con la cámara del teléfono",
+  "testLaunchAccepted": "Solicitud de inicio aceptada; no se ha verificado la reproducción de Aerial.",
+  "testLaunchUnconfirmed": "Solicitud del salvapantallas rechazada o sin confirmar. Revisa la información de depuración y los registros."
  },
  "es-419": "es-ES",
  "fi-FI": {
@@ -2322,7 +2383,14 @@
   "fontPhoneSaveFailed": "Fontin tallennus epäonnistui: {error}",
   "fontPhoneRequestFailed": "Pyyntöä ei voitu käsitellä: {error}",
   "durH": "t",
-  "durMin": "min"
+  "durMin": "min",
+  "aboutDiscordSub": "Yhteisö ja apu",
+  "aboutBrew": "Homebrew-arkisto",
+  "aboutDonateSub": "Tue kehitystä",
+  "aboutFooter": "Valitse linkki saadaksesi QR-koodin puhelimellesi",
+  "qrHint": "Skannaa puhelimen kameralla",
+  "testLaunchAccepted": "Käynnistyspyyntö hyväksytty; Aerialin toistoa ei ole varmistettu.",
+  "testLaunchUnconfirmed": "Näytönsäästäjäpyyntö hylättiin tai sitä ei vahvistettu. Tarkista vianmääritystiedot ja lokit."
  },
  "fr-CA": "fr-FR",
  "fr-FR": {
@@ -2555,7 +2623,14 @@
   "fontPhoneSaveFailed": "Impossible d’enregistrer la police : {error}",
   "fontPhoneRequestFailed": "Impossible de traiter la demande : {error}",
   "durH": "h",
-  "durMin": "min"
+  "durMin": "min",
+  "aboutDiscordSub": "Communauté et aide",
+  "aboutBrew": "Dépôt Homebrew",
+  "aboutDonateSub": "Soutenir le développement",
+  "aboutFooter": "Choisissez un lien pour obtenir un QR code pour votre téléphone",
+  "qrHint": "Scannez avec l’appareil photo de votre téléphone",
+  "testLaunchAccepted": "Demande de lancement acceptée ; lecture d’Aerial non vérifiée.",
+  "testLaunchUnconfirmed": "Demande de l’économiseur d’écran rejetée ou non confirmée. Consultez les informations de débogage et les journaux."
  },
  "he-IL": {
   "apply": "החל",
@@ -2787,7 +2862,14 @@
   "fontPhoneSaveFailed": "לא ניתן לשמור את הגופן: {error}",
   "fontPhoneRequestFailed": "לא ניתן לעבד את הבקשה: {error}",
   "durH": "שע׳",
-  "durMin": "דק׳"
+  "durMin": "דק׳",
+  "aboutDiscordSub": "קהילה ועזרה",
+  "aboutBrew": "מאגר Homebrew",
+  "aboutDonateSub": "תמיכה בפיתוח",
+  "aboutFooter": "בחרו קישור כדי לקבל קוד QR לטלפון",
+  "qrHint": "סרקו במצלמת הטלפון",
+  "testLaunchAccepted": "בקשת ההפעלה התקבלה; ההפעלה של Aerial לא אומתה.",
+  "testLaunchUnconfirmed": "בקשת שומר המסך נדחתה או לא אושרה. בדקו את פרטי הניפוי והיומנים."
  },
  "hi-IN": {
   "apply": "लागू करें",
@@ -3019,7 +3101,14 @@
   "fontPhoneSaveFailed": "फ़ॉन्ट सहेजा नहीं जा सका: {error}",
   "fontPhoneRequestFailed": "अनुरोध प्रोसेस नहीं हो सका: {error}",
   "durH": "घं",
-  "durMin": "मि"
+  "durMin": "मि",
+  "aboutDiscordSub": "समुदाय और सहायता",
+  "aboutBrew": "Homebrew रिपॉज़िटरी",
+  "aboutDonateSub": "विकास का समर्थन करें",
+  "aboutFooter": "अपने फ़ोन के लिए QR कोड पाने हेतु कोई लिंक चुनें",
+  "qrHint": "अपने फ़ोन के कैमरे से स्कैन करें",
+  "testLaunchAccepted": "प्रारंभ अनुरोध स्वीकार किया गया; Aerial का प्लेबैक सत्यापित नहीं हुआ।",
+  "testLaunchUnconfirmed": "स्क्रीनसेवर अनुरोध अस्वीकृत या अपुष्ट रहा। डिबग जानकारी और लॉग जाँचें।"
  },
  "hr-HR": {
   "apply": "Primijeni",
@@ -3251,7 +3340,14 @@
   "fontPhoneSaveFailed": "Nije moguće spremiti font: {error}",
   "fontPhoneRequestFailed": "Nije moguće obraditi zahtjev: {error}",
   "durH": "h",
-  "durMin": "min"
+  "durMin": "min",
+  "aboutDiscordSub": "Zajednica i pomoć",
+  "aboutBrew": "Homebrew repozitorij",
+  "aboutDonateSub": "Podržite razvoj",
+  "aboutFooter": "Odaberite poveznicu za QR kod za telefon",
+  "qrHint": "Skenirajte kamerom telefona",
+  "testLaunchAccepted": "Zahtjev za pokretanje prihvaćen; reprodukcija Aerial nije provjerena.",
+  "testLaunchUnconfirmed": "Zahtjev za čuvar zaslona odbijen ili nepotvrđen. Provjerite informacije o otklanjanju pogrešaka i zapisnike."
  },
  "hu-HU": {
   "apply": "Alkalmazás",
@@ -3483,7 +3579,14 @@
   "fontPhoneSaveFailed": "A betűtípust nem sikerült menteni: {error}",
   "fontPhoneRequestFailed": "A kérést nem sikerült feldolgozni: {error}",
   "durH": "ó",
-  "durMin": "p"
+  "durMin": "p",
+  "aboutDiscordSub": "Közösség és segítség",
+  "aboutBrew": "Homebrew tárhely",
+  "aboutDonateSub": "A fejlesztés támogatása",
+  "aboutFooter": "Válasszon egy hivatkozást a telefonra szánt QR-kódhoz",
+  "qrHint": "Olvassa be a telefon kamerájával",
+  "testLaunchAccepted": "Az indítási kérés elfogadva; az Aerial lejátszása nincs ellenőrizve.",
+  "testLaunchUnconfirmed": "A képernyővédő kérése elutasítva vagy nincs megerősítve. Ellenőrizze a hibakeresési adatokat és a naplókat."
  },
  "id-ID": {
   "apply": "Terapkan",
@@ -3715,7 +3818,14 @@
   "fontPhoneSaveFailed": "Tidak dapat menyimpan font: {error}",
   "fontPhoneRequestFailed": "Tidak dapat memproses permintaan: {error}",
   "durH": "j",
-  "durMin": "mnt"
+  "durMin": "mnt",
+  "aboutDiscordSub": "Komunitas dan bantuan",
+  "aboutBrew": "Repositori Homebrew",
+  "aboutDonateSub": "Dukung pengembangan",
+  "aboutFooter": "Pilih tautan untuk mendapatkan kode QR untuk ponsel Anda",
+  "qrHint": "Pindai dengan kamera ponsel Anda",
+  "testLaunchAccepted": "Permintaan mulai diterima; pemutaran Aerial belum diverifikasi.",
+  "testLaunchUnconfirmed": "Permintaan screensaver ditolak atau belum dikonfirmasi. Periksa informasi debug dan log."
  },
  "it-IT": {
   "apply": "Applica",
@@ -3947,7 +4057,14 @@
   "fontPhoneSaveFailed": "Impossibile salvare il font: {error}",
   "fontPhoneRequestFailed": "Impossibile elaborare la richiesta: {error}",
   "durH": "h",
-  "durMin": "min"
+  "durMin": "min",
+  "aboutDiscordSub": "Community e aiuto",
+  "aboutBrew": "Repository Homebrew",
+  "aboutDonateSub": "Sostieni lo sviluppo",
+  "aboutFooter": "Seleziona un link per ottenere un codice QR per il telefono",
+  "qrHint": "Inquadra con la fotocamera del telefono",
+  "testLaunchAccepted": "Richiesta di avvio accettata; riproduzione di Aerial non verificata.",
+  "testLaunchUnconfirmed": "Richiesta dello screensaver rifiutata o non confermata. Controlla le informazioni di debug e i log."
  },
  "ja-JP": {
   "apply": "適用",
@@ -4179,7 +4296,14 @@
   "fontPhoneSaveFailed": "フォントを保存できませんでした: {error}",
   "fontPhoneRequestFailed": "リクエストを処理できませんでした: {error}",
   "durH": "時間",
-  "durMin": "分"
+  "durMin": "分",
+  "aboutDiscordSub": "コミュニティとサポート",
+  "aboutBrew": "Homebrew リポジトリ",
+  "aboutDonateSub": "開発を支援",
+  "aboutFooter": "リンクを選ぶとスマートフォン用のQRコードが表示されます",
+  "qrHint": "スマートフォンのカメラで読み取ってください",
+  "testLaunchAccepted": "起動リクエストは受け付けられましたが、Aerial の再生は確認されていません。",
+  "testLaunchUnconfirmed": "スクリーンセーバーのリクエストが拒否されたか、確認できませんでした。デバッグ情報とログを確認してください。"
  },
  "ko-KR": {
   "apply": "적용",
@@ -4411,7 +4535,14 @@
   "fontPhoneSaveFailed": "글꼴을 저장할 수 없습니다: {error}",
   "fontPhoneRequestFailed": "요청을 처리할 수 없습니다: {error}",
   "durH": "시간",
-  "durMin": "분"
+  "durMin": "분",
+  "aboutDiscordSub": "커뮤니티 및 도움말",
+  "aboutBrew": "Homebrew 저장소",
+  "aboutDonateSub": "개발 후원",
+  "aboutFooter": "링크를 선택하면 휴대폰용 QR 코드가 표시됩니다",
+  "qrHint": "휴대폰 카메라로 스캔하세요",
+  "testLaunchAccepted": "시작 요청이 수락되었지만 Aerial 재생은 확인되지 않았습니다.",
+  "testLaunchUnconfirmed": "화면 보호기 요청이 거부되었거나 확인되지 않았습니다. 디버그 정보와 로그를 확인하세요."
  },
  "mk-MK": {
   "apply": "Примени",
@@ -4643,7 +4774,14 @@
   "fontPhoneSaveFailed": "Фонтот не може да се зачува: {error}",
   "fontPhoneRequestFailed": "Барањето не може да се обработи: {error}",
   "durH": "ч",
-  "durMin": "мин"
+  "durMin": "мин",
+  "aboutDiscordSub": "Заедница и помош",
+  "aboutBrew": "Репозиториум на Homebrew",
+  "aboutDonateSub": "Поддржете го развојот",
+  "aboutFooter": "Изберете врска за да добиете QR-код за телефонот",
+  "qrHint": "Скенирајте со камерата на телефонот",
+  "testLaunchAccepted": "Барањето за стартување е прифатено; репродукцијата на Aerial не е потврдена.",
+  "testLaunchUnconfirmed": "Барањето за чувар на екранот е одбиено или непотврдено. Проверете ги информациите за дебагирање и дневниците."
  },
  "ms-MY": {
   "apply": "Terapkan",
@@ -4875,7 +5013,14 @@
   "fontPhoneSaveFailed": "Tidak dapat menyimpan fon: {error}",
   "fontPhoneRequestFailed": "Tidak dapat memproses permintaan: {error}",
   "durH": "j",
-  "durMin": "min"
+  "durMin": "min",
+  "aboutDiscordSub": "Komuniti dan bantuan",
+  "aboutBrew": "Repositori Homebrew",
+  "aboutDonateSub": "Sokong pembangunan",
+  "aboutFooter": "Pilih pautan untuk mendapatkan kod QR untuk telefon anda",
+  "qrHint": "Imbas dengan kamera telefon anda",
+  "testLaunchAccepted": "Permintaan mula diterima; main balik Aerial tidak disahkan.",
+  "testLaunchUnconfirmed": "Permintaan penyelamat skrin ditolak atau tidak disahkan. Semak maklumat nyahpepijat dan log."
  },
  "nl-NL": {
   "apply": "Toepassen",
@@ -5109,7 +5254,12 @@
   "fontPhoneSaveFailed": "Het lettertype kon niet worden opgeslagen: {error}",
   "fontPhoneRequestFailed": "Het verzoek kon niet worden verwerkt: {error}",
   "durH": "u",
-  "durMin": "min"
+  "durMin": "min",
+  "aboutDiscordSub": "Community en hulp",
+  "aboutBrew": "Homebrew-repository",
+  "aboutDonateSub": "Ontwikkeling steunen",
+  "aboutFooter": "Kies een link voor een QR-code voor je telefoon",
+  "qrHint": "Scan met de camera van je telefoon"
  },
  "nb-NO": {
   "apply": "Bruk",
@@ -5341,7 +5491,14 @@
   "fontPhoneSaveFailed": "Kunne ikke lagre skrifttypen: {error}",
   "fontPhoneRequestFailed": "Kunne ikke behandle forespørselen: {error}",
   "durH": "t",
-  "durMin": "min"
+  "durMin": "min",
+  "aboutDiscordSub": "Fellesskap og hjelp",
+  "aboutBrew": "Homebrew-repository",
+  "aboutDonateSub": "Støtt utviklingen",
+  "aboutFooter": "Velg en lenke for å få en QR-kode til telefonen",
+  "qrHint": "Skann med telefonkameraet",
+  "testLaunchAccepted": "Startforespørsel godtatt; avspilling av Aerial er ikke bekreftet.",
+  "testLaunchUnconfirmed": "Forespørselen om skjermsparer ble avvist eller ikke bekreftet. Sjekk feilsøkingsinformasjon og logger."
  },
  "pl-PL": {
   "apply": "Zastosuj",
@@ -5573,7 +5730,14 @@
   "fontPhoneSaveFailed": "Nie udało się zapisać czcionki: {error}",
   "fontPhoneRequestFailed": "Nie udało się przetworzyć żądania: {error}",
   "durH": "godz.",
-  "durMin": "min"
+  "durMin": "min",
+  "aboutDiscordSub": "Społeczność i pomoc",
+  "aboutBrew": "Repozytorium Homebrew",
+  "aboutDonateSub": "Wesprzyj rozwój",
+  "aboutFooter": "Wybierz link, aby uzyskać kod QR na telefon",
+  "qrHint": "Zeskanuj aparatem telefonu",
+  "testLaunchAccepted": "Żądanie uruchomienia przyjęte; odtwarzanie Aerial nie zostało zweryfikowane.",
+  "testLaunchUnconfirmed": "Żądanie wygaszacza ekranu odrzucone lub niepotwierdzone. Sprawdź informacje debugowania i dzienniki."
  },
  "pt-BR": {
   "apply": "Aplicar",
@@ -5805,7 +5969,14 @@
   "fontPhoneSaveFailed": "Não foi possível salvar a fonte: {error}",
   "fontPhoneRequestFailed": "Não foi possível processar a solicitação: {error}",
   "durH": "h",
-  "durMin": "min"
+  "durMin": "min",
+  "aboutDiscordSub": "Comunidade e ajuda",
+  "aboutBrew": "Repositório Homebrew",
+  "aboutDonateSub": "Apoiar o desenvolvimento",
+  "aboutFooter": "Selecione um link para obter um QR code para o celular",
+  "qrHint": "Escaneie com a câmera do celular",
+  "testLaunchAccepted": "Solicitação de início aceita; reprodução do Aerial não verificada.",
+  "testLaunchUnconfirmed": "Solicitação da proteção de tela rejeitada ou não confirmada. Verifique as informações de depuração e os logs."
  },
  "pt-PT": {
   "apply": "Aplicar",
@@ -6037,7 +6208,14 @@
   "fontPhoneSaveFailed": "Não foi possível guardar o tipo de letra: {error}",
   "fontPhoneRequestFailed": "Não foi possível processar o pedido: {error}",
   "durH": "h",
-  "durMin": "min"
+  "durMin": "min",
+  "aboutDiscordSub": "Comunidade e ajuda",
+  "aboutBrew": "Repositório Homebrew",
+  "aboutDonateSub": "Apoiar o desenvolvimento",
+  "aboutFooter": "Selecione um link para obter um QR code para o celular",
+  "qrHint": "Escaneie com a câmera do celular",
+  "testLaunchAccepted": "Pedido de início aceite; reprodução do Aerial não verificada.",
+  "testLaunchUnconfirmed": "Pedido do protetor de ecrã rejeitado ou não confirmado. Verifique as informações de depuração e os registos."
  },
  "ro-RO": {
   "apply": "Aplică",
@@ -6269,7 +6447,14 @@
   "fontPhoneSaveFailed": "Fontul nu a putut fi salvat: {error}",
   "fontPhoneRequestFailed": "Cererea nu a putut fi procesată: {error}",
   "durH": "h",
-  "durMin": "min"
+  "durMin": "min",
+  "aboutDiscordSub": "Comunitate și ajutor",
+  "aboutBrew": "Depozitul Homebrew",
+  "aboutDonateSub": "Sprijină dezvoltarea",
+  "aboutFooter": "Alege un link pentru a primi un cod QR pentru telefon",
+  "qrHint": "Scanează cu camera telefonului",
+  "testLaunchAccepted": "Cererea de pornire a fost acceptată; redarea Aerial nu a fost verificată.",
+  "testLaunchUnconfirmed": "Cererea pentru screensaver a fost respinsă sau neconfirmată. Verifică informațiile de depanare și jurnalele."
  },
  "ru-RU": {
   "apply": "Применить",
@@ -6501,7 +6686,14 @@
   "fontPhoneSaveFailed": "Не удалось сохранить шрифт: {error}",
   "fontPhoneRequestFailed": "Не удалось обработать запрос: {error}",
   "durH": "ч",
-  "durMin": "мин"
+  "durMin": "мин",
+  "aboutDiscordSub": "Сообщество и помощь",
+  "aboutBrew": "Репозиторий Homebrew",
+  "aboutDonateSub": "Поддержать разработку",
+  "aboutFooter": "Выберите ссылку, чтобы получить QR-код для телефона",
+  "qrHint": "Наведите камеру телефона",
+  "testLaunchAccepted": "Запрос на запуск принят; воспроизведение Aerial не проверено.",
+  "testLaunchUnconfirmed": "Запрос заставки отклонён или не подтверждён. Проверьте отладочную информацию и журналы."
  },
  "sk-SK": {
   "apply": "Použiť",
@@ -6733,7 +6925,14 @@
   "fontPhoneSaveFailed": "Písmo sa nepodarilo uložiť: {error}",
   "fontPhoneRequestFailed": "Požiadavku sa nepodarilo spracovať: {error}",
   "durH": "h",
-  "durMin": "min"
+  "durMin": "min",
+  "aboutDiscordSub": "Komunita a pomoc",
+  "aboutBrew": "Repozitár Homebrew",
+  "aboutDonateSub": "Podporiť vývoj",
+  "aboutFooter": "Vyberte odkaz a získajte QR kód pre telefón",
+  "qrHint": "Naskenujte fotoaparátom telefónu",
+  "testLaunchAccepted": "Požiadavka na spustenie prijatá; prehrávanie Aerial nebolo overené.",
+  "testLaunchUnconfirmed": "Požiadavka na šetrič obrazovky bola zamietnutá alebo nepotvrdená. Skontrolujte ladiace informácie a protokoly."
  },
  "sl-SI": {
   "apply": "Uporabi",
@@ -6965,7 +7164,14 @@
   "fontPhoneSaveFailed": "Pisave ni bilo mogoče shraniti: {error}",
   "fontPhoneRequestFailed": "Zahteve ni bilo mogoče obdelati: {error}",
   "durH": "h",
-  "durMin": "min"
+  "durMin": "min",
+  "aboutDiscordSub": "Skupnost in pomoč",
+  "aboutBrew": "Repozitorij Homebrew",
+  "aboutDonateSub": "Podprite razvoj",
+  "aboutFooter": "Izberite povezavo za QR-kodo za telefon",
+  "qrHint": "Skenirajte s kamero telefona",
+  "testLaunchAccepted": "Zahteva za zagon sprejeta; predvajanje Aerial ni preverjeno.",
+  "testLaunchUnconfirmed": "Zahteva za ohranjevalnik zaslona je bila zavrnjena ali nepotrjena. Preverite podatke za odpravljanje napak in dnevnike."
  },
  "sv-SE": {
   "apply": "Använd",
@@ -7197,7 +7403,14 @@
   "fontPhoneSaveFailed": "Det gick inte att spara typsnittet: {error}",
   "fontPhoneRequestFailed": "Det gick inte att behandla begäran: {error}",
   "durH": "tim",
-  "durMin": "min"
+  "durMin": "min",
+  "aboutDiscordSub": "Community och hjälp",
+  "aboutBrew": "Homebrew-förråd",
+  "aboutDonateSub": "Stöd utvecklingen",
+  "aboutFooter": "Välj en länk för att få en QR-kod till telefonen",
+  "qrHint": "Skanna med telefonens kamera",
+  "testLaunchAccepted": "Startbegäran godkänd; uppspelning av Aerial är inte verifierad.",
+  "testLaunchUnconfirmed": "Begäran om skärmsläckare avvisades eller bekräftades inte. Kontrollera felsökningsinformation och loggar."
  },
  "th-TH": {
   "apply": "นำไปใช้",
@@ -7429,7 +7642,14 @@
   "fontPhoneSaveFailed": "บันทึกฟอนต์ไม่สำเร็จ: {error}",
   "fontPhoneRequestFailed": "ประมวลผลคำขอไม่สำเร็จ: {error}",
   "durH": "ชม.",
-  "durMin": "นาที"
+  "durMin": "นาที",
+  "aboutDiscordSub": "ชุมชนและความช่วยเหลือ",
+  "aboutBrew": "ที่เก็บ Homebrew",
+  "aboutDonateSub": "สนับสนุนการพัฒนา",
+  "aboutFooter": "เลือกลิงก์เพื่อรับคิวอาร์โค้ดสำหรับโทรศัพท์",
+  "qrHint": "สแกนด้วยกล้องโทรศัพท์",
+  "testLaunchAccepted": "รับคำขอเริ่มแล้ว แต่ยังไม่ได้ตรวจสอบการเล่น Aerial",
+  "testLaunchUnconfirmed": "คำขอโปรแกรมรักษาหน้าจอถูกปฏิเสธหรือไม่ได้รับการยืนยัน ตรวจสอบข้อมูลดีบักและบันทึก"
  },
  "tr-TR": {
   "apply": "Uygula",
@@ -7661,7 +7881,14 @@
   "fontPhoneSaveFailed": "Yazı tipi kaydedilemedi: {error}",
   "fontPhoneRequestFailed": "İstek işlenemedi: {error}",
   "durH": "sa",
-  "durMin": "dk"
+  "durMin": "dk",
+  "aboutDiscordSub": "Topluluk ve yardım",
+  "aboutBrew": "Homebrew deposu",
+  "aboutDonateSub": "Geliştirmeyi destekle",
+  "aboutFooter": "Telefonunuz için QR kodu almak üzere bir bağlantı seçin",
+  "qrHint": "Telefon kamerasıyla tarayın",
+  "testLaunchAccepted": "Başlatma isteği kabul edildi; Aerial oynatımı doğrulanmadı.",
+  "testLaunchUnconfirmed": "Ekran koruyucu isteği reddedildi veya doğrulanmadı. Hata ayıklama bilgilerini ve günlükleri kontrol edin."
  },
  "uk-UA": {
   "apply": "Застосувати",
@@ -7893,7 +8120,14 @@
   "fontPhoneSaveFailed": "Не вдалося зберегти шрифт: {error}",
   "fontPhoneRequestFailed": "Не вдалося обробити запит: {error}",
   "durH": "год",
-  "durMin": "хв"
+  "durMin": "хв",
+  "aboutDiscordSub": "Спільнота та допомога",
+  "aboutBrew": "Репозиторій Homebrew",
+  "aboutDonateSub": "Підтримати розробку",
+  "aboutFooter": "Виберіть посилання, щоб отримати QR-код для телефону",
+  "qrHint": "Скануйте камерою телефона",
+  "testLaunchAccepted": "Запит на запуск прийнято; відтворення Aerial не перевірено.",
+  "testLaunchUnconfirmed": "Запит заставки відхилено або не підтверджено. Перевірте налагоджувальну інформацію та журнали."
  },
  "vi-VN": {
   "apply": "Áp dụng",
@@ -8125,7 +8359,14 @@
   "fontPhoneSaveFailed": "Không thể lưu phông chữ: {error}",
   "fontPhoneRequestFailed": "Không thể xử lý yêu cầu: {error}",
   "durH": "giờ",
-  "durMin": "phút"
+  "durMin": "phút",
+  "aboutDiscordSub": "Cộng đồng và trợ giúp",
+  "aboutBrew": "Kho Homebrew",
+  "aboutDonateSub": "Ủng hộ phát triển",
+  "aboutFooter": "Chọn một liên kết để nhận mã QR cho điện thoại",
+  "qrHint": "Quét bằng camera điện thoại",
+  "testLaunchAccepted": "Yêu cầu khởi động đã được chấp nhận; chưa xác minh việc phát Aerial.",
+  "testLaunchUnconfirmed": "Yêu cầu trình bảo vệ màn hình bị từ chối hoặc chưa được xác nhận. Hãy kiểm tra thông tin gỡ lỗi và nhật ký."
  },
  "zh-CN": {
   "apply": "应用",
@@ -8357,7 +8598,14 @@
   "fontPhoneSaveFailed": "无法保存字体：{error}",
   "fontPhoneRequestFailed": "无法处理请求：{error}",
   "durH": "小时",
-  "durMin": "分钟"
+  "durMin": "分钟",
+  "aboutDiscordSub": "社区与帮助",
+  "aboutBrew": "Homebrew 软件源",
+  "aboutDonateSub": "支持开发",
+  "aboutFooter": "选择链接即可获取手机扫描用的二维码",
+  "qrHint": "请用手机相机扫描",
+  "testLaunchAccepted": "启动请求已被接受；尚未验证 Aerial 是否在播放。",
+  "testLaunchUnconfirmed": "屏保请求被拒绝或未得到确认。请检查调试信息和日志。"
  },
  "zh-HK": "zh-TW",
  "zh-TW": {
@@ -8590,6 +8838,13 @@
   "fontPhoneSaveFailed": "無法儲存字型：{error}",
   "fontPhoneRequestFailed": "無法處理要求：{error}",
   "durH": "小時",
-  "durMin": "分鐘"
+  "durMin": "分鐘",
+  "aboutDiscordSub": "社群與協助",
+  "aboutBrew": "Homebrew 軟體庫",
+  "aboutDonateSub": "支持開發",
+  "aboutFooter": "選擇連結即可取得手機掃描用的 QR 碼",
+  "qrHint": "請用手機相機掃描",
+  "testLaunchAccepted": "啟動要求已被接受；尚未驗證 Aerial 是否在播放。",
+  "testLaunchUnconfirmed": "螢幕保護程式要求被拒絕或未獲確認。請檢查偵錯資訊和記錄檔。"
  }
 }
