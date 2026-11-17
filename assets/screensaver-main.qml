@@ -259,16 +259,16 @@ WebOSWindow {
         id : osdNotice
         z : 2
         visible : window.osdNoticeVisible
-        opacity : window.osdNoticeActive ? 1 : 0
+        opacity : window.osdNoticeActive ? (window.protectionWarningActive ? 1 : 0.75) : 0
         Behavior on opacity { NumberAnimation { duration : 1000 } }
         anchors.horizontalCenter : parent.horizontalCenter
         anchors.bottom : parent.bottom
-        anchors.bottomMargin : 100
+        anchors.bottomMargin : 50
         width : parent.width - 160
         horizontalAlignment : Text.AlignHCenter
         wrapMode : Text.WordWrap
         font.family : name.font.family
-        font.pixelSize : 32
+        font.pixelSize : 26
         color : "white"
         style : Text.Raised
         styleColor : "black"
@@ -354,7 +354,7 @@ WebOSWindow {
     Rectangle {
         id : osd
         opacity : 0
-        visible : window.osdWantedVisible && !window.osdNoticeVisible
+        visible : window.osdWantedVisible && !window.protectionWarningActive
         color : "transparent"
         anchors.fill : parent
         anchors.leftMargin : 65 + driftX

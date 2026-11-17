@@ -27,9 +27,9 @@
   #osd { position: absolute; left: 65px; right: 65px; top: 65px; bottom: 65px; color: #fff;
          font-family: SegoeUILight, sans-serif; letter-spacing: -1px;
          opacity: 0; transition: opacity 3s ease; }
-  body.osd-notice #osd { visibility: hidden; }
-  #osd-notice { position: absolute; left: 80px; right: 80px; bottom: 100px; z-index: 2; color: #fff;
-                font-family: SegoeUILight, sans-serif; font-size: 32px; text-align: center;
+  body.osd-warning #osd { visibility: hidden; }
+  #osd-notice { position: absolute; left: 80px; right: 80px; bottom: 50px; z-index: 2; color: #fff;
+                font-family: SegoeUILight, sans-serif; font-size: 26px; text-align: center;
                 text-shadow: 0 1px 0 #000; opacity: 0; transition: opacity 1s ease; visibility: hidden; }
   #osd.fading { transition-duration: 5s; }
   /* Panel protection, drift: the box moves 1 px at a time, smoothly */
@@ -147,7 +147,7 @@ function showNextOsdNotice() {
         OSD_NOTICES.active = false;
         OSD_NOTICES.current = null;
         osdNotice.style.visibility = "hidden";
-        document.body.classList.remove("osd-notice");
+        document.body.classList.remove("osd-warning");
         return;
     }
     OSD_NOTICES.active = true;
@@ -155,8 +155,8 @@ function showNextOsdNotice() {
     osdNotice.textContent = notice.text;
     osdNotice.style.visibility = "visible";
     osdNotice.style.opacity = "0";
-    document.body.classList.add("osd-notice");
-    OSD_NOTICES.fadeIn = setTimeout(function () { osdNotice.style.opacity = "1"; }, 20);
+    document.body.classList.remove("osd-warning");
+    OSD_NOTICES.fadeIn = setTimeout(function () { osdNotice.style.opacity = "0.75"; }, 20);
     OSD_NOTICES.hold = setTimeout(function () {
         OSD_NOTICES.current = null;
         osdNotice.style.opacity = "0";
@@ -200,6 +200,7 @@ function setProtectionWarning(type, until) {
     if (!type || !(until > 0)) {
         if (!OSD_NOTICES.warning) return;
         OSD_NOTICES.warning = false;
+        document.body.classList.remove("osd-warning");
         OSD_NOTICES.fadeOut = setTimeout(showNextOsdNotice, 1000);
         osdNotice.style.opacity = "0";
         return;
@@ -219,7 +220,7 @@ function setProtectionWarning(type, until) {
         OSD_NOTICES.active = true;
         osdNotice.style.visibility = "visible";
         osdNotice.style.opacity = "1";
-        document.body.classList.add("osd-notice");
+        document.body.classList.add("osd-warning");
     }
     key = type === "standby" ? "protWarningStandby" : "protWarningOff";
     osdNotice.textContent = runtimeText(key, { seconds: seconds });

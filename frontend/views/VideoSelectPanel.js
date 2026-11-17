@@ -717,6 +717,7 @@ var VideoSelectPanel = kind({
   // passed in by MainPanel
   settings: null,
   settingsPath: '',
+  basePath: '',
   // 'categories' = first level (category tiles), 'videos' = video tiles
   mode: 'categories',
   // which playlist the tiles select: 'day' = the normal one (disabledVideos), 'night' = nightVideos
@@ -844,6 +845,7 @@ var VideoSelectPanel = kind({
   create: function () {
     if (!this.isChild) { this.title = I18n.t('playlist'); }
     this.inherited(arguments);
+    this.basePath = this.basePath || SettingsStore.basePath;
     I18n.apply(this);   // texts of the controls with an `i18n` key
     // webOS TV tells the app when the virtual keyboard appears / disappears (see keyboardChanged)
     this.kbListener = this.bindSafely('keyboardChanged');
@@ -1227,6 +1229,7 @@ var VideoSelectPanel = kind({
         list: this.list,
         categoryId: evt.id,
         shared: this.shared,
+        basePath: this.basePath,
         settings: this.settings,
         settingsPath: this.settingsPath
       });
@@ -1854,6 +1857,8 @@ var VideoSelectPanel = kind({
       var cmd = (k === 0 ? 'rm -f ' + q(tmp) + '; ' : '') + "printf '%s' " + q(c) + ' >> ' + q(tmp);
       if (k === chunks.length - 1) {
         cmd += ' && [ "$(wc -c < ' + q(tmp) + ')" -eq ' + bytes + ' ] && mv -f ' + q(tmp) + ' ' + q(path) +
+          ' && { if [ -f /tmp/aerial-videoads/videos.json ]; then cp ' + q(path) +
+          ' /tmp/aerial-videoads/videos.json.tmp && mv -f /tmp/aerial-videoads/videos.json.tmp /tmp/aerial-videoads/videos.json || true; fi; }' +
           ' && echo OK || { rm -f ' + q(tmp) + '; echo ERR; }';
       }
       return cmd;
@@ -2217,6 +2222,7 @@ var VideoSelectPanel = kind({
         isChild: true,
         list: 'night',
         shared: this.nightShared,
+        basePath: this.basePath,
         settings: this.settings,
         settingsPath: this.settingsPath
       });
