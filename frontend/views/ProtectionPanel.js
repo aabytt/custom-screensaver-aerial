@@ -38,7 +38,7 @@ var STR = {
   protBrightnessOn: 'Custom screen brightness', protBrightness: 'Brightness, %',
   protBrightnessNote: 'The previous brightness is restored when the screensaver stops.',
   protDimOn: 'Gradual dimming', protDimAfter: 'Start dimming after, min', protDimDuration: 'Dim over, min', protDimTo: 'Dim down to, %',
-  protOffOn: 'Panel turn-off timer', protOffAfter: 'Turn the panel off after, min',
+  protOffOn: 'Panel turn-off timer (OLED)', protOffAfter: 'Turn the panel off after, min',
   protStandbyOn: 'Standby timer', protStandbyAfter: 'Go to standby after, min',
   protCornersOn: 'Move the text between corners', protCornersEvery: 'Move every, sec', protCornersWhich: 'Corners to use (at least two)',
   protDriftOn: 'Smooth text drift', protDriftPx: 'Drift range, px', protDriftPeriod: 'Drift cycle, min',

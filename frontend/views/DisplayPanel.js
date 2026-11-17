@@ -196,6 +196,10 @@ var STR = {
   fontAddHint: 'Scan the code with your phone (on the same Wi-Fi). Choose a font file there, or paste a link to one.',
   fontStarting: 'Starting\u2026', fontReady: 'Waiting for a font\u2026', fontAdded: 'Added: {name}',
   fontNoServer: 'Could not start the font server',
+  fontServerProcessUnknown: 'Cannot verify the existing font server process.',
+  fontServerRestartFailed: 'The existing font server could not be restarted.',
+  fontServerNodeMissing: 'Node was not found on this TV.',
+  fontServerStartFailed: 'The server did not start: {error}',
   fontDeleteAsk: 'Delete the font \u201c{name}\u201d?', fontDeleteYes: 'Delete', fontDeleteNo: 'Cancel',
   protOverridden: 'overridden by Panel protection',
   protPreviewNote: 'Panel protection preview: time is sped up'
@@ -227,6 +231,16 @@ var MODAL_FOOTER = 'display: flex; align-items: center; justify-content: flex-en
 function blockY(anchor, h) {
   if (anchor.charAt(0) === 't') { return 0; }
   return OSD_H * 0.9 + 106 - h;
+}
+
+function osdLaneLayout(pa, ca, py, cy, pH, cH, boxW) {
+  var pCol = pa.charAt(1), cCol = ca.charAt(1), lane, width;
+  if (!(pH > 0 && cH > 0 && py < cy + cH && cy < py + pH)) {
+    return {placeWidth: boxW, clockWidth: boxW, placeCol: pCol, clockCol: cCol};
+  }
+  lane = (pCol === 'r' || (pCol === 'c' && cCol === 'l')) ? 'r' : 'l';
+  width = Math.max(1, (boxW - 40) / 2);
+  return {placeWidth: width, clockWidth: width, placeCol: lane, clockCol: lane === 'l' ? 'r' : 'l'};
 }
 
 function getJSON(url, ok, fail) {
@@ -280,7 +294,8 @@ function checkBoldFaces(done) {
 }
 
 var TEXT_STYLE = 'position: absolute; white-space: nowrap; color: #fff; line-height: 1.33; ' +
-  'text-shadow: ' + SHADOW_OFF + '; -webkit-transition: opacity 0.7s linear; transition: opacity 0.7s linear;';
+  'overflow: hidden; text-overflow: ellipsis; text-shadow: ' + SHADOW_OFF +
+  '; -webkit-transition: opacity 0.7s linear; transition: opacity 0.7s linear;';
 
 // The preview of Panel protection runs on a short cycle (seconds instead of minutes), same shapes as the screensaver
 var PV_CORNER_EVERY = 4, PV_DRIFT_PERIOD = 8, PV_FADE_CYCLE = 12;
@@ -460,7 +475,7 @@ var DisplayPanel = kind({
   destroy: function () {
     this.pvGone = true;
     this.stopJob('fontPoll');
-    if (this.fontServerOn) { this.$.fontExec.send({command: 'sh ' + SettingsStore.assetsDir + '/font-server.sh stop'}); }
+    this.stopFontServer();
     if (this.timer) { clearInterval(this.timer); this.timer = null; }
     // flush a pending save so nothing is lost when going back
     if (this.dirty) {
@@ -593,21 +608,58 @@ var DisplayPanel = kind({
   },
 
   openFontAdd: function () {
+    var lang = /^[A-Za-z0-9-]+$/.test(this.settings.localeLang || '') ? this.settings.localeLang : 'en-US';
     this.$.fontPopStatus.set('content', tt('fontStarting'));
     this.$.fontPopStatus.applyStyle('color', '#7ddc8a');
     this.$.fontPopUrl.set('content', '');
     this.$.fontQr.set('content', '');
     this.$.fontPopup.show();
+    this.fontServerStopRequested = false;
+    if (this.fontServerStopSent) {
+      this.fontServerRestartAfterStop = true;
+      return true;
+    }
+    if (this.fontServerStartPending) { return true; }
     this.fontServerOn = true;
+    this.fontServerStartPending = true;
+    this.fontServerCommand = 'start';
     this.$.fontExec.send({command: 'sh ' + SettingsStore.assetsDir + '/font-server.sh start' +
-      (isWebScreensaver(this.webosRelease) ? '' : ' ttf-only')});
+      (isWebScreensaver(this.webosRelease) ? '' : ' ttf-only') + ' ' + lang});
     return true;
   },
 
   // the reply of font-server.sh: the address to open on the phone, or "ERR <why>"
   onFontExec: function (sender, evt) {
-    var out = String((evt && evt.stdoutString) || '').trim().split('\n').pop(), qr;
+    var command = this.fontServerCommand,
+      out = String((evt && evt.stdoutString) || '').trim().split('\n').pop(), qr;
+    this.fontServerCommand = '';
+    if (command === 'stop') {
+      this.fontServerStopSent = false;
+      this.fontServerMayBeRunning = false;
+      if (this.fontServerRestartAfterStop && !this.destroyed && this.$.fontPopup.showing) {
+        this.fontServerRestartAfterStop = false;
+        this.openFontAdd();
+      }
+      return true;
+    }
+    this.fontServerStartPending = false;
+    this.fontServerMayBeRunning = true;
+    if (this.fontServerStopRequested) {
+      this.stopFontServer();
+      return true;
+    }
     if (this.destroyed || !this.$.fontPopup.showing || !/^(http|ERR)/.test(out)) { return true; }
+    if (/^ERR\s/.test(out)) {
+      var error = out.replace(/^ERR\s*/, ''), errorText;
+      if (error === 'FONT_SERVER_PROCESS_UNKNOWN') { errorText = tt('fontServerProcessUnknown'); }
+      else if (error === 'FONT_SERVER_RESTART_FAILED') { errorText = tt('fontServerRestartFailed'); }
+      else if (error === 'FONT_SERVER_NODE_MISSING') { errorText = tt('fontServerNodeMissing'); }
+      else if (error.indexOf('FONT_SERVER_START_FAILED:') === 0) {
+        errorText = tt('fontServerStartFailed').replace('{error}', error.slice('FONT_SERVER_START_FAILED:'.length));
+      } else { errorText = error; }
+      this.onFontExecError(sender, {errorText: errorText});
+      return true;
+    }
     if (/^http/.test(out)) {
       // QrCode.js is the app's own: svg(text, level, size) -> {markup, px}
       try { qr = QrCode.svg(out, 'M', 340); } catch (e) { qr = null; }
@@ -625,6 +677,24 @@ var DisplayPanel = kind({
     return true;
   },
   onFontExecError: function (sender, evt) {
+    if (this.fontServerCommand === 'stop') {
+      this.fontServerCommand = '';
+      this.fontServerStopSent = false;
+      this.fontServerMayBeRunning = false;
+      if (this.fontServerRestartAfterStop && !this.destroyed && this.$.fontPopup.showing) {
+        this.fontServerRestartAfterStop = false;
+        this.openFontAdd();
+      }
+      return true;
+    }
+    this.fontServerCommand = '';
+    this.fontServerStartPending = false;
+    this.fontServerMayBeRunning = true;
+    if (this.fontServerStopRequested) {
+      this.stopFontServer();
+      return true;
+    }
+    if (this.destroyed || !this.$.fontPopup.showing) { return true; }
     this.$.fontPopStatus.applyStyle('color', '#ff8a8a');
     this.$.fontPopStatus.set('content', tt('fontNoServer') + (evt && evt.errorText ? ': ' + evt.errorText : ''));
     return true;
@@ -638,12 +708,18 @@ var DisplayPanel = kind({
     this.$.fontPopup.hide();
     return true;
   },
+  stopFontServer: function () {
+    this.fontServerOn = false;
+    this.fontServerRestartAfterStop = false;
+    this.fontServerStopRequested = true;
+    if (this.fontServerStartPending || this.fontServerStopSent || !this.fontServerMayBeRunning) { return; }
+    this.fontServerStopSent = true;
+    this.fontServerCommand = 'stop';
+    this.$.fontExec.send({command: 'sh ' + SettingsStore.assetsDir + '/font-server.sh stop'});
+  },
   fontPopupHidden: function () {
     this.stopJob('fontPoll');
-    if (this.fontServerOn) {
-      this.fontServerOn = false;
-      this.$.fontExec.send({command: 'sh ' + SettingsStore.assetsDir + '/font-server.sh stop'});
-    }
+    this.stopFontServer();
     this.listFonts();
   },
 
@@ -973,10 +1049,11 @@ var DisplayPanel = kind({
   },
 
   // one line of the OSD in its place: same numbers as the QML
-  putLine: function (ctrl, on, anchor, y, px) {
-    var col = anchor.charAt(1);
+  putLine: function (ctrl, on, y, px, col, width) {
     ctrl.set('showing', on);
     ctrl.applyStyle('font-size', px + 'px');
+    ctrl.applyStyle('width', width + 'px');
+    ctrl.applyStyle('text-align', col === 'r' ? 'right' : (col === 'c' ? 'center' : 'left'));
     ctrl.applyStyle('top', y + 'px');
     ctrl.applyStyle('left', col === 'l' ? '0' : (col === 'c' ? '50%' : null));
     ctrl.applyStyle('right', col === 'r' ? '0' : null);
@@ -993,14 +1070,15 @@ var DisplayPanel = kind({
       pH = (titleOn && poiOn ? 106 : (titleOn ? 56 : (poiOn ? 40 : 0))) * ps,
       cH = (clockOn && dateOn ? 136 : (clockOn ? 79 : (dateOn ? 40 : 0))) * cs,
       py = blockY(pa, pH), cy = blockY(ca, cH),
+      lanes = osdLaneLayout(pa, ca, py, cy, pH, cH, OSD_W),
       opacity = this.opacityOf(this.settings.osdOpacitySplit ? this.previewKind : 'sdr') / 100,
       font = FONT_BY_ID[g('font')],
       bold = !!g('bold'),
       real = !!(font.boldFile && !boldFailed[font.id]);   // the real bold face is there
-    this.putLine(this.$.pvTitle, titleOn, pa, py, 56 * ps);
-    this.putLine(this.$.pvPoi, poiOn, pa, py + (titleOn ? 66 * ps : 0), 40 * ps);
-    this.putLine(this.$.pvTime, clockOn, ca, cy, 79 * cs);
-    this.putLine(this.$.pvDate, dateOn, ca, cy + (clockOn ? 96 * cs : 0), 40 * cs);
+    this.putLine(this.$.pvTitle, titleOn, py, 56 * ps, lanes.placeCol, lanes.placeWidth);
+    this.putLine(this.$.pvPoi, poiOn, py + (titleOn ? 66 * ps : 0), 40 * ps, lanes.placeCol, lanes.placeWidth);
+    this.putLine(this.$.pvTime, clockOn, cy, 79 * cs, lanes.clockCol, lanes.clockWidth);
+    this.putLine(this.$.pvDate, dateOn, cy + (clockOn ? 96 * cs : 0), 40 * cs, lanes.clockCol, lanes.clockWidth);
     this.pvOpacity = opacity;
     this.applyPvOpacity();
     ['pvTitle', 'pvPoi', 'pvTime', 'pvDate'].forEach(function (n) {

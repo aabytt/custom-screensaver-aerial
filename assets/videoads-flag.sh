@@ -26,10 +26,14 @@
 # reboot first. So this watcher keeps the user's brightness (a value that stayed the same for
 # STABLE checks while no screensaver ran), publishes it as "orig" in the heartbeat file (the
 # screensaver changes the brightness only with it, i.e. only while this watcher runs), saves it
-# to a file when a screensaver starts, and puts it back once none runs: at every check, also
-# after a reboot (the file is read at start). Without a watcher the brightness is not touched.
+# to a file when either tvpowerd or the app manager reports the screensaver running, and puts it
+# back only after both report it stopped: also after a reboot (the file is read at start). Without
+# a watcher the brightness is not touched.
 # The same watcher also serves the QML screensaver (older webOS): then it is its qml/main.qml that
 # is mounted instead of the app directory.
+#
+# Panel-off and standby timers are owned here too. This process outlives either screensaver page;
+# a confirmed app-manager stop clears both pending actions, while panel-off leaves standby armed.
 #
 # Solar mode (sunrise / sunset). The same watcher keeps solar.json up to date: at its start (so
 # after every boot, as apply.sh starts it) and then every SOLAR_EVERY checks it runs
@@ -46,6 +50,7 @@ APP_DIR="/usr/palm/applications/com.webos.app.screensaver"
 APP_IDS="com\.webos\.app\.(screensaver|videoads)"
 HEARTBEAT="/tmp/aerial-watcher.json"
 POWER="luna://com.webos.service.tvpower/power/getPowerState"
+TVPOWER="luna://com.webos.service.tvpower/power"
 NOTIFY="luna://com.webos.notification"
 SAM="luna://com.webos.applicationManager"
 POLL=5         # seconds between checks
@@ -84,8 +89,7 @@ notify_on() {  # reason
 # Switches notifications on unless the screensaver app is running (it may be starting), for up to
 # $STUCK checks in a row. If the app manager doesn't answer, switches them on.
 maybe_on() {  # reason
-    reply="$($TIMEOUT luna-send -n 1 "$SAM/running" '{}' </dev/null 2>/dev/null || true)"
-    if echo "$reply" | grep -qE "\"id\" *: *\"$APP_IDS\""; then
+    if [ "$ss_running" = 1 ]; then
         listed=$((listed + 1))
         [ $listed -lt $STUCK ] && return 0
         set -- "$1, the screensaver still listed as running"
@@ -100,14 +104,137 @@ maybe_on() {  # reason
 heartbeat() {
     extra=
     [ -n "$orig" ] && extra=",\"orig\":$orig"
-    { echo "{\"time\":$(date +%s)$extra}" > "$HEARTBEAT"; } 2>/dev/null
+    { echo "{\"time\":$(date +%s)$extra,\"protectionElapsed\":$protection_elapsed,\"panelOff\":$protection_panel_off,\"standbyDone\":$protection_standby_done,\"protectionWarning\":\"$protection_warning\",\"protectionWarningUntil\":$protection_warning_until}" > "$HEARTBEAT"; } 2>/dev/null
 }
 
 # ---- brightness ----
-# Whether the app manager lists the screensaver app as running
-ss_listed() {
+# Whether the app manager lists the screensaver app as running. Unknown is distinct from stopped:
+# a failed query must not release brightness protection or make the watcher track a dimmed value.
+ss_check() {
     reply="$($TIMEOUT luna-send -n 1 "$SAM/running" '{}' </dev/null 2>/dev/null || true)"
-    echo "$reply" | grep -qE "\"id\" *: *\"$APP_IDS\""
+    if echo "$reply" | grep -qE "\"id\" *: *\"$APP_IDS\""; then
+        ss_running=1
+    elif echo "$reply" | grep -q '"returnValue" *: *true'; then
+        ss_running=0
+    else
+        ss_running=-1
+    fi
+}
+
+# Panel-off and standby timers belong to this watcher rather than the screensaver page. The page
+# can disappear before a timer fires; an explicit app-manager stop cancels both pending actions.
+protection_value() {
+    sed -n "s/.*\"$1\"[[:space:]]*:[[:space:]]*\\([0-9][0-9]*\\).*/\\1/p" "$SETTINGS" | head -n 1
+}
+protection_enabled() {
+    grep -qsE "\"$1\" *: *true" "$SETTINGS"
+}
+protection_action() {  # service, payload
+    reply="$($TIMEOUT luna-send -n 1 "$1" "$2" </dev/null 2>/dev/null || true)"
+    echo "$reply" | grep -q '"returnValue" *: *true'
+}
+protection_tick() {
+    now="$(date +%s)"
+    case "$now" in ''|*[!0-9]*) return 0 ;; esac
+    if [ "$ss_running" = 1 ]; then
+        if [ "$protection_active" = 0 ]; then
+            protection_active=1
+            protection_started=$now
+            protection_elapsed=0
+            protection_panel_off=0
+            protection_standby_done=0
+            protection_off_logged=0
+        else
+            protection_elapsed=$((now - protection_started))
+            [ "$protection_elapsed" -ge 0 ] || protection_elapsed=0
+        fi
+
+        off_after="$(protection_value offAfter)"
+        standby_after="$(protection_value standbyAfter)"
+        if protection_enabled offOn && protection_enabled standbyOn &&
+           [ -n "$off_after" ] && [ -n "$standby_after" ] &&
+           [ "$standby_after" -lt "$off_after" ]; then
+            standby_after="$off_after"
+        fi
+
+        next_warning=
+        next_warning_until=0
+        if protection_enabled standbyOn && [ -n "$standby_after" ] &&
+           [ "$protection_elapsed" -ge $((standby_after * 60 - 30)) ] &&
+           [ "$protection_elapsed" -lt $((standby_after * 60)) ]; then
+            next_warning=standby
+            next_warning_until=$((protection_started + standby_after * 60))
+        elif protection_enabled offOn && [ -n "$off_after" ] &&
+             [ "$protection_elapsed" -ge $((off_after * 60 - 30)) ] &&
+             [ "$protection_elapsed" -lt $((off_after * 60)) ]; then
+            next_warning=off
+            next_warning_until=$((protection_started + off_after * 60))
+        fi
+        if [ "$next_warning" != "$protection_warning" ] ||
+           [ "$next_warning_until" != "$protection_warning_until" ]; then
+            # Wake the panel for the last 30-second warning even if it was turned off outside this timer.
+            if [ "$next_warning" = standby ] &&
+               ! protection_action "$TVPOWER/turnOnScreen" '{}'; then
+                echo "aerial-notify: could not wake the panel for standby warning"
+            fi
+            protection_warning="$next_warning"
+            protection_warning_until=$next_warning_until
+        fi
+
+        if [ "$protection_panel_off" = 0 ] && protection_enabled offOn &&
+           [ -n "$off_after" ] && [ "$protection_elapsed" -ge $((off_after * 60)) ]; then
+            protection_panel_off=1
+            protection_warning=
+            protection_warning_until=0
+            if ! restore_backlight && [ "$protection_off_logged" = 0 ]; then
+                echo "aerial-notify: could not restore backlight before panel turn-off"
+                protection_off_logged=1
+            fi
+            if ! protection_action "$TVPOWER/turnOffScreen" '{}'; then
+                echo "aerial-notify: panel turn-off timer service call failed"
+                protection_off_logged=1
+            fi
+        fi
+
+        if [ "$protection_standby_done" = 0 ] && protection_enabled standbyOn &&
+           [ -n "$standby_after" ] && [ "$protection_elapsed" -ge $((standby_after * 60)) ]; then
+            protection_standby_done=1
+            protection_warning=
+            protection_warning_until=0
+            if ! protection_action "$TVPOWER/powerOff" '{"reason":"remoteKey"}'; then
+                echo "aerial-notify: standby timer service call failed"
+            fi
+        fi
+    elif [ "$ss_running" = 0 ] && [ "$protection_active" = 1 ]; then
+        protection_active=0
+        protection_started=0
+        protection_elapsed=0
+        protection_panel_off=0
+        protection_standby_done=0
+        protection_warning=
+        protection_warning_until=0
+    fi
+}
+protection_wait() {
+    wait="$POLL"
+    if [ "$protection_active" = 1 ]; then
+        off_after="$(protection_value offAfter)"
+        standby_after="$(protection_value standbyAfter)"
+        if protection_enabled offOn && protection_enabled standbyOn &&
+           [ -n "$off_after" ] && [ -n "$standby_after" ] &&
+           [ "$standby_after" -lt "$off_after" ]; then
+            standby_after="$off_after"
+        fi
+        if protection_enabled offOn && [ -n "$off_after" ]; then
+            remaining=$((off_after * 60 - protection_elapsed))
+            [ "$remaining" -gt 0 ] && [ "$remaining" -le $((30 + POLL)) ] && wait=1
+        fi
+        if protection_enabled standbyOn && [ -n "$standby_after" ]; then
+            remaining=$((standby_after * 60 - protection_elapsed))
+            [ "$remaining" -gt 0 ] && [ "$remaining" -le $((30 + POLL)) ] && wait=1
+        fi
+    fi
+    sleep "$wait"
 }
 
 # The brightness is only followed while the protection uses it (brightness or dimming switched on)
@@ -144,16 +271,13 @@ prot_freeze() {
 # Screensaver not running (and tvpowerd answered)
 prot_idle() {
     if [ $frozen = 1 ]; then
-        # not while the app is still listed (it may be starting or closing), unless that goes on
-        if ss_listed; then
-            rl=$((rl + 1))
-            [ $rl -lt $STUCK ] && return 0
-        else
-            rl=0
-        fi
+        # A non-screensaver tvpower state alone can arrive while the page is still active.
+        # Keep ownership until the app manager explicitly reports it stopped.
+        [ "$ss_running" = 0 ] || return 0
         restore_backlight && frozen=0
         return 0
     fi
+    [ "$ss_running" = -1 ] && return 0
     prot_track
 }
 
@@ -166,7 +290,11 @@ solar_tick() {
     { sh "$ASSETS_DIR/solar-update.sh" </dev/null >/dev/null 2>&1 & } 2>/dev/null
 }
 
-orig=; orig_mode=; cand=; cand_mode=; cand_n=0; frozen=0; rl=0
+orig=; orig_mode=; cand=; cand_mode=; cand_n=0; frozen=0; ss_running=-1
+protection_active=0; protection_started=0; protection_elapsed=0
+protection_panel_off=0; protection_standby_done=0
+protection_warning=; protection_warning_until=0
+protection_off_logged=0
 solar_n=$SOLAR_EVERY   # due at the first check
 load_state || true   # a screensaver that left the brightness lowered (killed, or the TV rebooted)
 quiet=0     # 1 once notifications were switched on and the screensaver hasn't run since
@@ -175,11 +303,11 @@ listed=0
 ran=0
 while mounted; do
     ran=1
-    heartbeat
     solar_tick
     reply="$($TIMEOUT luna-send -n 1 "$POWER" '{}' </dev/null 2>/dev/null || true)"
     state="$(echo "$reply" | sed -n 's/.*"state" *: *"\([^"]*\)".*/\1/p')"
     processing="$(echo "$reply" | sed -n 's/.*"processing" *: *"\([^"]*\)".*/\1/p')"
+    ss_check
     # The exact values, not any "Screen Saver" in the reply: "processing": "Screen Saver Ready"
     # (webOS 25, while the screensaver starts) can stay for minutes after a screensaver closed
     # during its start. While it starts, the app manager check in maybe_on holds the enable back.
@@ -189,12 +317,15 @@ while mounted; do
     elif [ -n "$state" ]; then
         no_answer=0
         mounted && maybe_on "$state${processing:+, $processing}"
-        prot_idle
+        if [ "$ss_running" = 1 ]; then prot_freeze; else prot_idle; fi
     else
         no_answer=$((no_answer + 1))
         [ $no_answer -ge $NO_ANSWER ] && mounted && maybe_on "tvpowerd not answering"
+        [ "$ss_running" = 1 ] && prot_freeze
     fi
-    sleep $POLL
+    protection_tick "$state" "$processing"
+    heartbeat
+    protection_wait
 done
 # Unmounted (Aerial undone, or replaced): nothing else will switch them on, or put the brightness back
 [ $ran = 1 ] && quiet=0 && notify_on "screensaver unmounted"

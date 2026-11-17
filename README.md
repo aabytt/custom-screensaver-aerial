@@ -62,9 +62,9 @@ setting and the `videoads` block back.
 Features
 --------
 
-* Autostart registration
-* Temporary apply
+* Apply Aerial now and enable autostart, or restore the stock screensaver
 * Launch screensaver immediately for testing
+* Optional update notices and an About panel with scannable links
 * Playlist editor
 * Night mode: a separate playlist for the night hours
 
@@ -86,5 +86,3 @@ Screenshots
    <img src="https://github.com/user-attachments/assets/e87586c6-4e00-47c6-8285-925c8e4fa646" width="480"/>
    <img src="https://github.com/user-attachments/assets/422872d8-11f2-4789-abe8-da75e43cbea6" width="480"/>
    <img src="https://github.com/user-attachments/assets/e6621686-c463-46f3-8e14-e4927a88633b" width="480"/>
-
-

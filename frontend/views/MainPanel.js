@@ -17,6 +17,7 @@ var
 	DisplayPanel = require('./DisplayPanel.js'),
 	ProtectionPanel = require('./ProtectionPanel.js'),
 	LanguagePanel = require('./LanguagePanel.js'),
+	OtherSettingsPanel = require('./OtherSettingsPanel.js'),
 	SettingsStore = require('./SettingsStore.js'),
 	QrCode = require('./QrCode.js'),
 	ReleaseNotes = require('./ReleaseNotes.js'),
@@ -56,7 +57,8 @@ var ICONS = {
 	chevron: '<path d="M9 5l7 7-7 7"/>',
 	uturn: '<path d="M7 20.5V10a5 5 0 0 1 10 0v9"/><path d="M13.5 15.5L17 19l3.5-3.5"/>',
 	restore: '<path d=\"M4 15.5V12a8.5 8.5 0 1 1 2.5 6\"/><path d=\"M1.2 12.8L4 15.6l2.8-2.8\"/><path d=\"M12.5 7.5V12l3 2\"/>',
-	translate: '<path d="M3 5.5h10M8 3.5v2M5 5.5c.6 3.4 3.2 6.2 6.5 7.7M11 5.5c-.7 3.6-3.4 6.5-7.5 8.5"/><path d="M12.5 21l4-10 4 10M14 17.5h5"/>'
+	translate: '<path d="M3 5.5h10M8 3.5v2M5 5.5c.6 3.4 3.2 6.2 6.5 7.7M11 5.5c-.7 3.6-3.4 6.5-7.5 8.5"/><path d="M12.5 21l4-10 4 10M14 17.5h5"/>',
+	info: '<circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5h.01"/>'
 };
 
 // Moonstone highlight color (focused item background); the "update available" text uses it, and turns white on focus
@@ -346,12 +348,9 @@ module.exports = kind({
 									{name: 'versionChev', allowHtml: true, style: 'flex: none; width: 22px; height: 22px; margin-left: 10px; line-height: 0; opacity: 0.7;', content: svgMarkup('chevron')}
 								]}
 						]},
-						// texts with an `i18n` key are filled in by I18n.apply() (see refreshStrings)
-						{kind: ToggleItem, name: 'autostart', allowHtml: true, disabled: true, onchange: 'autostartToggle'},
-						// Apply until reboot / Restore stock: the title, the description, the icon and the action
-						// follow the state apply.sh reports (see refreshApplyItem)
+						// Apply / Unapply: the title, description and icon follow apply.sh's reported state.
 						{kind: Item, name: 'applyItem', components: [
-							titleRow('clock', {kind: Marquee.Text, name: 'applyTitle'}, 'applyIcon'),
+							titleRow('power', {kind: Marquee.Text, name: 'applyTitle'}, 'applyIcon'),
 							{kind: BodyText, style: DESC_STYLE, name: 'applyInfo', content: ''}
 						], ontap: 'applyOrRevert'},
 						{kind: ExpandablePicker, name: 'source', onChange: 'selectSource', components: [
@@ -375,6 +374,10 @@ module.exports = kind({
 							titleRow('shield', {kind: Marquee.Text, name: 'protectionTitle'}),
 							{kind: BodyText, style: DESC_STYLE + ' white-space: nowrap; overflow: hidden; text-overflow: ellipsis;', name: 'protectionInfo', content: ''}
 						], ontap: 'openProtection'},
+						{kind: Item, components: [
+							titleRow('info', {kind: Marquee.Text, i18n: 'otherSettings'}),
+							{kind: BodyText, style: DESC_STYLE, i18n: 'otherSettingsInfo'}
+						], ontap: 'openOtherSettings'},
 						{style: 'margin: 28px 0 0', components: [
 							{kind: Button, style: 'margin: 0', i18n: 'testRun', ontap: 'testRun'}
 						]}
@@ -435,7 +438,7 @@ module.exports = kind({
 					{kind: Button, name: 'notesClose', small: true, style: 'margin: 0 0 0 auto;', ontap: 'closeNotes'}
 				]}
 			]},
-		// two-button question card (Test while not applied, Restore while autostart is on). A toast is easy to
+		// two-button question card (Test while not applied). A toast is easy to
 		// miss with a remote, and a warning without a way out leaves the user pressing the same button again.
 		{kind: Popup, name: 'confirmPopup', centered: true, floating: true, modal: true, autoDismiss: true,
 			style: 'width: 900px; max-width: 92%; padding: 28px 44px 24px; background: ' + Theme.MODAL_BG + '; color: ' + Theme.TEXT + '; border: ' + Theme.MODAL_BORDER_PX + 'px solid ' + Theme.MODAL_BORDER + '; border-radius: ' + Theme.MODAL_RADIUS + 'px;', components: [
@@ -446,7 +449,6 @@ module.exports = kind({
 					{kind: Button, name: 'confirmCancel', small: true, style: 'margin: 0 0 0 16px;', ontap: 'confirmDismiss'}
 				]}
 			]},
-		{kind: LunaService, name: 'statusCheck', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onStatusCheck', onError: 'onStatusCheck'},
 		{kind: LunaService, name: 'applyStatus', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onApplyStatus', onError: 'onApplyStatus'},
 		{kind: LunaService, name: 'exec', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onExec', onError: 'onExec'},
 		{kind: LunaService, name: 'init', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'onInit', onError: 'onInit'},
@@ -487,9 +489,6 @@ module.exports = kind({
 		this.sources = {};
 		this.loaded = false;
 		this.persistBroken = false;
-		this.$.statusCheck.send({
-			command: 'readlink ' + linkPath
-		});
 		this.checkApplyStatus();
 		this.loadSettingsLocal();
 		// A missing file is a normal answer (empty output, exit 0), so a real failure can be told apart from it
@@ -503,7 +502,6 @@ module.exports = kind({
 	// (re)write every translated text; called when the language changes
 	refreshStrings: function () {
 		I18n.apply(this);
-		this.$.autostart.set('content', iconLabel('power', I18n.t('autostart')));
 		this.$.source.set('content', iconLabel('video', I18n.t('videoFormat')));
 		this.$.playLowerQuality.set('content', iconLabel('uturn', I18n.t('fallbackSdr')));
 		this.$.protectionTitle.set('content', tr('protection', 'Panel protection'));
@@ -663,6 +661,7 @@ module.exports = kind({
 		var lang = settings.uiLang || this.guessLang;
 		I18n.setLang(lang);
 		this.fadeStrings();
+		if (this.settingsApplied && this.latest) { this.saveUpdateNotice(); }
 		// the release notes are translated in the background as soon as the language is known (no-op if there is
 		// no update, the notes have not arrived yet or the language is English)
 		this.translateNotes();
@@ -759,13 +758,20 @@ module.exports = kind({
 				self.loadNotes();
 				return;
 			}
+			self.updateCheckComplete = true;
 			if (latest && compareVersions(latest, self.version) > 0) {
 				self.latest = String(latest).replace(/^v/i, '');
+				if (self.settingsApplied) { self.saveUpdateNotice(); }
 				self.loadNotes();
 				self.renderVersion();
 				self.refit();
 				if (self.$.reportPopup && self.$.reportPopup.showing) { self.refreshReport(); }
 			} else {
+				self.latest = '';
+				if (self.settingsApplied) {
+					delete settings.updateNotice;
+					self.settingsSave();
+				}
 				self.loadNotes();   // up to date: the button shows the changelog of all versions
 			}
 		};
@@ -1059,6 +1065,8 @@ module.exports = kind({
 		// in place: DisplayPanel / VideoSelectPanel hold a reference to this object
 		Object.keys(settings).forEach(function (k) { delete settings[k]; });
 		Object.keys(s).forEach(function (k) { settings[k] = s[k]; });
+		if (settings.updateNoticeEnabled === undefined) { settings.updateNoticeEnabled = true; }
+		if (this.updateCheckComplete && !this.latest) { delete settings.updateNotice; }
 		this.$.source.set('selectedIndex', settings.sourceTypeIndex);
 		this.$.playLowerQuality.set('checked', settings.playLowerQuality);
 		this.settingsApplied = true;
@@ -1125,40 +1133,26 @@ module.exports = kind({
 		this.statusCb = null;
 		if (cb) { cb(this.applied); }
 	},
-	// the item is "Apply until reboot" while stock, "Restore stock screensaver" once applied
+	// Applying enables both the screensaver and its autostart; unapplying restores LG's screensaver.
 	refreshApplyItem: function () {
 		var title = this.$.applyTitle, info = this.$.applyInfo, icon = this.$.applyIcon;
 		if (!title || !info) { return; }
 		if (this.applied) {
-			title.set('content', tr('revertStock', 'Restore stock screensaver'));
-			info.set('content', this.autostartOn() ?
-				tr('revertStockInfoAutostart', 'Back until the next reboot: Autostart applies Aerial again') :
-				tr('revertStockInfo', 'Puts LG\u2019s screensaver back until you apply Aerial again'));
+			title.set('content', tr('unapply', 'Unapply Aerial'));
+			info.set('content', tr('unapplyInfo', 'Restores LG’s stock screensaver now and disables autostart.'));
 		} else {
-			title.set('content', I18n.t('applyTemp'));
-			info.set('content', I18n.t('applyTempInfo'));
+			title.set('content', tr('apply', 'Apply'));
+			info.set('content', tr('applyInfo', 'Applies Aerial now and enables it to start automatically.'));
 		}
-		if (icon) { icon.set('content', svgMarkup(this.applied ? 'restore' : 'clock')); }
+		if (icon) { icon.set('content', svgMarkup(this.applied ? 'restore' : 'power')); }
 		this.refit();
 	},
-	autostartOn: function () {
-		return !!(this.$.autostart && this.$.autostart.get('checked'));
-	},
 	applyOrRevert: function () {
-		if (!this.applied) { this.temporaryApply(); return; }
-		if (this.autostartOn()) {
-			// otherwise the user reboots, sees Aerial again and thinks the button did nothing
-			this.askConfirm(
-				tr('revertTitle', 'Restore the stock screensaver?'),
-				tr('revertAutostartHint', 'Autostart is on, so Aerial comes back at the next reboot. To turn it off for good, switch Autostart off first.'),
-				tr('revertConfirm', 'Restore'),
-				'doRevert');
-			return;
+		if (this.applied) {
+			this.exec('rm -f ' + linkPath + ' && ' + applyPath + ' revert', 'revert');
+		} else {
+			this.exec('mkdir -p /var/lib/webosbrew/init.d && ln -sf ' + applyPath + ' ' + linkPath + ' && ' + applyPath, 'apply');
 		}
-		this.doRevert();
-	},
-	doRevert: function () {
-		this.exec(applyPath + ' revert', 'revert');
 	},
 	// ---- two-button question card --------------------------------------------------------------------------
 	askConfirm: function (title, text, okLabel, method) {
@@ -1192,18 +1186,15 @@ module.exports = kind({
 		this.askConfirm(
 			tr('testNeedsApplyTitle', 'Aerial is not applied'),
 			tr('testNeedsApply', 'The stock screensaver is still in place, so the test would show that one. Apply Aerial now and run the test?'),
-			tr('testApplyAndRun', 'Apply and test'),
+			tr('apply', 'Apply'),
 			'testApplyAndRun');
 	},
 	testApplyAndRun: function () {
 		this.pendingTest = true;
-		this.exec(applyPath, 'apply');
+		this.exec('mkdir -p /var/lib/webosbrew/init.d && ln -sf ' + applyPath + ' ' + linkPath + ' && ' + applyPath, 'apply');
 	},
 	doTestRun: function () {
 		this.exec("luna-send -n 1 'luna://com.webos.service.tvpower/power/turnOnScreenSaver' '{}'");
-	},
-	temporaryApply: function () {
-		this.exec(applyPath, 'apply');
 	},
 	exec: function (command, kind) {
 		console.info(command);
@@ -1231,12 +1222,6 @@ module.exports = kind({
 		if (kind === 'apply' || kind === 'revert') { this.checkApplyStatus(); }
 		if (runTest && kind === 'apply' && evt.returnValue) { this.doTestRun(); }
 	},
-	onStatusCheck: function (sender, evt) {
-		console.info(sender, evt);
-		this.$.autostart.set('disabled', false);
-		this.$.autostart.set('checked', !!(evt && evt.stdoutString) && evt.stdoutString.trim() == applyPath);
-		this.refreshApplyItem();   // the description mentions the reboot while autostart is on
-	},
 	selectSource: function () {
 		var index = this.$.source.get('selectedIndex'), sel = this.$.source.get('selected');
 		if (sel && settings.sourceTypeIndex != index) {
@@ -1244,17 +1229,6 @@ module.exports = kind({
 			settings.sourceTypeIndex = index;
 			this.settingsSave();
 		}
-	},
-	// Switching autostart on means "I want this screensaver", so it applies at once: the link alone only
-	// takes effect at the next boot, which is what made people press Test and see the stock one.
-	// Switching it off does not revert anything: that is the Restore item, and it is explicit.
-	autostartToggle: function (sender) {
-		if (sender.active) {
-			this.exec('mkdir -p /var/lib/webosbrew/init.d && ln -sf ' + applyPath + ' ' + linkPath + ' && ' + applyPath, 'apply');
-		} else {
-			this.exec('rm -rf ' + linkPath);
-		}
-		this.refreshApplyItem();
 	},
 	playLowerQualityToggle: function (sender) {
 		settings.playLowerQuality = !!sender.active;
@@ -1343,6 +1317,31 @@ module.exports = kind({
 			console.error(e);
 			this.setResult(I18n.t('openFail', {error: e.message}));
 		}
+	},
+	openOtherSettings: function () {
+		try {
+			this.doRequestPushPanel({panel: {
+				kind: OtherSettingsPanel,
+				settings: settings,
+				version: this.version || '',
+				onChange: this.bindSafely('otherSettingsChanged')
+			}});
+		} catch (e) {
+			console.error(e);
+			this.setResult(I18n.t('openFail', {error: e.message}));
+		}
+	},
+	otherSettingsChanged: function (key, value) {
+		settings[key] = value;
+		this.settingsSave();
+	},
+	saveUpdateNotice: function () {
+		if (!this.settingsApplied || this.persistBroken || !this.latest || !this.version) { return; }
+		settings.updateNotice = {
+			version: this.latest,
+			text: I18n.t('updateAvailable', {version: this.version, latest: this.latest})
+		};
+		this.settingsSave();
 	},
 	settingsSave: function () {
 		this.exec(SettingsStore.saveCommand(settings));   // app copy + persistent copy
