@@ -17,11 +17,20 @@ alive() {  # pid
 }
 pid_of() { sed -n 's/.*"pid":\([0-9]*\).*/\1/p' "$INFO" 2>/dev/null | head -n 1; }
 url_of() { sed -n 's/.*"url":"\([^"]*\)".*/\1/p' "$INFO" 2>/dev/null | head -n 1; }
+server_process() {
+    [ -r "/proc/$1/cmdline" ] && tr '\000' '\n' <"/proc/$1/cmdline" | grep -Fxq "$DIR/font-server.js"
+}
 
 case "$1" in
 stop)
     pid="$(pid_of)"
-    alive "$pid" && kill "$pid" 2>/dev/null
+    if alive "$pid"; then
+        if ! server_process "$pid"; then
+            echo "ERR FONT_SERVER_PROCESS_UNKNOWN"
+            exit 0
+        fi
+        kill "$pid" 2>/dev/null
+    fi
     rm -f "$INFO"
     echo stopped
     ;;
@@ -30,13 +39,13 @@ start)
     expected_mode=false
     [ "$TTF_ONLY" -eq 1 ] && expected_mode=true
     if alive "$pid"; then
-        running_mode="$(sed -n 's/.*"ttfOnly":\([^,}]*\).*/\1/p' "$INFO" 2>/dev/null)"
-        running_lang="$(sed -n 's/.*"lang":"\([^"]*\)".*/\1/p' "$INFO" 2>/dev/null)"
-        if [ "$running_mode" = "$expected_mode" ] && [ "$running_lang" = "$LANGUAGE" ]; then url_of; exit 0; fi
-        if [ ! -r "/proc/$pid/cmdline" ] || ! tr '\000' '\n' <"/proc/$pid/cmdline" | grep -q 'font-server.js'; then
+        if ! server_process "$pid"; then
             echo "ERR FONT_SERVER_PROCESS_UNKNOWN"
             exit 0
         fi
+        running_mode="$(sed -n 's/.*"ttfOnly":\([^,}]*\).*/\1/p' "$INFO" 2>/dev/null)"
+        running_lang="$(sed -n 's/.*"lang":"\([^"]*\)".*/\1/p' "$INFO" 2>/dev/null)"
+        if [ "$running_mode" = "$expected_mode" ] && [ "$running_lang" = "$LANGUAGE" ]; then url_of; exit 0; fi
         kill "$pid" 2>/dev/null
         i=0
         while alive "$pid" && [ "$i" -lt 10 ]; do

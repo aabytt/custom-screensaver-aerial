@@ -54,8 +54,13 @@ load_state() {
     frozen=1
 }
 save_state() {
-    mkdir -p "$STATE_DIR" 2>/dev/null
-    echo "$orig|$orig_mode" > "$STATE_FILE" 2>/dev/null
+    mkdir -p "$STATE_DIR" 2>/dev/null || return 1
+    if echo "$orig|$orig_mode" > "$STATE_FILE.tmp" 2>/dev/null &&
+       mv -f "$STATE_FILE.tmp" "$STATE_FILE" 2>/dev/null; then
+        return 0
+    fi
+    rm -f "$STATE_FILE.tmp" 2>/dev/null
+    return 1
 }
 clear_state() {
     rm -f "$STATE_FILE" 2>/dev/null

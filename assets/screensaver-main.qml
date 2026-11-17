@@ -90,6 +90,7 @@ WebOSWindow {
     property bool panelOff : false      // the panel was turned off by the timer: no video until the screensaver ends
     property bool standbyDone : false
     property bool protSyncBusy : false
+    property bool protOrigBusy : false
     // Protection of the on-screen text: any of "corners", "drift", "fade" joined with "+" (they work together), "" = none. It takes priority over the position / opacity of the On-screen display panel.
     property string protTextMode : ""
     property var protCornerList : []    // chosen corners, clockwise
@@ -910,9 +911,18 @@ WebOSWindow {
             protectionSyncTimer.start()
         if (!(protGet("brightnessOn", false) || protGet("dimOn", false)))
             return
+        protRequestOrig()
+    }
+    function protRequestOrig() {
+        if (protOrigBusy || protOrig >= 0 || panelOff || standbyDone)
+            return
+        protOrigBusy = true
         var xhr = new XMLHttpRequest()
         xhr.onreadystatechange = function () {
             if (xhr.readyState !== XMLHttpRequest.DONE)
+                return
+            protOrigBusy = false
+            if (panelOff || standbyDone)
                 return
             try {
                 var w = JSON.parse(xhr.responseText)
@@ -1001,6 +1011,8 @@ WebOSWindow {
     }
     function protTick() {
         protElapsed++
+        if (protOrig < 0 && (protGet("brightnessOn", false) || protGet("dimOn", false)))
+            protRequestOrig()
         protTextTick()
         var min = protElapsed / 60
         // gradual dimming: from protBase down to dimTo % of it, over dimDuration minutes after dimAfter

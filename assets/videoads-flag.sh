@@ -103,7 +103,7 @@ maybe_on() {  # reason
 # file as no watcher for that second. Errors are dropped: this runs every check.
 heartbeat() {
     extra=
-    [ -n "$orig" ] && extra=",\"orig\":$orig"
+    [ "$frozen" = 1 ] && [ -n "$orig" ] && extra=",\"orig\":$orig"
     { echo "{\"time\":$(date +%s)$extra,\"protectionElapsed\":$protection_elapsed,\"panelOff\":$protection_panel_off,\"standbyDone\":$protection_standby_done,\"protectionWarning\":\"$protection_warning\",\"protectionWarningUntil\":$protection_warning_until}" > "$HEARTBEAT"; } 2>/dev/null
 }
 
@@ -264,8 +264,9 @@ prot_track() {
 prot_freeze() {
     [ $frozen = 1 ] && return 0
     [ -n "$orig" ] || return 0
-    frozen=1
-    save_state
+    if save_state; then
+        frozen=1
+    fi
 }
 
 # Screensaver not running (and tvpowerd answered)
