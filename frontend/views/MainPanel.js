@@ -120,7 +120,7 @@ function webosLabel(release) {
 // translated text, or the English fallback while the key is not in the translation files yet
 function tr(key, fallback) {
 	var s = I18n.t(key);
-	return (typeof s === 'string' && s && s.indexOf(key) < 0) ? s : fallback;
+	return (typeof s === 'string' && s && s !== key) ? s : fallback;
 }
 
 // "label   value" row of the report card: small gray label, large white value, thin separator
