@@ -1887,7 +1887,11 @@ var VideoSelectPanel = kind({
     // keep the text of what is on disk: the next write has the same layout
     this.videosRaw = this.videosText();
     if (this.shared) { this.shared.videosRaw = this.videosRaw; }
-    if (this.tagAgain || this.tagDirty) { this.startTagSave(); }
+    if (this.tagAgain || this.tagDirty) {
+      this.startTagSave();
+    } else {
+      this.showToast(I18n.t('success'));
+    }
     return true;
   },
 
