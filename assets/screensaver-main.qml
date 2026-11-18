@@ -262,13 +262,14 @@ WebOSWindow {
         opacity : window.osdNoticeActive ? (window.protectionWarningActive ? 1 : 0.75) : 0
         Behavior on opacity { NumberAnimation { duration : 1000 } }
         anchors.horizontalCenter : parent.horizontalCenter
-        anchors.bottom : parent.bottom
+        anchors.verticalCenter : window.protectionWarningActive ? parent.verticalCenter : undefined
+        anchors.bottom : window.protectionWarningActive ? undefined : parent.bottom
         anchors.bottomMargin : 3
         width : parent.width - 160
         horizontalAlignment : Text.AlignHCenter
         wrapMode : Text.WordWrap
         font.family : name.font.family
-        font.pixelSize : 26
+        font.pixelSize : window.protectionWarningActive ? 48 : 26
         color : "white"
         style : Text.Raised
         styleColor : "black"
