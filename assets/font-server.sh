@@ -54,8 +54,8 @@ start)
         alive "$pid" && { echo "ERR FONT_SERVER_RESTART_FAILED"; exit 0; }
     fi
     rm -f "$INFO"
-    NODE="$(command -v node 2>/dev/null)"
-    [ -n "$NODE" ] || for n in /usr/bin/node /usr/local/bin/node /media/developer/bin/node /usr/palm/nodejs/node; do
+    . "$DIR/aerial-node.sh"
+    find_aerial_node || for n in /usr/bin/node /usr/local/bin/node /media/developer/bin/node /usr/palm/nodejs/node; do
         [ -x "$n" ] && NODE="$n" && break
     done
     [ -n "$NODE" ] || { echo "ERR FONT_SERVER_NODE_MISSING"; exit 0; }

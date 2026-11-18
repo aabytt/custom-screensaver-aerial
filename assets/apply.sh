@@ -27,8 +27,14 @@ fi
 PERSIST_SETTINGS="/var/lib/webosbrew/custom-screensaver-aerial/settings.json"
 if [ -s "$PERSIST_SETTINGS" ] && grep -q '^{' "$PERSIST_SETTINGS" &&
 ! cmp -s "$PERSIST_SETTINGS" "$ASSETS_DIR/settings.json"; then
+. "$ASSETS_DIR/aerial-node.sh"
+if find_aerial_node; then
+"$NODE" "$ASSETS_DIR/update-check.js" restore "$ASSETS_DIR/settings.json" "$PERSIST_SETTINGS" ||
+echo "[-] Could not restore settings from $PERSIST_SETTINGS" >&2
+else
 cp "$PERSIST_SETTINGS" "$ASSETS_DIR/settings.json" ||
 echo "[-] Could not restore settings from $PERSIST_SETTINGS" >&2
+fi
 fi
 # Custom OSD fonts (added from the app, see font-server.js) are kept next to the settings and copied
 # into assets/fonts/custom, the only place the screensaver page can read them from. Files that were
