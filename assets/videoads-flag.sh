@@ -172,11 +172,6 @@ protection_tick() {
         fi
         if [ "$next_warning" != "$protection_warning" ] ||
            [ "$next_warning_until" != "$protection_warning_until" ]; then
-            # Wake the panel for the last 30-second warning even if it was turned off outside this timer.
-            if [ "$next_warning" = standby ] &&
-               ! protection_action "$TVPOWER/turnOnScreen" '{}'; then
-                echo "aerial-notify: could not wake the panel for standby warning"
-            fi
             protection_warning="$next_warning"
             protection_warning_until=$next_warning_until
         fi
