@@ -1,7 +1,8 @@
 <!doctype html>
 <!--
   Aerial screensaver for webOS versions where the stock screensaver is a Flutter app
-  (webOS 25 / 10.x) and QML apps can't be launched. apply.sh bind-mounts the assets directory
+  (webOS 25 / 10.x) and QML apps can't be launched, and for webOS 4, where the QML screensaver's
+  video stays black (keep this page ES5 + Promise: webOS 4 is Chromium 53). apply.sh bind-mounts the assets directory
   over /usr/palm/applications/com.webos.app.screensaver (see assets/appinfo.json). Web apps
   can only read files inside their own app directory, so everything is loaded relative to it.
   Mirrors screensaver-main.qml and reads the same settings, videos and locales.

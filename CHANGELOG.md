@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Changed
+- webOS 4: `apply.sh` uses the web screensaver there instead of the QML one, whose video stayed
+  black under the OSD (#30). Experimental, video tested on webOS 4.10.2.
+- `apply.sh`: TVs without systemd (webOS 4) check that the app manager is up by calling it, so
+  it still rereads the web screensaver.
+
 ## [3.0.4] - 2026-11-03
 ### Added
 - Night mode: a separate night playlist for set hours (e.g. 22 to 7, TV time), picked per video
