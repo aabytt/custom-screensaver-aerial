@@ -2066,7 +2066,8 @@ var VideoSelectPanel = kind({
     } else {
       this.settings.disabledVideos = Object.keys(this.disabled);
     }
-    this.$.save.send({command: SettingsStore.saveCommand(this.settings)});   // app copy + persistent copy
+    var self = this;
+    SettingsStore.save(this.settings, function (command) { self.$.save.send({command: command}); });
   },
 
   // ids of the videos that are on, in videos.json order
@@ -2307,7 +2308,8 @@ var VideoSelectPanel = kind({
     this.solarOnline = null;
     this.solarFailed = false;
     this.$.solarInfo.set('content', st('solarFetching'));
-    this.$.solarRun.send({command: SettingsStore.saveCommand(this.settings) + '; sh ' + SettingsStore.assetsDir + '/solar-update.sh force'});
+    var self = this;
+    SettingsStore.save(this.settings, function (command) { self.$.solarRun.send({command: command + '; sh ' + SettingsStore.assetsDir + '/solar-update.sh force'}); });
     this.updateSolarInfo();
   },
 
@@ -2695,7 +2697,8 @@ var VideoSelectPanel = kind({
 
   saveSettings: function () {
     this.settingsDirty = false;
-    this.$.save.send({command: SettingsStore.saveCommand(this.settings)});
+    var self = this;
+    SettingsStore.save(this.settings, function (command) { self.$.save.send({command: command}); });
   }
 });
 

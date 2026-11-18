@@ -847,7 +847,8 @@ var DisplayPanel = kind({
 
   save: function () {
     this.dirty = false;
-    this.$.save.send({command: SettingsStore.saveCommand(this.settings)});   // app copy + persistent copy
+    var self = this;
+    SettingsStore.save(this.settings, function (command) { self.$.save.send({command: command}); });
   },
 
   // ---- preview ----

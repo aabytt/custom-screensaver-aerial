@@ -34,3 +34,17 @@ Aerial 3.0.2 ran the screensaver on webOS 26 as `videoads`, with the LG Channels
 first apply of a newer version runs its restore hook
 (`/var/lib/webosbrew/init.d/49-aerial-videoads-restore`), which stops that watcher and puts the
 setting and the `videoads` block back.
+
+### Background update notices
+
+Once Aerial is applied, its watcher checks the Homebrew Channel index in the
+background using the TV's existing Node runtime and a TLS-verifying HTTP client.
+The notice appears on the next screensaver run; the companion app can stay closed.
+If the TV has no usable runtime or HTTPS client, background checks cannot run,
+but the app's own version check is still available. The user preference to show
+notices stays enabled or disabled independently of the background check.
+
+The videoads screensaver reads a bind-mounted settings file. The watcher updates
+that file in place so the mount keeps pointing to it. It validates the new JSON
+and checks for concurrent edits first, but an overlapping UI save or screensaver
+read is still possible: an in-place write is not atomic.
