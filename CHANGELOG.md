@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2026-11-18
+
+### What's Changed
+* Fix/webos26 screensaver startup by @bruvv in https://github.com/aabytt/custom-screensaver-aerial/pull/92
+* fix(qml): retry decoder availability while in clock-only mode (#99) by @seergi893 in https://github.com/aabytt/custom-screensaver-aerial/pull/100
+* Feat/background update check by @aabytt in https://github.com/aabytt/custom-screensaver-aerial/pull/103
+* Add panel protection, solar playlists, and custom OSD fonts by @aabytt in https://github.com/aabytt/custom-screensaver-aerial/pull/98
+
+### New Contributors
+* @bruvv made their first contribution in https://github.com/aabytt/custom-screensaver-aerial/pull/92
+* @seergi893 made their first contribution in https://github.com/aabytt/custom-screensaver-aerial/pull/100
+
+**Full Changelog**: https://github.com/aabytt/custom-screensaver-aerial/compare/v3.0.4...v3.1.0
+
 ## [3.0.4] - 2026-11-03
 ### Added
 - Night mode: a separate night playlist for set hours (e.g. 22 to 7, TV time), picked per video
@@ -158,3 +172,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [1.0.2]: https://github.com/aabytt/custom-screensaver-aerial/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/aabytt/custom-screensaver-aerial/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/aabytt/custom-screensaver-aerial/releases/tag/v1.0.0
+[3.1.0]: https://github.com/aabytt/custom-screensaver-aerial/compare/v3.0.4...v3.1.0
