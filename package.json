@@ -15,7 +15,9 @@
     },
     "assets": [
         "appinfo.json",
-        "assets/**/*.*"
+        "assets/**/*.*",
+        "frontend/views/update-index.js",
+        "frontend/views/update-settings.js"
     ],
     "repository": {
         "type": "git",

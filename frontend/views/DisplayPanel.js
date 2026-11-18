@@ -608,7 +608,8 @@ var DisplayPanel = kind({
   },
 
   openFontAdd: function () {
-    var lang = /^[A-Za-z0-9-]+$/.test(this.settings.localeLang || '') ? this.settings.localeLang : 'en-US';
+    var uiLang = I18n.getLang();
+    var lang = /^[A-Za-z0-9-]+$/.test(uiLang || '') ? uiLang : 'en-US';
     this.$.fontPopStatus.set('content', tt('fontStarting'));
     this.$.fontPopStatus.applyStyle('color', '#7ddc8a');
     this.$.fontPopUrl.set('content', '');
@@ -847,7 +848,8 @@ var DisplayPanel = kind({
 
   save: function () {
     this.dirty = false;
-    this.$.save.send({command: SettingsStore.saveCommand(this.settings)});   // app copy + persistent copy
+    var self = this;
+    SettingsStore.save(this.settings, function (command) { self.$.save.send({command: command}); });
   },
 
   // ---- preview ----

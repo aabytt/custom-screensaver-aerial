@@ -291,6 +291,33 @@ solar_tick() {
     { sh "$ASSETS_DIR/solar-update.sh" </dev/null >/dev/null 2>&1 & } 2>/dev/null
 }
 
+# A restart always replays the cache; subsequent runs use the deadline returned
+# by the hook. Network work stays in the child, not in the watcher loop.
+update_dir="$(mktemp -d /tmp/aerial-update-watcher.XXXXXX 2>/dev/null)"
+trap '[ -z "$update_dir" ] || rm -f "$update_dir/next"; [ -z "$update_dir" ] || rmdir "$update_dir"' 0
+trap 'exit 0' HUP INT TERM
+update_pid=
+update_due=0
+update_last=0
+update_tick() {
+    [ -n "$update_dir" ] && [ -f "$ASSETS_DIR/update-check.sh" ] || return 0
+    if [ -n "$update_pid" ]; then
+        kill -0 "$update_pid" 2>/dev/null && return 0
+        wait "$update_pid" 2>/dev/null || true
+        if read -r next < "$update_dir/next"; then
+            case "$next" in ''|*[!0-9]*) ;; *) update_due="$next" ;; esac
+        fi
+        update_pid=
+    fi
+    update_now="$(date +%s)"
+    [ "$update_now" -ge "$update_last" ] || update_due=0
+    update_last="$update_now"
+    [ "$update_now" -ge "$update_due" ] || return 0
+    update_due=$((update_now + 30)) # busy lock, timeout or interrupted hook
+    sh "$ASSETS_DIR/update-check.sh" </dev/null >"$update_dir/next" &
+    update_pid=$!
+}
+
 orig=; orig_mode=; cand=; cand_mode=; cand_n=0; frozen=0; ss_running=-1
 protection_active=0; protection_started=0; protection_elapsed=0
 protection_panel_off=0; protection_standby_done=0
@@ -305,6 +332,7 @@ ran=0
 while mounted; do
     ran=1
     solar_tick
+    update_tick
     reply="$($TIMEOUT luna-send -n 1 "$POWER" '{}' </dev/null 2>/dev/null || true)"
     state="$(echo "$reply" | sed -n 's/.*"state" *: *"\([^"]*\)".*/\1/p')"
     processing="$(echo "$reply" | sed -n 's/.*"processing" *: *"\([^"]*\)".*/\1/p')"

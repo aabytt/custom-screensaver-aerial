@@ -19,6 +19,7 @@ var
 	LanguagePanel = require('./LanguagePanel.js'),
 	OtherSettingsPanel = require('./OtherSettingsPanel.js'),
 	SettingsStore = require('./SettingsStore.js'),
+	UpdateIndex = require('./update-index.js'),
 	QrCode = require('./QrCode.js'),
 	ReleaseNotes = require('./ReleaseNotes.js'),
 	I18n = require('./I18n.js'),
@@ -33,14 +34,10 @@ var settingsPath = SettingsStore.appPath;
 // so applySettings() fills it in place instead of replacing it.
 var settings = {};
 
-// Homebrew Channel repository index: the version listed here is what HBC offers, and it is published
-// later than the GitHub release, so the update check must use it instead of the GitHub releases.
-var repoApi = 'https://repo.webosbrew.org/api/apps.json';
 // The release pages (Markdown) of the versions between the installed one and the latest are shown in the update card
 var releasesApi = 'https://api.github.com/repos/aabytt/custom-screensaver-aerial/releases?per_page=100';
 var NOTES_MAX_PX = 400;    // height of the notes area; longer notes scroll
 
-var appId = 'org.aabytt.webos.custom-screensaver-aerial';
 var hbChannelId = 'org.webosbrew.hbchannel';
 
 // Line icons (24x24 grid) as inline SVG that takes the text color (currentColor), so an icon matches
@@ -131,21 +128,7 @@ function infoRow(name) {
 	]};
 }
 
-// "v1.2.3" / "1.2.3-beta" -> [1, 2, 3]; anything non-numeric after the leading number is ignored
-function parseVersion(v) {
-	var m = String(v || '').match(/\d+(\.\d+)+/);
-	return m ? m[0].split('.').map(function (n) { return parseInt(n, 10); }) : [];
-}
-
-// > 0 if a is newer than b, < 0 if older, 0 if equal
-function compareVersions(a, b) {
-	var x = parseVersion(a), y = parseVersion(b), i, d;
-	for (i = 0; i < Math.max(x.length, y.length); i++) {
-		d = (x[i] || 0) - (y[i] || 0);
-		if (d) { return d; }
-	}
-	return 0;
-}
+var compareVersions = UpdateIndex.compare;
 
 // ---- release notes translation helpers ----------------------------------------------------------------
 
@@ -564,7 +547,7 @@ module.exports = kind({
 		this.finishLoading(true);
 	},
 	finishLoading: function (force) {
-		var src = this.sources, merged = {};
+		var src = this.sources;
 		if (this.loaded) { return; }
 		if (!force && (src.packaged === undefined || src.persisted === undefined)) { return; }
 		this.loaded = true;
@@ -576,10 +559,7 @@ module.exports = kind({
 			this.hideSplash();
 			return;
 		}
-		[src.packaged, src.persisted].forEach(function (o) {
-			if (o) { Object.keys(o).forEach(function (k) { merged[k] = o[k]; }); }
-		});
-		this.applySettings(merged);
+		this.applySettings(SettingsStore.merge(src.packaged, src.persisted));
 		// Bring both copies in line: after a reinstall the app directory holds the default file, the persistent
 		// one is restored there; on the first run after this feature appeared the persistent copy gets created.
 		// Skipped if the persistent read did not finish or the file is broken: never overwrite what was not read.
@@ -612,7 +592,8 @@ module.exports = kind({
 		}, 300);
 	},
 	writeCopies: function () {
-		this.$.restore.send({command: SettingsStore.saveCommand(settings)});
+		var self = this;
+		SettingsStore.save(settings, function (command) { self.$.restore.send({command: command}); });
 	},
 	// The languages follow the TV's UI language (if it is in the list), otherwise the defaults stay.
 	//  firstRun: the OSD text language is picked as well; otherwise (an update of an existing install)
@@ -662,7 +643,6 @@ module.exports = kind({
 		var lang = settings.uiLang || this.guessLang;
 		I18n.setLang(lang);
 		this.fadeStrings();
-		if (this.settingsApplied && this.latest) { this.saveUpdateNotice(); }
 		// the release notes are translated in the background as soon as the language is known (no-op if there is
 		// no update, the notes have not arrived yet or the language is English)
 		this.translateNotes();
@@ -741,25 +721,18 @@ module.exports = kind({
 	// in the report card (opened by tapping the version line) only if it is newer. Failures (no network, timeout, unexpected format) are silent.
 	checkUpdate: function () {
 		var self = this, xhr = new XMLHttpRequest();
-		xhr.open('GET', repoApi);
+		xhr.open('GET', UpdateIndex.url);
 		xhr.timeout = 10000;
 		xhr.onload = function () {
-			var latest, id = self.appId || appId, pkgs, i;
+			var latest;
 			if (xhr.status !== 200) { self.loadNotes(); return; }   // no repository answer: the changelog is still shown
 			try {
-				pkgs = JSON.parse(xhr.responseText).packages || [];
-				for (i = 0; i < pkgs.length; i++) {
-					if (pkgs[i].id === id) {
-						latest = pkgs[i].manifest && pkgs[i].manifest.version;
-						break;
-					}
-				}
+				latest = UpdateIndex.version(JSON.parse(xhr.responseText), self.appId);
 			} catch (e) {
 				console.error(e);
 				self.loadNotes();
 				return;
 			}
-			self.updateCheckComplete = true;
 			if (latest && compareVersions(latest, self.version) > 0) {
 				self.latest = String(latest).replace(/^v/i, '');
 				if (self.settingsApplied) { self.saveUpdateNotice(); }
@@ -769,10 +742,6 @@ module.exports = kind({
 				if (self.$.reportPopup && self.$.reportPopup.showing) { self.refreshReport(); }
 			} else {
 				self.latest = '';
-				if (self.settingsApplied) {
-					delete settings.updateNotice;
-					self.settingsSave();
-				}
 				self.loadNotes();   // up to date: the button shows the changelog of all versions
 			}
 		};
@@ -1067,7 +1036,6 @@ module.exports = kind({
 		Object.keys(settings).forEach(function (k) { delete settings[k]; });
 		Object.keys(s).forEach(function (k) { settings[k] = s[k]; });
 		if (settings.updateNoticeEnabled === undefined) { settings.updateNoticeEnabled = true; }
-		if (this.updateCheckComplete && !this.latest) { delete settings.updateNotice; }
 		this.$.source.set('selectedIndex', settings.sourceTypeIndex);
 		this.$.playLowerQuality.set('checked', settings.playLowerQuality);
 		this.settingsApplied = true;
@@ -1349,15 +1317,8 @@ module.exports = kind({
 		settings[key] = value;
 		this.settingsSave();
 	},
-	saveUpdateNotice: function () {
-		if (!this.settingsApplied || this.persistBroken || !this.latest || !this.version) { return; }
-		settings.updateNotice = {
-			version: this.latest,
-			text: I18n.t('updateAvailable', {version: this.version, latest: this.latest})
-		};
-		this.settingsSave();
-	},
 	settingsSave: function () {
-		this.exec(SettingsStore.saveCommand(settings));   // app copy + persistent copy
+		var self = this;
+		SettingsStore.save(settings, function (command) { self.exec(command); });
 	}
 });
