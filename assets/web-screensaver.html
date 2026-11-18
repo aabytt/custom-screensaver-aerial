@@ -15,7 +15,7 @@
 <meta charset="utf-8">
 <title>Aerial</title>
 <style>
-  @font-face { font-family: SegoeUILight; src: url("SegoeUI-Light.ttf"); }
+  @font-face { font-family: SegoeUILight; src: url("fonts/SegoeUI-Light.ttf"); }
   html, body { margin: 0; width: 100%; height: 100%; background: #000; overflow: hidden; cursor: none; }
   /* 1px short of fullscreen: webOS ends the screensaver when fullscreen video plays */
   video { position: absolute; top: 0; left: 0; width: 100%; height: calc(100% - 1px); object-fit: cover;
@@ -27,8 +27,27 @@
   #osd { position: absolute; left: 65px; right: 65px; top: 65px; bottom: 65px; color: #fff;
          font-family: SegoeUILight, sans-serif; letter-spacing: -1px;
          opacity: 0; transition: opacity 3s ease; }
+  body.osd-warning #osd { visibility: hidden; }
+  #osd-notice { position: absolute; left: 80px; right: 80px; bottom: 3px; z-index: 2; color: #fff;
+                font-family: SegoeUILight, sans-serif; font-size: 26px; text-align: center;
+                text-shadow: 0 1px 0 #000; opacity: 0; transition: opacity 1s ease; visibility: hidden; }
+  body.osd-warning #osd-notice {
+    top: 50%;
+    bottom: auto;
+    -webkit-transform: translateY(-50%);
+    transform: translateY(-50%);
+    font-size: 48px;
+    line-height: 1.2;
+    text-shadow: 0 1px 2px #000, 0 0 8px #000;
+    pointer-events: none;
+  }
   #osd.fading { transition-duration: 5s; }
-  #osd .ln { position: absolute; white-space: nowrap; line-height: 1.33; text-shadow: 0 1px 0 #000; }
+  /* Panel protection, drift: the box moves 1 px at a time, smoothly */
+  body.drift #osd { transition-property: opacity, transform; transition-duration: 3s, 1s; transition-timing-function: ease, linear; }
+  body.drift #osd.fading { transition-duration: 5s, 1s; }
+  #osd .ln { position: absolute; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.33;
+             text-shadow: var(--osd-shadow, 0 1px 0 #000);
+             transition: opacity var(--od, 1.5s) ease; }
   /* Clock mode: only the time and date, moved every minute against OLED burn-in */
   body.clock #osd { right: auto; bottom: auto; text-align: right; }
   body.clock #osd .ln { position: static; }
@@ -45,7 +64,9 @@
   <div id="time" class="ln"></div>
   <div id="date" class="ln"></div>
 </div>
+<div id="osd-notice"></div>
 <div id="debug"></div>
+<script src="solar.js"></script>
 <script>
 var basePath = "";
 var settings = { localeLang: "en-GB", sourceType: "url-4K-SDR", osdOpacity: 60, debug: false, playLowerQuality: true };
@@ -53,6 +74,7 @@ var playList = { assets: [] };
 var poi = { strings: {} };
 var randomIndex = -1;
 var nightPlaying = false; // the video playing now is from the night playlist
+var solarPlaying = "";    // solar mode: the timeOfDay tag the video playing now was picked for
 var disabledSet = null;
 var sourceAlt = "";
 var sourceKey = "";   // the source type actually chosen for the current video (url-4K-HDR, ...)
@@ -60,24 +82,35 @@ var stalledSeconds = 0;
 var clockMode = false;
 var clockTimers = [];
 
+// ---- Panel protection (settings.protection, written by the app's "Panel protection" panel) ----
+// Defaults must stay equal to DEFAULTS in ProtectionPanel.js. Brightness is the picture "backlight" (0-100).
+// Protection of the text: any of "corners", "drift", "fade" joined with "+" (they work together). It takes priority over the position / opacity of the On-screen display panel. In clock mode the clock
+// has its own moving: only the drift applies there.
+var PTXT = { mode: "", corners: [], idx: 0, pa: null, ca: null, g: null, hopping: false };   // g: auto fade out state of [name + description, clock + date]
+var OSD_NOTICES = { queue: [], active: false, updateShown: false, warning: false, current: null, fadeIn: 0, hold: 0, fadeOut: 0 };
+var PROT = { elapsed: 0, orig: -1, base: -1, last: -1, panelOff: false, standbyDone: false, warningType: "", warningUntil: 0 };
+var runtimeTranslations = null;
+// luna method (under com.webos.service.tvpower/power/) that puts the TV in standby; "" = not known yet, nothing is called
+
 var video = document.getElementById("video");
 var osd = document.getElementById("osd");
+var osdNotice = document.getElementById("osd-notice");
 
 // ---- settings.osd (written by the app's Display panel) ----
 // Defaults must stay equal to DEFAULTS in DisplayPanel.js / screensaver-main.qml
 var OSD_DEFAULTS = {
     title: true, poi: true, clock: true, date: true,
     placeAnchor: "bl", placeScale: 100, clockAnchor: "br", clockScale: 100,
-    seconds: true, clock24: true, font: "segoe"
+    seconds: true, clock24: true, font: "segoe", bold: false, shadow: false
 };
 var OSD_FONTS = {   // file relative to this page, letter spacing in px
-    segoe: { file: "SegoeUI-Light.ttf", spacing: -1 },
-    roboto: { file: "fonts/Roboto-Light.ttf", spacing: 0 },
-    opensans: { file: "fonts/OpenSans-Light.ttf", spacing: 0 },
-    montserrat: { file: "fonts/Montserrat-Light.ttf", spacing: 0 },
-    oswald: { file: "fonts/Oswald-Light.ttf", spacing: 0 },
-    comfortaa: { file: "fonts/Comfortaa-Light.ttf", spacing: 0 },
-    lora: { file: "fonts/Lora-Regular.ttf", spacing: 0 },
+    segoe: { file: "fonts/SegoeUI-Light.ttf", boldFile: "fonts/SegoeUI-Bold.ttf", spacing: -1 },
+    roboto: { file: "fonts/Roboto-Light.ttf", boldFile: "fonts/Roboto-Bold.ttf", spacing: 0 },
+    opensans: { file: "fonts/OpenSans-Light.ttf", boldFile: "fonts/OpenSans-Bold.ttf", spacing: 0 },
+    montserrat: { file: "fonts/Montserrat-Light.ttf", boldFile: "fonts/Montserrat-Bold.ttf", spacing: 0 },
+    oswald: { file: "fonts/Oswald-Light.ttf", boldFile: "fonts/Oswald-Bold.ttf", spacing: 0 },
+    comfortaa: { file: "fonts/Comfortaa-Light.ttf", boldFile: "fonts/Comfortaa-Bold.ttf", spacing: 0 },
+    lora: { file: "fonts/Lora-Regular.ttf", boldFile: "fonts/Lora-Bold.ttf", spacing: 0 },
     satisfy: { file: "fonts/Satisfy-Regular.ttf", spacing: 0 }
 };
 var OSD_ANCHORS = { tl: 1, tc: 1, tr: 1, bl: 1, bc: 1, br: 1 };
@@ -86,7 +119,13 @@ function osdGet(key) {
     var o = settings.osd, v = (o && typeof o === "object" && o[key] !== undefined) ? o[key] : OSD_DEFAULTS[key];
     if ((key === "placeAnchor" || key === "clockAnchor") && !OSD_ANCHORS[v]) v = OSD_DEFAULTS[key];
     if ((key === "placeScale" || key === "clockScale") && !(v > 0)) v = OSD_DEFAULTS[key];
-    if (key === "font" && !OSD_FONTS[v]) v = OSD_DEFAULTS.font;
+    if (key === "font") {
+        // "custom:<file name>": a font added in the app, in fonts/custom/ (see font-server.js)
+        if (!OSD_FONTS[v] && typeof v === "string" && /^custom:[A-Za-z0-9._-]+$/.test(v)) {
+            OSD_FONTS[v] = { file: "fonts/custom/" + v.slice(7), spacing: 0 };
+        }
+        if (!OSD_FONTS[v]) v = OSD_DEFAULTS.font;
+    }
     return v;
 }
 
@@ -105,27 +144,154 @@ function osdOpacityNow() {
 function osdInvisible() {
     return osdOpacityOf("sdr") == 0 && (!settings.osdOpacitySplit || osdOpacityOf("dv") == 0);
 }
+function enqueueOsdNotice(text, duration) {
+    if (!text) return;
+    OSD_NOTICES.queue.push({ text: text, duration: Math.max(1000, duration || 10000) });
+    if (!OSD_NOTICES.active) showNextOsdNotice();
+}
+function showNextOsdNotice() {
+    var notice;
+    if (closing || OSD_NOTICES.warning) return;
+    notice = OSD_NOTICES.queue.shift();
+    if (!notice) {
+        OSD_NOTICES.active = false;
+        OSD_NOTICES.current = null;
+        osdNotice.style.visibility = "hidden";
+        document.body.classList.remove("osd-warning");
+        return;
+    }
+    OSD_NOTICES.active = true;
+    OSD_NOTICES.current = notice;
+    osdNotice.textContent = notice.text;
+    osdNotice.style.visibility = "visible";
+    osdNotice.style.opacity = "0";
+    document.body.classList.remove("osd-warning");
+    OSD_NOTICES.fadeIn = setTimeout(function () { osdNotice.style.opacity = "0.75"; }, 20);
+    OSD_NOTICES.hold = setTimeout(function () {
+        OSD_NOTICES.current = null;
+        osdNotice.style.opacity = "0";
+        OSD_NOTICES.fadeOut = setTimeout(function () {
+            showNextOsdNotice();
+        }, 1000);
+    }, 1000 + notice.duration);
+}
+function runtimeText(key, params) {
+    var data = runtimeTranslations || {}, lang = String(settings.localeLang || "en-US"),
+        base = lang.split("-")[0].toLowerCase(), chain = [], text, hops, entry;
+    function dictionary(locale) {
+        entry = data[locale];
+        hops = 0;
+        while (typeof entry === "string" && hops++ < 5) entry = data[entry];
+        return entry && typeof entry === "object" ? entry : null;
+    }
+    function add(locale) {
+        var d = dictionary(locale);
+        if (d && chain.indexOf(d) < 0) chain.push(d);
+    }
+    add(lang);
+    Object.keys(data).forEach(function (locale) {
+        if (locale.split("-")[0].toLowerCase() === base) add(locale);
+    });
+    add("en-US");
+    for (var i = 0; i < chain.length; i++) {
+        if (chain[i][key] !== undefined) { text = chain[i][key]; break; }
+    }
+    if (text === undefined) {
+        text = key === "protWarningStandby" ? "TV goes to standby in {seconds} seconds" :
+            "Panel turns off in {seconds} seconds";
+    }
+    return String(text).replace(/\{(\w+)\}/g, function (match, name) {
+        return params && params[name] !== undefined ? params[name] : match;
+    });
+}
+function setProtectionWarning(type, until) {
+    var key, seconds;
+    if (type !== "off" && type !== "standby") type = "";
+    if (!type || !(until > 0)) {
+        if (!OSD_NOTICES.warning) return;
+        OSD_NOTICES.warning = false;
+        document.body.classList.remove("osd-warning");
+        OSD_NOTICES.fadeOut = setTimeout(showNextOsdNotice, 1000);
+        osdNotice.style.opacity = "0";
+        return;
+    }
+    seconds = Math.ceil(until - Date.now() / 1000);
+    if (seconds <= 0) {
+        setProtectionWarning("", 0);
+        return;
+    }
+    if (!OSD_NOTICES.warning) {
+        clearTimeout(OSD_NOTICES.fadeIn);
+        clearTimeout(OSD_NOTICES.hold);
+        clearTimeout(OSD_NOTICES.fadeOut);
+        if (OSD_NOTICES.current) OSD_NOTICES.queue.unshift(OSD_NOTICES.current);
+        OSD_NOTICES.current = null;
+        OSD_NOTICES.warning = true;
+        OSD_NOTICES.active = true;
+        osdNotice.style.visibility = "visible";
+        osdNotice.style.opacity = "1";
+        document.body.classList.add("osd-warning");
+    }
+    key = type === "standby" ? "protWarningStandby" : "protWarningOff";
+    osdNotice.textContent = runtimeText(key, { seconds: seconds });
+}
+function queueUpdateNotice() {
+    var notice = settings.updateNotice;
+    if (OSD_NOTICES.updateShown || settings.updateNoticeEnabled === false || !notice || !notice.text) return;
+    OSD_NOTICES.updateShown = true;
+    enqueueOsdNotice(notice.text, 10000);
+}
+
+// The real bold face is a font family of its own (OsdFontB-<id>) placed before the light one, so no weight matching is involved
+function setOsdBold(bold, real, id) {
+    osd.style.fontWeight = "normal";
+    osd.style.webkitTextStroke = (bold && !real) ? "0.035em #fff" : "";
+    // Segoe UI Light is declared in the CSS above (family SegoeUILight), the other fonts are declared in applyOsdFont()
+    osd.style.fontFamily = ((bold && real) ? "'OsdFontB-" + id + "', " : "") + (id === "segoe" ? "" : "'OsdFont-" + id + "', ") +
+        "SegoeUILight, 'Segoe UI', sans-serif";
+}
 
 // Loads only the chosen font (the page is in the app directory, so the file is relative)
 function applyOsdFont() {
     var id = osdGet("font"), f = OSD_FONTS[id], st;
-    if (id !== "segoe") {   // Segoe UI Light is declared above already
-        st = document.createElement("style");
-        st.textContent = "@font-face { font-family: 'OsdFont-" + id + "'; src: url('" + basePath + f.file + "'); }";
-        document.head.appendChild(st);
-        osd.style.fontFamily = "'OsdFont-" + id + "', SegoeUILight, 'Segoe UI', sans-serif";
-    }
+    st = document.createElement("style");   // Segoe UI Light itself is declared above already
+    st.textContent = (id !== "segoe" ? "@font-face { font-family: 'OsdFont-" + id + "'; font-weight: normal; src: url('" + basePath + f.file + "'); }" : "") +
+        (f.boldFile ? "@font-face { font-family: 'OsdFontB-" + id + "'; font-weight: normal; src: url('" + basePath + f.boldFile + "'); }" : "");
+    document.head.appendChild(st);
     osd.style.letterSpacing = f.spacing + "px";
+    // bold: the real bold face if the font has one, otherwise a thin outline in the text color
+    setOsdBold(osdGet("bold"), !!f.boldFile, id);
+    if (osdGet("bold") && f.boldFile && window.FontFace) {   // the file missing / rejected: the outline instead
+        try {
+            new FontFace("OsdBoldCheck", "url('" + basePath + f.boldFile + "')").load().then(null, function () { setOsdBold(true, false, id); });
+        } catch (e) { setOsdBold(true, false, id); }
+    }
+    // soft shadow for bright scenes; the same value as SHADOW_ON in DisplayPanel.js
+    osd.style.setProperty("--osd-shadow", osdGet("shadow") ? "0 2px 8px rgba(0,0,0,0.9), 0 0 3px rgba(0,0,0,0.8)" : "0 1px 0 #000");
+}
+
+function osdLaneLayout(pa, ca, py, cy, pH, cH, boxW) {
+    var pCol = pa.charAt(1), cCol = ca.charAt(1), lane, width;
+    if (!(pH > 0 && cH > 0 && py < cy + cH && cy < py + pH)) {
+        return { placeWidth: boxW, clockWidth: boxW, placeCol: pCol, clockCol: cCol };
+    }
+    lane = (pCol === "r" || (pCol === "c" && cCol === "l")) ? "r" : "l";
+    width = Math.max(1, (boxW - 40) / 2);
+    return { placeWidth: width, clockWidth: width, placeCol: lane, clockCol: lane === "l" ? "r" : "l" };
 }
 
 // One line of the OSD in its place (same numbers as the preview / QML)
-function putLine(el, on, anchor, y, px) {
-    var col = anchor.charAt(1), t = (col === "c" && !clockMode) ? "translateX(-50%)" : "";
+function putLine(el, on, y, px, col, width) {
+    var t = (col === "c" && !clockMode) ? "translateX(-50%)" : "";
     el.style.display = on ? "" : "none";
     el.style.fontSize = px + "px";
     if (clockMode) {   // flows in the shrink-wrapped box
+        el.style.width = "auto";
+        el.style.textAlign = "right";
         el.style.top = el.style.left = el.style.right = "";
     } else {
+        el.style.width = width + "px";
+        el.style.textAlign = col === "r" ? "right" : (col === "c" ? "center" : "left");
         el.style.top = y + "px";
         el.style.left = col === "l" ? "0" : (col === "c" ? "50%" : "");
         el.style.right = col === "r" ? "0" : "";
@@ -136,16 +302,19 @@ function putLine(el, on, anchor, y, px) {
 function layoutOSD() {
     var titleOn = !!osdGet("title"), poiOn = !!osdGet("poi"), clockOn = !!osdGet("clock"), dateOn = !!osdGet("date"),
         ps = osdGet("placeScale") / 100, cs = osdGet("clockScale") / 100,
-        pa = osdGet("placeAnchor"), ca = osdGet("clockAnchor"),
+        pa = PTXT.pa || osdGet("placeAnchor"), ca = PTXT.ca || osdGet("clockAnchor"),
         boxH = window.innerHeight - 130,
-        pH = (titleOn && poiOn ? 106 : (titleOn ? 56 : (poiOn ? 40 : 0))) * ps,
-        cH = (clockOn && dateOn ? 136 : (clockOn ? 79 : (dateOn ? 40 : 0))) * cs;
+        pH = clockMode ? 0 : (titleOn && poiOn ? 106 : (titleOn ? 56 : (poiOn ? 40 : 0))) * ps,
+        cH = (clockOn && dateOn ? 136 : (clockOn ? 79 : (dateOn ? 40 : 0))) * cs,
+        py = 0, cy = 0, lanes;
     function blockY(anchor, h) { return anchor.charAt(0) === "t" ? 0 : boxH * 0.9 + 106 - h; }
-    var py = blockY(pa, pH), cy = blockY(ca, cH);
-    putLine(document.getElementById("name"), titleOn, pa, py, 56 * ps);
-    putLine(document.getElementById("poi"), poiOn, pa, py + (titleOn ? 66 * ps : 0), 40 * ps);
-    putLine(document.getElementById("time"), clockOn, ca, cy, 79 * cs);
-    putLine(document.getElementById("date"), dateOn, ca, cy + (clockOn ? 96 * cs : 0), 40 * cs);
+    py = blockY(pa, pH);
+    cy = blockY(ca, cH);
+    lanes = osdLaneLayout(pa, ca, py, cy, pH, cH, window.innerWidth - 130);
+    putLine(document.getElementById("name"), titleOn, py, 56 * ps, lanes.placeCol, lanes.placeWidth);
+    putLine(document.getElementById("poi"), poiOn, py + (titleOn ? 66 * ps : 0), 40 * ps, lanes.placeCol, lanes.placeWidth);
+    putLine(document.getElementById("time"), clockOn, cy, 79 * cs, lanes.clockCol, lanes.clockWidth);
+    putLine(document.getElementById("date"), dateOn, cy + (clockOn ? 96 * cs : 0), 40 * cs, lanes.clockCol, lanes.clockWidth);
 }
 
 function loadJSONData(url) {
@@ -189,13 +358,35 @@ var notifyRestoreNeeded = false;
 var notifyQueue = Promise.resolve();
 var notifyPending = null;
 var watcherAlive = false;
+var watcherOrig = null;   // the user's brightness, kept by the watcher (Panel protection); null = unknown
 var WATCHER_STALE = 60; // seconds: a check can take a while when services are slow
 var closing = false;    // a key was pressed: no more disables or videos
 function checkWatcher() {
     if (!notifyCtl) return Promise.resolve();
     return loadJSONData(basePath + "watcher.json")
-        .then(function (w) { watcherAlive = Math.abs(Date.now() / 1000 - w.time) < WATCHER_STALE; })
-        .catch(function () { watcherAlive = false; });
+        .then(function (w) {
+            watcherAlive = Math.abs(Date.now() / 1000 - w.time) < WATCHER_STALE;
+            watcherOrig = (watcherAlive && typeof w.orig === "number") ? w.orig : null;
+            if (watcherAlive && typeof w.protectionElapsed === "number")
+                PROT.elapsed = Math.max(PROT.elapsed, w.protectionElapsed);
+            if (watcherAlive && w.panelOff === 1 && !PROT.panelOff) {
+                PROT.panelOff = true;
+                protRestore();
+                video.pause();
+            }
+            if (watcherAlive && w.standbyDone === 1)
+                PROT.standbyDone = true;
+            PROT.warningType = watcherAlive ? w.protectionWarning : "";
+            PROT.warningUntil = watcherAlive ? w.protectionWarningUntil : 0;
+            setProtectionWarning(PROT.warningType, PROT.warningUntil);
+        })
+        .catch(function () {
+            watcherAlive = false;
+            watcherOrig = null;
+            PROT.warningType = "";
+            PROT.warningUntil = 0;
+            setProtectionWarning("", 0);
+        });
 }
 // Serialize opposite-state requests so a slow disable cannot race the enable.
 // A failed enable remains retryable; the independent watcher handles abrupt exits.
@@ -295,13 +486,62 @@ function nightHours(date) {
     return start < end ? h >= start && h < end : h >= start || h < end;
 }
 
-function inPool(asset, night) {
-    return night ? !!nightSet[asset.id] : isAllowed(asset);
+// ---- Solar mode: the videos' timeOfDay tags (sunrise / day / sunset / night) follow the sun at the
+// chosen city (settings.solarCity). The times come from solar.json, which solar-update.sh keeps
+// (boot + about once a day); if that is missing, for another place or run out, they are calculated
+// (solar.js), which is accurate to a couple of minutes.
+var solarData = null;
+function loadSolar() {
+    return loadJSONData(basePath + "solar.json")
+        .then(function (d) { solarData = d; })
+        .catch(function () { solarData = null; });
 }
 
-// Whether it's night for the night playlist (playRandomVideo falls back to the normal playlist
-// when none of its videos can play)
-function nightNow() {
+function solarCityOk() {
+    var c = settings.solarCity;
+    return !!(settings.solarMode && c && isFinite(Number(c.lat)) && isFinite(Number(c.lon)));
+}
+
+// "sunrise" | "day" | "sunset" | "night", or null when solar mode is off
+var solarSource = "";
+function solarPhase() {
+    if (!solarCityOk() || typeof solarTimeOfDay !== "function") return null;
+    var lat = Number(settings.solarCity.lat), lon = Number(settings.solarCity.lon),
+        win = settings.solarWindow !== undefined ? Number(settings.solarWindow) : 60,
+        now = Date.now(), d = solarData, phase = null;
+    if (d && Math.abs(Number(d.lat) - lat) < 0.001 && Math.abs(Number(d.lon) - lon) < 0.001 &&
+        d.sunrise && d.sunset && d.sunrise.length && d.sunset.length) {
+        var r = [], s = [], i, before = false, after = false;
+        for (i = 0; i < d.sunrise.length; i++) r.push(d.sunrise[i] * 1000);
+        for (i = 0; i < d.sunset.length; i++) s.push(d.sunset[i] * 1000);
+        // the stored days must surround now (at least one event on each side), else they ran out
+        for (i = 0; i < r.length; i++) { if (r[i] <= now) before = true; else after = true; }
+        for (i = 0; i < s.length; i++) { if (s[i] <= now) before = true; else after = true; }
+        if (before && after) {
+            phase = solarPhaseFromEvents(now, r, s, win);
+            solarSource = "stored";
+        }
+    }
+    if (!phase) {
+        phase = solarTimeOfDay(lat, lon, now, win);
+        solarSource = "calculated";
+    }
+    return phase;
+}
+
+// The pool a video is picked from: false = the normal playlist, true = the night playlist (night
+// mode), or a timeOfDay tag in solar mode (the normal playlist, only videos with that tag).
+function inPool(asset, pool) {
+    if (typeof pool === "string") return isAllowed(asset) && asset.timeOfDay === pool;
+    return pool ? !!nightSet[asset.id] : isAllowed(asset);
+}
+
+// The pool for the next video (playRandomVideo falls back when none of its videos can play)
+var solarNow = "";
+function poolNow() {
+    var phase = solarPhase();
+    solarNow = phase || "";
+    if (phase) return phase;
     return !!nightSet && nightHours(new Date());
 }
 
@@ -339,18 +579,25 @@ function handleVideoError(attempt) {
     setTimeout(function () { playRandomVideo(true); }, 1000);
 }
 function playRandomVideo(afterError) {
-    if (closing || clockMode) return;
+    if (closing || clockMode || PROT.panelOff) return;
     var assets = playList.assets;
     var again = afterError !== true;
-    var night = nightNow();
+    var night = poolNow();
     var candidates = candidatesFor(night, again);
     if (!candidates.length && night) {
         // no night video can play with the chosen source, or the only one failed: the normal
-        // playlist instead
-        night = false;
-        candidates = candidatesFor(false, again);
+        // playlist instead. Solar mode: sunrise and sunset fall back to the day videos first.
+        if (night === "sunrise" || night === "sunset") {
+            night = "day";
+            candidates = candidatesFor(night, again);
+        }
+        if (!candidates.length) {
+            night = false;
+            candidates = candidatesFor(false, again);
+        }
     }
-    nightPlaying = night;
+    nightPlaying = night === true;
+    solarPlaying = typeof night === "string" ? night : "";
     if (!candidates.length) {
         // An exhausted playlist should show the moving OLED clock, not a black screen.
         // The clock's periodic decoder check can retry when the video becomes available.
@@ -390,6 +637,7 @@ video.addEventListener("playing", function () {
     if (video.currentTime <= 2) setNotifications(false, true);
     video.classList.add("on");
     osd.style.opacity = osdOpacityNow();
+    protOnPlaying();
 });
 video.addEventListener("ended", playRandomVideo);
 video.addEventListener("error", function () { handleVideoError(playbackAttempt); });
@@ -412,7 +660,13 @@ function checkStatus() {
         stalledSeconds = 0;
     }
     var poiKey = (asset.pointsOfInterest || {})[Math.floor(video.currentTime)];
-    if (poiKey && poi.strings[poiKey]) document.getElementById("poi").textContent = poi.strings[poiKey];
+    if (poiKey && poi.strings[poiKey]) {
+        var poiEl = document.getElementById("poi");
+        if (poiEl.textContent !== poi.strings[poiKey]) {
+            poiEl.textContent = poi.strings[poiKey];
+            protPoiChanged();
+        }
+    }
 }
 
 function updateOSD() {
@@ -529,6 +783,171 @@ function stopClock() {
     playRandomVideo();
 }
 
+function protGet(key, def) {
+    var p = settings.protection;
+    return (p && typeof p === "object" && p[key] !== undefined) ? p[key] : def;
+}
+function protNum(key, def) {
+    var v = Number(protGet(key, def));
+    return isNaN(v) ? def : v;
+}
+function setBacklight(v) {
+    v = Math.max(0, Math.min(100, Math.round(v)));
+    if (PROT.orig < 0 || v === PROT.last) return;
+    PROT.last = v;
+    luna("luna://com.webos.settingsservice/setSystemSettings",
+        { category: "picture", settings: { backlight: v }, notifySelf: false });
+}
+function protRestore() {
+    if (PROT.orig >= 0) setBacklight(PROT.orig);
+}
+// The brightness is changed only from the user's value that the watcher keeps (and puts back if this
+// page is cut off): without a recent watcher, or without that value, it is left alone.
+function protApplyCorner() {
+    PTXT.pa = PTXT.corners[PTXT.idx];
+    PTXT.ca = PTXT.pa.charAt(0) + (PTXT.pa.charAt(1) === "l" ? "r" : "l");   // opposite horizontally, like bl + br
+    layoutOSD();
+}
+function protModeHas(m) { return PTXT.mode.split("+").indexOf(m) >= 0; }
+function protGroupOn(i) { return !!protGet(i ? "fadeClockOn" : "fadeTextOn", true); }
+function groupFade(i, v, secs) {
+    if (PTXT.hopping) return;
+    (i ? ["time", "date"] : ["name", "poi"]).forEach(function (id) {
+        var el = document.getElementById(id);
+        el.style.setProperty("--od", secs + "s");
+        el.style.opacity = v;
+    });
+}
+function protTextStart() {
+    var order = [["cornerTl", "tl"], ["cornerTr", "tr"], ["cornerBr", "br"], ["cornerBl", "bl"]], list = [], m = [], i;
+    PTXT.mode = "";
+    PTXT.hopping = false;
+    PTXT.g = [{ faded: false, age: 0, hid: 0 }, { faded: false, age: 0, hid: 0 }];
+    if (protGet("cornersOn", false)) {
+        for (i = 0; i < order.length; i++) if (protGet(order[i][0], true)) list.push(order[i][1]);
+        if (list.length >= 2) {
+            m.push("corners");
+            PTXT.corners = list;
+            i = list.indexOf(osdGet("placeAnchor"));
+            PTXT.idx = i >= 0 ? i : 0;
+            protApplyCorner();
+        }
+    }
+    if (protGet("driftOn", false)) {
+        m.push("drift");
+        document.body.classList.add("drift");
+    }
+    if (protGet("fadeOn", false) && (protGroupOn(0) || protGroupOn(1))) m.push("fade");
+    PTXT.mode = m.join("+");
+}
+// group i appears (if it was faded out) and its countdown starts again
+function protShow(i) {
+    var g = PTXT.g[i];
+    g.age = g.hid = 0;
+    if (g.faded) { g.faded = false; groupFade(i, 1, 1.5); }
+}
+// every second, for the name + description (0) and the clock + date (1) separately:
+// shown for fadeAfter seconds, hidden, back after fadeTextBack / fadeClockBack minutes (0 = not on a timer)
+function protFadeTick() {
+    var i, g, back;
+    for (i = 0; i < 2; i++) {
+        g = PTXT.g[i];
+        if (!protGroupOn(i)) continue;
+        if (g.faded) {
+            back = Math.round(protNum(i ? "fadeClockBack" : "fadeTextBack", i ? 5 : 0) * 60);
+            g.hid++;
+            if (back > 0 && g.hid >= back) protShow(i);
+        } else if (++g.age >= Math.max(1, protNum("fadeAfter", 30))) {
+            g.faded = true;
+            g.hid = 0;
+            groupFade(i, 0, 2.5);
+        }
+    }
+}
+function protCornerHop() {
+    var lines = ["name", "poi", "time", "date"].map(function (id) {
+        var el = document.getElementById(id);
+        return { el: el, transition: el.style.transition };
+    });
+    PTXT.hopping = true;
+    lines.forEach(function (line) {
+        line.el.style.transition = "opacity 1.5s ease";
+        line.el.style.opacity = "0";
+    });
+    setTimeout(function () {
+        if (closing) {
+            PTXT.hopping = false;
+            return;
+        }
+        PTXT.idx = (PTXT.idx + 1) % PTXT.corners.length;
+        protApplyCorner();
+        lines.forEach(function (line, i) {
+            line.el.style.opacity = PTXT.g[i < 2 ? 0 : 1].faded ? "0" : "1";
+        });
+        setTimeout(function () {
+            lines.forEach(function (line) { line.el.style.transition = line.transition; });
+            PTXT.hopping = false;
+        }, 1500);
+    }, 1500);
+}
+// every second
+function protTextTick() {
+    var amp, ph;
+    if (!PTXT.hopping && protModeHas("corners") && !clockMode &&
+        PROT.elapsed % Math.max(1, protNum("cornersEvery", 60)) === 0) {
+        protCornerHop();
+    }
+    if (protModeHas("drift")) {
+        amp = protNum("driftPx", 8);
+        ph = 2 * Math.PI * PROT.elapsed / (Math.max(1, protNum("driftPeriod", 5)) * 60);
+        // Lissajous curve 3:2 from the centre, closed once per driftPeriod (same in the app's preview)
+        osd.style.transform = "translate(" + Math.round(amp * Math.sin(3 * ph)) + "px," + Math.round(amp * Math.sin(2 * ph)) + "px)";
+    }
+    if (protModeHas("fade") && !clockMode && !PTXT.hopping) protFadeTick();
+}
+// the description changed: its countdown starts again (and it appears, if it was faded out)
+function protPoiChanged() {
+    if (!protModeHas("fade")) return;
+    PTXT.g[0].age = 0;
+    if (PTXT.g[0].faded && protGet("fadeInPoi", true)) protShow(0);
+}
+// a new video: everything is back whatever the settings
+function protOnPlaying() {
+    if (!protModeHas("fade")) return;
+    protShow(0);
+    protShow(1);
+}
+function protStart() {
+    protTextStart();
+    var bright = protGet("brightnessOn", false), dim = protGet("dimOn", false);
+    if (!(bright || dim) || watcherOrig === null) return;
+    PROT.orig = PROT.last = watcherOrig;
+    if (bright) {
+        PROT.base = Math.max(0, Math.min(100, Math.round(protNum("brightness", 30))));
+        setBacklight(PROT.base);
+    } else {
+        PROT.base = PROT.orig;
+    }
+}
+// called every second
+function protTick() {
+    PROT.elapsed++;
+    protTextTick();
+    var min = PROT.elapsed / 60;
+    // gradual dimming: from base down to dimTo % of it, over dimDuration minutes after dimAfter
+    if (!PROT.panelOff && PROT.base >= 0 && protGet("dimOn", false)) {
+        var after = protNum("dimAfter", 10), dur = Math.max(protNum("dimDuration", 5), 0.1);
+        if (min >= after) {
+            var f = Math.min((min - after) / dur, 1);
+            setBacklight(PROT.base + (PROT.base * protNum("dimTo", 20) / 100 - PROT.base) * f);
+        }
+    }
+}
+function protDebug() {
+    return "backlight " + PROT.last + " (was " + PROT.orig + (PROT.orig < 0 ? ", " + (watcherAlive ? "no value from the watcher" : "no watcher") : "") + "), " + Math.floor(PROT.elapsed / 60) + " min" +
+        (PROT.panelOff ? ", panel off" : "") + (PROT.standbyDone ? ", standby sent" : "") + (PTXT.mode ? ", text: " + PTXT.mode : "");
+}
+
 function updateDebug() {
     if (!settings.debug) return;
     var el = document.getElementById("debug");
@@ -536,9 +955,11 @@ function updateDebug() {
     el.textContent = "Mode: " + (clockMode ? "clock" : "video") +
         "\n Decoder: " + decoderStatus + ", manual mode: " + manualModeStatus +
         "\n Video " + randomIndex + " of " + playList.assets.length + (nightPlaying ? " (night playlist)" : "") +
+        (settings.solarMode ? "\n Solar: now " + solarNow + ", playing " + (solarPlaying || "other (fallback)") + " (" + solarSource + " times)" : "") +
         "\n Source Type: " + settings.sourceType + sourceAlt +
         "\n Try Other Source: " + settings.playLowerQuality +
         "\n Locale: " + settings.localeLang +
+        "\n Protection: " + protDebug() +
         "\n OSD opacity: " + Math.round(osdOpacityNow() * 100) + "%" + (settings.osdOpacitySplit ? " (DV " + osdOpacityOf("dv") + " / SDR " + osdOpacityOf("sdr") + ")" : "") +
         "\n Timecode: " + Math.floor(video.currentTime) + " / " + Math.floor(video.duration || 0) +
         "\n Ready State: " + video.readyState +
@@ -559,12 +980,22 @@ function closeOnce() {
 document.addEventListener("keydown", function () {
     if (closing) return;
     closing = true;
+    PROT.warningType = "";
+    PROT.warningUntil = 0;
+    setProtectionWarning("", 0);
+    protRestore();
     setTimeout(closeOnce, 500);
     setNotifications(true, false, closeOnce);
 });
 // Closed by the system (tvpowerd ending the screensaver): a call from here may not get out, which
 // is why videoads-flag.sh also switches notifications on
-window.addEventListener("pagehide", function () { setNotifications(true); });
+window.addEventListener("pagehide", function () {
+    clearTimeout(OSD_NOTICES.fadeIn);
+    clearTimeout(OSD_NOTICES.hold);
+    clearTimeout(OSD_NOTICES.fadeOut);
+    setNotifications(true);
+    protRestore();
+});
 
 loadJSONData(basePath + "settings.json")
     .then(function (s) { for (var key in s) settings[key] = s[key]; })
@@ -575,10 +1006,17 @@ loadJSONData(basePath + "settings.json")
             loadJSONData(basePath + "locales/" + settings.localeLang + ".json").catch(function () { return { strings: {} }; }),
             videoDecoderInUse(),
             checkWatcher(),
-            setManualMode()
+            loadSolar(),
+            setManualMode(),
+            loadJSONData(basePath + "i18n.json").catch(function (e) {
+                console.error("Could not load interface translations", e);
+                return {};
+            })
         ]);
     })
     .then(function (r) {
+        runtimeTranslations = r[6];
+        setProtectionWarning(PROT.warningType, PROT.warningUntil);
         playList = r[0];
         buildDisabledSet();
         buildNightSet();
@@ -587,7 +1025,9 @@ loadJSONData(basePath + "settings.json")
         applyOsdFont();
         layoutOSD();
         updateOSD();
-        setInterval(function () { checkStatus(); updateOSD(); updateDebug(); checkWatcher(); }, 1000);
+        protStart();
+        queueUpdateNotice();
+        setInterval(function () { checkStatus(); updateOSD(); updateDebug(); checkWatcher(); protTick(); }, 1000);
         if (r[2]) startClock(); else playRandomVideo();
     })
     .catch(function (e) {

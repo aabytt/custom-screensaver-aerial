@@ -50,29 +50,75 @@ WebOSWindow {
     property real clockScale : 100
     property bool useSeconds : true
     property bool use24h : true
-    property string fontFile : "SegoeUI-Light.ttf"
+    property string fontFile : "fonts/SegoeUI-Light.ttf"
     property real fontSpacing : -1
+    property bool osdBold : false   // settings.osd.bold (no shadow setting here: the text shadow is a web-screensaver feature)
+    property bool fauxBold : false  // bold wanted, but the font has no bold file: white outline instead
     property real osdAlpha : 1
     // fonts: id -> file in assets/ and letter spacing in px (same list as FONTS in DisplayPanel.js)
     property var osdFonts : ({
-        "segoe": {file: "SegoeUI-Light.ttf", spacing: -1},
-        "roboto": {file: "fonts/Roboto-Light.ttf", spacing: 0},
-        "opensans": {file: "fonts/OpenSans-Light.ttf", spacing: 0},
-        "montserrat": {file: "fonts/Montserrat-Light.ttf", spacing: 0},
-        "oswald": {file: "fonts/Oswald-Light.ttf", spacing: 0},
-        "comfortaa": {file: "fonts/Comfortaa-Light.ttf", spacing: 0},
-        "lora": {file: "fonts/Lora-Regular.ttf", spacing: 0},
+        "segoe": {file: "fonts/SegoeUI-Light.ttf", boldFile: "fonts/SegoeUI-Bold.ttf", spacing: -1},
+        "roboto": {file: "fonts/Roboto-Light.ttf", boldFile: "fonts/Roboto-Bold.ttf", spacing: 0},
+        "opensans": {file: "fonts/OpenSans-Light.ttf", boldFile: "fonts/OpenSans-Bold.ttf", spacing: 0},
+        "montserrat": {file: "fonts/Montserrat-Light.ttf", boldFile: "fonts/Montserrat-Bold.ttf", spacing: 0},
+        "oswald": {file: "fonts/Oswald-Light.ttf", boldFile: "fonts/Oswald-Bold.ttf", spacing: 0},
+        "comfortaa": {file: "fonts/Comfortaa-Light.ttf", boldFile: "fonts/Comfortaa-Bold.ttf", spacing: 0},
+        "lora": {file: "fonts/Lora-Regular.ttf", boldFile: "fonts/Lora-Bold.ttf", spacing: 0},
         "satisfy": {file: "fonts/Satisfy-Regular.ttf", spacing: 0}
     })
     // derived layout: title/description block and clock/date block
     // (in clock-only mode the clock block hops between the corners instead of using clockAnchor)
     property bool clockOn : (decoderHeld && !showClock && !showDate) ? true : showClock
-    property string clockAnchorEff : decoderHeld ? ["br", "tr", "tl", "bl"][appliedCorner] : clockAnchor
-    property string placeCol : placeAnchor.charAt(1)
+    // Panel protection "move the text between corners" replaces both anchors of the On-screen display panel
+    property string placeAnchorEff : protModeHas("corners") ? protPlaceAnchor : placeAnchor
+    property string clockAnchorEff : decoderHeld ? ["br", "tr", "tl", "bl"][appliedCorner] : (protModeHas("corners") ? protClockAnchor : clockAnchor)
+    property string placeCol : placeAnchorEff.charAt(1)
     property string clockCol : clockAnchorEff.charAt(1)
-    property real placeY : blockY(placeAnchor, placeBlockH())
+    property real placeY : blockY(placeAnchorEff, placeBlockH())
     property real clockY : blockY(clockAnchorEff, clockBlockH())
+    property var textLayout : osdBlockLayout()
+    property real placeTextWidth : textLayout.placeWidth
+    property real clockTextWidth : textLayout.clockWidth
+    property string placeTextCol : textLayout.placeCol
+    property string clockTextCol : textLayout.clockCol
+    // Panel protection (settings.protection, written by the app's "Panel protection" panel).
+    // Defaults must stay equal to DEFAULTS in ProtectionPanel.js. Brightness is the picture "backlight" (0-100).
+    property int protElapsed : 0        // seconds since the screensaver started
+    property int protOrig : -1          // the user's backlight, from the watcher (-1 = unknown: brightness is left alone)
+    property int protBase : -1          // level the dimming starts from (custom brightness, or protOrig)
+    property int protLast : -1          // level last sent
+    property bool panelOff : false      // the panel was turned off by the timer: no video until the screensaver ends
+    property bool standbyDone : false
+    property bool protSyncBusy : false
+    property bool protOrigBusy : false
+    // Protection of the on-screen text: any of "corners", "drift", "fade" joined with "+" (they work together), "" = none. It takes priority over the position / opacity of the On-screen display panel.
+    property string protTextMode : ""
+    property var protCornerList : []    // chosen corners, clockwise
+    property int protCornerIdx : 0
+    property string protPlaceAnchor : "bl"
+    property string protClockAnchor : "br"
+    property real protFade : 1          // 0..1, multiplies the opacity of all the text (corner hop)
+    property bool protCornerMoving : false
+    property real protFadeText : 1      // 0..1, auto fade out of the name and the description
+    property real protFadeClock : 1     // 0..1, auto fade out of the clock and the date
+    property int driftX : 0
+    property int driftY : 0
+    // auto fade out, per group (0 = name + description, 1 = clock + date): faded, seconds shown, seconds hidden
+    property var protG : [{faded: false, age: 0, hid: 0}, {faded: false, age: 0, hid: 0}]
+    onPoiIndexChanged : protPoiChanged()
+    property bool protNoWatcher : false  // no recent watcher / no brightness from it: brightness is left alone
     property string basePath : "file:///media/developer/apps/usr/palm/applications/org.aabytt.webos.custom-screensaver-aerial/assets/"
+    property bool osdWantedVisible : false
+    property var osdNoticeQueue : []
+    property bool osdNoticeActive : false
+    property bool osdNoticeVisible : false
+    property bool updateNoticeShown : false
+    property string osdNoticeText : ""
+    property int osdNoticeDuration : 10000
+    property bool protectionWarningActive : false
+    property string protectionWarningType : ""
+    property real protectionWarningUntil : 0
+    property var runtimeTranslations : null
     Component.onCompleted : {
         init()
         notificationsService.set('disable')
@@ -80,9 +126,111 @@ WebOSWindow {
         decoderCheck.callService({})
         decoderCheckTimeout.start()
     }
+    function enqueueOsdNotice(text, duration) {
+        if (!text)
+            return
+        osdNoticeQueue.push({text: text, duration: Math.max(1000, duration || 10000)})
+        if (!osdNoticeVisible)
+            showNextOsdNotice()
+    }
+    function showNextOsdNotice() {
+        if (protectionWarningActive)
+            return
+        if (!osdNoticeQueue.length) {
+            osdNoticeActive = false
+            osdNoticeVisible = false
+            return
+        }
+        var notice = osdNoticeQueue.shift()
+        osdNoticeText = notice.text
+        osdNoticeDuration = notice.duration
+        osdNoticeVisible = true
+        osdNoticeActive = true
+        osdNoticeHold.interval = osdNoticeDuration
+        osdNoticeHold.start()
+    }
+    function runtimeText(key, params) {
+        var data = runtimeTranslations || ({}), lang = String(settings.localeLang || "en-US"),
+            base = lang.split("-")[0].toLowerCase(), chain = [], entry, hops, text
+        function dictionary(locale) {
+            entry = data[locale]
+            hops = 0
+            while (typeof entry === "string" && hops++ < 5)
+                entry = data[entry]
+            return entry && typeof entry === "object" ? entry : null
+        }
+        function add(locale) {
+            var d = dictionary(locale)
+            if (d && chain.indexOf(d) < 0)
+                chain.push(d)
+        }
+        add(lang)
+        Object.keys(data).forEach(function (locale) {
+            if (locale.split("-")[0].toLowerCase() === base)
+                add(locale)
+        })
+        add("en-US")
+        for (var i = 0; i < chain.length; i++) {
+            if (chain[i][key] !== undefined) {
+                text = chain[i][key]
+                break
+            }
+        }
+        if (text === undefined)
+            text = key === "protWarningStandby" ? "TV goes to standby in {seconds} seconds" :
+                   "Panel turns off in {seconds} seconds"
+        return String(text).replace(/\{(\w+)\}/g, function (match, name) {
+            return params && params[name] !== undefined ? params[name] : match
+        })
+    }
+    function setProtectionWarning(type, until) {
+        var key, seconds
+        if (type !== "off" && type !== "standby")
+            type = ""
+        if (!type || !(until > 0)) {
+            if (!protectionWarningActive)
+                return
+            protectionWarningActive = false
+            protectionWarningType = ""
+            protectionWarningUntil = 0
+            osdNoticeActive = false
+            osdNoticeFade.start()
+            return
+        }
+        seconds = Math.ceil(until - Date.now() / 1000)
+        if (seconds <= 0) {
+            setProtectionWarning("", 0)
+            return
+        }
+        if (!protectionWarningActive) {
+            if (osdNoticeVisible && osdNoticeActive)
+                osdNoticeQueue.unshift({text: osdNoticeText, duration: osdNoticeDuration})
+            osdNoticeHold.stop()
+            osdNoticeFade.stop()
+            protectionWarningActive = true
+            osdNoticeVisible = true
+            osdNoticeActive = true
+        }
+        protectionWarningType = type
+        protectionWarningUntil = until
+        key = type === "standby" ? "protWarningStandby" : "protWarningOff"
+        osdNoticeText = runtimeText(key, {seconds: seconds})
+    }
+    function queueUpdateNotice() {
+        if (updateNoticeShown || settings.updateNoticeEnabled === false)
+            return
+        var notice = settings.updateNotice
+        if (notice && notice.text) {
+            updateNoticeShown = true
+            enqueueOsdNotice(notice.text, 10000)
+        }
+    }
     // Notifications are disabled on start and re-enabled only after 2 s of video;
     // always re-enable on exit, otherwise Back loses the system "exit app?" popup (#52)
-    Component.onDestruction : notificationsService.set('enable')
+    Component.onDestruction : {
+        notificationsService.set('enable')
+        protRestore()
+    }
     I.ILib {
         id : ilib
     }
@@ -90,6 +238,12 @@ WebOSWindow {
         id : segoeUILight
         source : basePath + fontFile
     }
+    FontLoader {
+        id : fallbackSegoe
+        source : basePath + "fonts/SegoeUI-Light.ttf"
+    }
+    property string osdFontFamily : segoeUILight.status === FontLoader.Ready ? segoeUILight.name :
+                                   (fallbackSegoe.status === FontLoader.Ready ? fallbackSegoe.name : "Segoe UI")
     Timer {
         id : refreshOSD
         interval : 1000
@@ -99,6 +253,43 @@ WebOSWindow {
             checkError()
             checkStatus()
             updateOSD()
+        }
+    }
+    Text {
+        id : osdNotice
+        z : 2
+        visible : window.osdNoticeVisible
+        opacity : window.osdNoticeActive ? (window.protectionWarningActive ? 1 : 0.75) : 0
+        Behavior on opacity { NumberAnimation { duration : 1000 } }
+        anchors.horizontalCenter : parent.horizontalCenter
+        anchors.verticalCenter : window.protectionWarningActive ? parent.verticalCenter : undefined
+        anchors.bottom : window.protectionWarningActive ? undefined : parent.bottom
+        anchors.bottomMargin : 3
+        width : parent.width - 160
+        horizontalAlignment : Text.AlignHCenter
+        wrapMode : Text.WordWrap
+        font.family : name.font.family
+        font.pixelSize : window.protectionWarningActive ? 48 : 26
+        color : "white"
+        style : Text.Raised
+        styleColor : "black"
+        text : window.osdNoticeText
+    }
+    Timer {
+        id : osdNoticeHold
+        repeat : false
+        onTriggered : {
+            osdNoticeActive = false
+            osdNoticeFade.start()
+        }
+    }
+    Timer {
+        id : osdNoticeFade
+        interval : 1000
+        repeat : false
+        onTriggered : {
+            osdNoticeVisible = false
+            showNextOsdNotice()
         }
     }
     Video {
@@ -111,21 +302,22 @@ WebOSWindow {
         autoPlay : true
         onStopped : {
             punchThroughArea.visible = false
-            osd.visible = false
+            osdWantedVisible = false
             fadeOutVideo.running = false
         }
         onPaused : {
             punchThroughArea.visible = false
             playRandomVideo()
-            osd.visible = false
+            osdWantedVisible = false
             fadeOutVideo.running = false
         }
         onPlaying : {
+            protOnPlaying()
             updateOsdAlpha()
             punchThroughArea.visible = true
             fadeInVideo.running = true
             fadeInOsd.running = true
-            osd.visible = true
+            osdWantedVisible = true
         }
         PunchThrough {
             id : punchThroughArea
@@ -163,10 +355,13 @@ WebOSWindow {
     Rectangle {
         id : osd
         opacity : 0
-        visible : true
+        visible : window.osdWantedVisible && !window.protectionWarningActive
         color : "transparent"
         anchors.fill : parent
-        anchors.margins : 65
+        anchors.leftMargin : 65 + driftX
+        anchors.rightMargin : 65 - driftX
+        anchors.topMargin : 65 + driftY
+        anchors.bottomMargin : 65 - driftY
         OpacityAnimator {
             id : fadeInOsd
             target : osd
@@ -186,33 +381,43 @@ WebOSWindow {
         Text {
             id : name
             visible : showTitle && !decoderHeld
-            opacity : osdAlpha
+            opacity : osdAlpha * protFade * protFadeText
             text : poi.strings[playList.assets[randomIndex].localizedNameKey]
-            font.family : segoeUILight.name
+            font.family : osdFontFamily
+            font.bold : osdBold && !fauxBold
             font.letterSpacing : fontSpacing
             fontSizeMode : Text.Fit
             font.pixelSize : Math.round(56 * placeScale / 100)
+            minimumPixelSize : 24
+            elide : Text.ElideRight
+            width : placeTextWidth
             y : placeY
-            anchors.left : placeCol === "l" ? parent.left : undefined
-            anchors.right : placeCol === "r" ? parent.right : undefined
-            anchors.horizontalCenter : placeCol === "c" ? parent.horizontalCenter : undefined
+            anchors.left : placeTextCol === "l" ? parent.left : undefined
+            anchors.right : placeTextCol === "r" ? parent.right : undefined
+            anchors.horizontalCenter : placeTextCol === "c" ? parent.horizontalCenter : undefined
+            horizontalAlignment : placeTextCol === "r" ? Text.AlignRight : (placeTextCol === "c" ? Text.AlignHCenter : Text.AlignLeft)
             color : "white"
-            style : Text.Raised
-            styleColor : "black"
+            style : fauxBold ? Text.Outline : Text.Raised
+            styleColor : fauxBold ? "white" : "black"
         }
         Text {
             id : poiOSD
             visible : showPoi && !decoderHeld
-            opacity : osdAlpha
+            opacity : osdAlpha * protFade * protFadeText
             text : poi.strings[playList.assets[randomIndex].pointsOfInterest[poiIndex]]
             font.family : name.font.family
+            font.bold : name.font.bold
             font.letterSpacing : fontSpacing
             fontSizeMode : name.fontSizeMode
             font.pixelSize : Math.round(40 * placeScale / 100)
+            minimumPixelSize : 24
+            elide : Text.ElideRight
+            width : placeTextWidth
             y : placeY + (showTitle ? Math.round(66 * placeScale / 100) : 0)
-            anchors.left : placeCol === "l" ? parent.left : undefined
-            anchors.right : placeCol === "r" ? parent.right : undefined
-            anchors.horizontalCenter : placeCol === "c" ? parent.horizontalCenter : undefined
+            anchors.left : placeTextCol === "l" ? parent.left : undefined
+            anchors.right : placeTextCol === "r" ? parent.right : undefined
+            anchors.horizontalCenter : placeTextCol === "c" ? parent.horizontalCenter : undefined
+            horizontalAlignment : placeTextCol === "r" ? Text.AlignRight : (placeTextCol === "c" ? Text.AlignHCenter : Text.AlignLeft)
             color : name.color
             style : name.style
             styleColor : name.styleColor
@@ -220,14 +425,20 @@ WebOSWindow {
         Text {
             id : timeOSD
             visible : clockOn
-            opacity : osdAlpha * clockFade
+            opacity : osdAlpha * clockFade * protFade * protFadeClock
             font.family : name.font.family
+            font.bold : name.font.bold
             font.letterSpacing : fontSpacing
             font.pixelSize : Math.round(79 * clockScale / 100)
+            minimumPixelSize : 24
+            elide : Text.ElideRight
+            width : decoderHeld ? implicitWidth : clockTextWidth
             y : clockY
-            anchors.left : clockCol === "l" ? parent.left : undefined
-            anchors.right : clockCol === "r" ? parent.right : undefined
-            anchors.horizontalCenter : clockCol === "c" ? parent.horizontalCenter : undefined
+            anchors.left : clockTextCol === "l" ? parent.left : undefined
+            anchors.right : clockTextCol === "r" ? parent.right : undefined
+            anchors.horizontalCenter : clockTextCol === "c" ? parent.horizontalCenter : undefined
+            horizontalAlignment : decoderHeld ? Text.AlignRight :
+                                  (clockTextCol === "r" ? Text.AlignRight : (clockTextCol === "c" ? Text.AlignHCenter : Text.AlignLeft))
             color : name.color
             style : name.style
             styleColor : name.styleColor
@@ -236,14 +447,20 @@ WebOSWindow {
         Text {
             id : dateOSD
             visible : showDate
-            opacity : osdAlpha * clockFade
+            opacity : osdAlpha * clockFade * protFade * protFadeClock
             font.family : name.font.family
+            font.bold : name.font.bold
             font.letterSpacing : fontSpacing
             font.pixelSize : Math.round(40 * clockScale / 100)
+            minimumPixelSize : 24
+            elide : Text.ElideRight
+            width : decoderHeld ? implicitWidth : clockTextWidth
             y : clockY + (clockOn ? Math.round(96 * clockScale / 100) : 0)
-            anchors.left : clockCol === "l" ? parent.left : undefined
-            anchors.right : clockCol === "r" ? parent.right : undefined
-            anchors.horizontalCenter : clockCol === "c" ? parent.horizontalCenter : undefined
+            anchors.left : clockTextCol === "l" ? parent.left : undefined
+            anchors.right : clockTextCol === "r" ? parent.right : undefined
+            anchors.horizontalCenter : clockTextCol === "c" ? parent.horizontalCenter : undefined
+            horizontalAlignment : decoderHeld ? Text.AlignRight :
+                                  (clockTextCol === "r" ? Text.AlignRight : (clockTextCol === "c" ? Text.AlignHCenter : Text.AlignLeft))
             color : name.color
             style : name.style
             styleColor : name.styleColor
@@ -273,12 +490,11 @@ WebOSWindow {
         anchors.right : parent.right
         anchors.margins : 25
         opacity : 0.7
-        font.family : name.font.family
+        font.family : "monospace"
         font.pixelSize : 26
-        color : name.color
-        style : name.style
-        styleColor : name.styleColor
-        fontSizeMode : name.fontSizeMode
+        color : "white"
+        style : Text.Raised
+        styleColor : "black"
     }
     // Clock-only mode notice: bottom center, shown for 5 s (0.5 s fade in + 4 s hold + 0.5 s fade out)
     Text {
@@ -316,6 +532,18 @@ WebOSWindow {
     function clockBlockH() {
         return (clockOn && showDate ? 136 : (clockOn ? 79 : (showDate ? 40 : 0))) * clockScale / 100
     }
+    function osdBlockLayout() {
+        var pH = decoderHeld ? 0 : placeBlockH(), cH = clockBlockH(),
+            overlap = pH > 0 && cH > 0 && placeY < clockY + cH && clockY < placeY + pH,
+            pCol = placeCol, cCol = clockCol, width = osd.width, lane;
+        if (!overlap)
+            return {placeWidth: width, clockWidth: width, placeCol: pCol, clockCol: cCol}
+        lane = (pCol === "r" || (pCol === "c" && cCol === "l")) ? "r" : "l"
+        pCol = lane
+        cCol = lane === "l" ? "r" : "l"
+        width = Math.max(1, (osd.width - 40) / 2)
+        return {placeWidth: width, clockWidth: width, placeCol: pCol, clockCol: cCol}
+    }
     function osdGet(key, def) {
         var o = settings.osd
         return (o && typeof o === "object" && o[key] !== undefined) ? o[key] : def
@@ -330,7 +558,13 @@ WebOSWindow {
     }
     // read settings.osd (missing keys / unknown values fall back to the defaults)
     function applyOsdSettings() {
-        var f = osdFonts[osdGet("font", "segoe")] || osdFonts["segoe"]
+        var fontId = osdGet("font", "segoe")
+        var f = osdFonts[fontId]
+        // Qt's FontLoader supports TTF/OTF reliably; custom filenames must not add path segments.
+        if (!f && typeof fontId === "string" && /^custom:[A-Za-z0-9._-]+\.(ttf|otf)$/i.test(fontId))
+            f = {file: "fonts/custom/" + fontId.slice(7), spacing: 0}
+        if (!f)
+            f = osdFonts["segoe"]
         showTitle = !!osdGet("title", true)
         showPoi = !!osdGet("poi", true)
         showClock = !!osdGet("clock", true)
@@ -341,7 +575,9 @@ WebOSWindow {
         clockScale = osdScale("clockScale")
         useSeconds = !!osdGet("seconds", true)
         use24h = !!osdGet("clock24", true)
-        fontFile = f.file
+        osdBold = !!osdGet("bold", false)   // before fontFile: it picks the bold face
+        fauxBold = osdBold && !f.boldFile
+        fontFile = (osdBold && f.boldFile) ? f.boldFile : f.file   // the real bold face if there is one
         fontSpacing = f.spacing
         updateOsdAlpha()
     }
@@ -369,6 +605,9 @@ WebOSWindow {
     }
     function loadResources() {
         applyOsdSettings()
+        protStart()
+        loadRuntimeTranslations()
+        queueUpdateNotice()
         loadJSONData(basePath + 'videos.json', 'playList')
         loadJSONData(basePath + 'locales/' + settings.localeLang + '.json', 'poi', playRandomVideo)
     }
@@ -428,7 +667,7 @@ WebOSWindow {
     }
     function playRandomVideo() {
         // Wait for the decoder check; clock-only mode never starts a video
-        if (!decoderDecided || decoderHeld || !playList || !poi)
+        if (!decoderDecided || decoderHeld || panelOff || !playList || !poi)
             return
         stalledCounter = 0
         var allowed = allowedIndices()
@@ -528,6 +767,7 @@ WebOSWindow {
         "\n Source Type: " + settings.sourceType + sourceAlt +
         "\n Try Other Source: " + settings.playLowerQuality +
         "\n Locale: " + settings.localeLang +
+        "\n Protection: " + protDebug() +
         "\n OSD opacity: " + Math.round(osdAlpha * 100) + "%" +
         "\n Timecode: " + Math.floor(videoOutput.position / 1000) + " / " + Math.floor(videoOutput.duration / 1000) +
         "\n Media Status: " + status +
@@ -589,7 +829,7 @@ WebOSWindow {
             decoderRecheck.start()
             if (firstDecision) {
                 notificationsService.set('enable')
-                osd.visible = true
+                osdWantedVisible = true
                 fadeInOsd.running = true
                 clockOnlyMsgAnim.start()
             }
@@ -597,6 +837,44 @@ WebOSWindow {
             decoderRecheck.stop()
             playRandomVideo()
         }
+    }
+    // ---- Panel protection ----
+    Service {
+        id : backlightSet
+        appId : window.appId
+        service : "com.webos.settingsservice"
+        method : "setSystemSettings"
+        onCallFailure : console.log("protection: setSystemSettings failed")
+    }
+    SequentialAnimation {
+        id : protCornerHop
+        ScriptAction { script : protCornerMoving = true }
+        NumberAnimation { target : window; property : "protFade"; to : 0; duration : 1500 }
+        ScriptAction { script : protApplyCorner() }
+        NumberAnimation { target : window; property : "protFade"; to : 1; duration : 1500 }
+        ScriptAction { script : protCornerMoving = false }
+    }
+    NumberAnimation {
+        id : protFadeTextAnim
+        target : window
+        property : "protFadeText"
+    }
+    NumberAnimation {
+        id : protFadeClockAnim
+        target : window
+        property : "protFadeClock"
+    }
+    Timer {
+        id : protTimer
+        interval : 1000
+        repeat : true
+        onTriggered : protTick()
+    }
+    Timer {
+        id : protectionSyncTimer
+        interval : 1000
+        repeat : true
+        onTriggered : protSyncTimerState()
     }
     Service {
         id : decoderCheck
@@ -633,6 +911,248 @@ WebOSWindow {
         function set(param) {
             call("luna://com.webos.notification/", param)
         }
+    }
+    function protGet(key, def) {
+        var p = settings.protection
+        return (p && typeof p === "object" && p[key] !== undefined) ? p[key] : def
+    }
+    function protNum(key, def) {
+        var v = Number(protGet(key, def))
+        return isNaN(v) ? def : v
+    }
+    // The brightness is changed only from the user's value that the watcher keeps in watcher.json (and puts
+    // back if the screensaver is cut off): without a recent watcher, or without that value, it is left alone.
+    function protStart() {
+        protTextStart()
+        if (!(protGet("brightnessOn", false) || protGet("dimOn", false) || protGet("offOn", false) || protGet("standbyOn", false)
+              || protTextMode !== ""))
+            return
+        protTimer.start()
+        if (protGet("offOn", false) || protGet("standbyOn", false))
+            protectionSyncTimer.start()
+        if (!(protGet("brightnessOn", false) || protGet("dimOn", false)))
+            return
+        protRequestOrig()
+    }
+    function protRequestOrig() {
+        if (protOrigBusy || protOrig >= 0 || panelOff || standbyDone)
+            return
+        protOrigBusy = true
+        var xhr = new XMLHttpRequest()
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState !== XMLHttpRequest.DONE)
+                return
+            protOrigBusy = false
+            if (panelOff || standbyDone)
+                return
+            try {
+                var w = JSON.parse(xhr.responseText)
+                if (xhr.status === 200 && Math.abs(Date.now() / 1000 - w.time) < 30 && typeof w.orig === "number") {
+                    protNoWatcher = false
+                    protOnOrig(w.orig)
+                    return
+                }
+            } catch (e) {}
+            protNoWatcher = true
+        }
+        xhr.open("GET", basePath + "watcher.json")
+        xhr.send()
+    }
+    function protSyncTimerState() {
+        if (protSyncBusy)
+            return
+        protSyncBusy = true
+        var xhr = new XMLHttpRequest()
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState !== XMLHttpRequest.DONE)
+                return
+            protSyncBusy = false
+            try {
+                var w = JSON.parse(xhr.responseText)
+                if (xhr.status !== 200 || typeof w.time !== "number" ||
+                    Math.abs(Date.now() / 1000 - w.time) >= 60) {
+                    setProtectionWarning("", 0)
+                    return
+                }
+                if (typeof w.protectionElapsed === "number")
+                    protElapsed = Math.max(protElapsed, w.protectionElapsed)
+                if (w.panelOff === 1 && !panelOff) {
+                    panelOff = true
+                    protRestore()
+                    videoOutput.stop()
+                }
+                if (w.standbyDone === 1)
+                    standbyDone = true
+                setProtectionWarning(w.protectionWarning, w.protectionWarningUntil)
+            } catch (e) {}
+        }
+        xhr.open("GET", basePath + "watcher.json")
+        xhr.send()
+    }
+    function loadRuntimeTranslations() {
+        var xhr = new XMLHttpRequest()
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState !== XMLHttpRequest.DONE)
+                return
+            if (xhr.status !== 200) {
+                console.error("Could not load interface translations:", xhr.statusText)
+                return
+            }
+            try {
+                runtimeTranslations = JSON.parse(xhr.responseText)
+                setProtectionWarning(protectionWarningType, protectionWarningUntil)
+            } catch (e) {
+                console.error("Could not parse interface translations:", e)
+            }
+        }
+        xhr.open("GET", basePath + "i18n.json")
+        xhr.send()
+    }
+    function protOnOrig(orig) {
+        if (protOrig >= 0)
+            return
+        protOrig = orig
+        protLast = protOrig
+        if (protGet("brightnessOn", false)) {
+            protBase = Math.max(0, Math.min(100, Math.round(protNum("brightness", 30))))
+            setBacklight(protBase)
+        } else
+            protBase = protOrig
+    }
+    function setBacklight(v) {
+        v = Math.max(0, Math.min(100, Math.round(v)))
+        if (protOrig < 0 || v === protLast)
+            return
+        protLast = v
+        backlightSet.callService({category : "picture", settings : {backlight : v}, notifySelf : false})
+    }
+    function protRestore() {
+        if (protOrig >= 0)
+            setBacklight(protOrig)
+    }
+    function protTick() {
+        protElapsed++
+        if (protOrig < 0 && (protGet("brightnessOn", false) || protGet("dimOn", false)))
+            protRequestOrig()
+        protTextTick()
+        var min = protElapsed / 60
+        // gradual dimming: from protBase down to dimTo % of it, over dimDuration minutes after dimAfter
+        if (!panelOff && protBase >= 0 && protGet("dimOn", false)) {
+            var after = protNum("dimAfter", 10), dur = Math.max(protNum("dimDuration", 5), 0.1)
+            if (min >= after) {
+                var f = Math.min((min - after) / dur, 1)
+                setBacklight(protBase + (protBase * protNum("dimTo", 20) / 100 - protBase) * f)
+            }
+        }
+    }
+    // ---- protection of the text ----
+    // the chosen corners, clockwise
+    function protCorners() {
+        var order = [["cornerTl", "tl"], ["cornerTr", "tr"], ["cornerBr", "br"], ["cornerBl", "bl"]], out = []
+        for (var i = 0; i < order.length; i++) {
+            if (protGet(order[i][0], true))
+                out.push(order[i][1])
+        }
+        return out
+    }
+    // the title block sits in the corner, the clock block in the one opposite horizontally (like bl + br)
+    function protApplyCorner() {
+        protPlaceAnchor = protCornerList[protCornerIdx]
+        protClockAnchor = protPlaceAnchor.charAt(0) + (protPlaceAnchor.charAt(1) === "l" ? "r" : "l")
+    }
+    function protModeHas(m) {
+        return protTextMode.split("+").indexOf(m) >= 0
+    }
+    function protGroupOn(i) {
+        return protGet(i ? "fadeClockOn" : "fadeTextOn", true) ? true : false
+    }
+    function protTextStart() {
+        var m = []
+        if (protGet("cornersOn", false)) {
+            protCornerList = protCorners()
+            if (protCornerList.length >= 2) {
+                m.push("corners")
+                var i = protCornerList.indexOf(placeAnchor)
+                protCornerIdx = i >= 0 ? i : 0
+                protApplyCorner()
+            }
+        }
+        if (protGet("driftOn", false))
+            m.push("drift")
+        if (protGet("fadeOn", false) && (protGroupOn(0) || protGroupOn(1)))
+            m.push("fade")
+        protTextMode = m.join("+")
+    }
+    function protGroupTo(i, v, ms) {
+        var a = i ? protFadeClockAnim : protFadeTextAnim
+        a.stop()
+        a.to = v
+        a.duration = ms
+        a.start()
+    }
+    // group i appears (if it was faded out) and its countdown starts again
+    function protShow(i) {
+        var g = protG[i]
+        g.age = 0
+        g.hid = 0
+        if (g.faded) {
+            g.faded = false
+            protGroupTo(i, 1, 1500)
+        }
+    }
+    // every second, for the name + description (0) and the clock + date (1) separately:
+    // shown for fadeAfter seconds, hidden, back after fadeTextBack / fadeClockBack minutes (0 = not on a timer)
+    function protFadeTick() {
+        for (var i = 0; i < 2; i++) {
+            var g = protG[i]
+            if (!protGroupOn(i))
+                continue
+            if (g.faded) {
+                var back = Math.round(protNum(i ? "fadeClockBack" : "fadeTextBack", i ? 5 : 0) * 60)
+                g.hid++
+                if (back > 0 && g.hid >= back)
+                    protShow(i)
+            } else if (++g.age >= Math.max(1, protNum("fadeAfter", 30))) {
+                g.faded = true
+                g.hid = 0
+                protGroupTo(i, 0, 2500)
+            }
+        }
+    }
+    // every second. In clock-only mode the clock has its own corner hopping: only the drift applies there
+    function protTextTick() {
+        if (!protCornerMoving && protModeHas("corners") && !decoderHeld &&
+            protElapsed % Math.max(1, protNum("cornersEvery", 60)) === 0) {
+            protCornerIdx = (protCornerIdx + 1) % protCornerList.length
+            protCornerHop.restart()
+        }
+        if (protModeHas("drift")) {
+            var amp = protNum("driftPx", 8), ph = 2 * Math.PI * protElapsed / (Math.max(1, protNum("driftPeriod", 5)) * 60)
+            // Lissajous curve 3:2 from the centre, closed once per driftPeriod (same in the app's preview)
+            driftX = Math.round(amp * Math.sin(3 * ph))
+            driftY = Math.round(amp * Math.sin(2 * ph))
+        }
+        if (protModeHas("fade") && !decoderHeld && !protCornerMoving)
+            protFadeTick()
+    }
+    // the description changed: its countdown starts again (and it appears, if it was faded out)
+    function protPoiChanged() {
+        if (!protModeHas("fade"))
+            return
+        protG[0].age = 0
+        if (protG[0].faded && protGet("fadeInPoi", true))
+            protShow(0)
+    }
+    // a new video: everything is back whatever the settings
+    function protOnPlaying() {
+        if (!protModeHas("fade"))
+            return
+        protShow(0)
+        protShow(1)
+    }
+    function protDebug() {
+        return "backlight " + protLast + " (was " + protOrig + (protOrig < 0 && protNoWatcher ? ", no watcher" : "") + "), " + Math.floor(protElapsed / 60) + " min" +
+            (panelOff ? ", panel off" : "") + (standbyDone ? ", standby sent" : "") + (protTextMode !== "" ? ", text: " + protTextMode : "")
     }
     function loadJSONData(url, targetVar, callback) {
         var xhr = new XMLHttpRequest()

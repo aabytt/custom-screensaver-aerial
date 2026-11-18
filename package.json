@@ -1,6 +1,6 @@
 {
     "name": "org.aabytt.webos.custom-screensaver-aerial",
-    "version": "3.0.4",
+    "version": "3.0.6",
     "main": "frontend/index.js",
     "moduleDir": "frontend",
     "scripts": {
@@ -15,7 +15,9 @@
     },
     "assets": [
         "appinfo.json",
-        "assets/**/*.*"
+        "assets/**/*.*",
+        "frontend/views/update-index.js",
+        "frontend/views/update-settings.js"
     ],
     "repository": {
         "type": "git",

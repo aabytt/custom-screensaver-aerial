@@ -32,15 +32,20 @@ const decoder = between(web, 'var decoderStatus = "not checked";', '// screenman
 const manual = between(web, 'var manualModeStatus = "not checked";', 'function moveClock()');
 const playback = between(web, '// afterError: true when the video before failed to play', 'function checkStatus()');
 const notifications = between(web, 'var notifyOff = false;', '// Same fallbacks as screensaver-main.qml');
-const testHandler = between(panel, '  onTestExec: function', '  onExec: function');
-const testRun = between(panel, '  testRun: function', '  temporaryApply: function');
+function panelMethod(name) {
+  const match = new RegExp('^\\t' + name + ': function[^]*?^\\t\\},', 'm').exec(panel);
+  assert.ok(match, 'missing panel method: ' + name);
+  return match[0];
+}
+const testHandler = panelMethod('onTestExec');
+const testRun = panelMethod('doTestRun');
 
 for (const [name, reply, expected, status] of [
   ['free pipelines', [], false, 'free'],
   ['decoder busy', [{ type: 'video', resource: [{ resource: 'VDEC HEVC' }] }], true, 'in use'],
   ['live TV exempt', [{ type: 'tv', resource: [{ resource: 'VDEC' }] }], false, 'free'],
-  ['query timed out', null, false, 'unknown (query failed)'],
-  ['service rejected query', { returnValue: false }, false, 'unknown (query failed)']
+  ['query timed out', null, false, 'unknown (query failed, trying playback)'],
+  ['service rejected query', { returnValue: false }, false, 'unknown (query failed, trying playback)']
 ]) {
   test('decoder: ' + name, async () => {
     const ctx = evaluate(decoder, { luna: () => Promise.resolve(reply) });
@@ -71,7 +76,8 @@ function videoContext(overrides = {}) {
   };
   const ctx = evaluate(playback, {
     clockMode: false, closing: false, randomIndex: -1,
-    nightNow: () => false, candidatesFor: () => [0],
+    PROT: { panelOff: false },
+    poolNow: () => false, candidatesFor: () => [0],
     playList: { assets: [{ url: 'video.mp4', localizedNameKey: 'x' }] },
     video, osd: { classList: classes, style: {} },
     poi: { strings: { x: 'Sample' } },
@@ -201,6 +207,62 @@ test('test button asks Luna for a response', () => {
     $: { testExec: { send(value) { this.command = value.command; } } }
   };
   vm.runInNewContext('({' + testRun + '})', { I18n: { t: name => name } })
-    .testRun.call(instance);
+    .doTestRun.call(instance);
   assert.match(instance.$.testExec.command, /luna-send -n 1 -f/);
+});
+
+for (const [name, overrides] of [
+  ['panel is off', { PROT: { panelOff: true } }],
+  ['clock mode is active', { clockMode: true }],
+  ['screensaver is closing', { closing: true }]
+]) {
+  test('playback does not restart when ' + name, () => {
+    let selections = 0;
+    const { ctx } = videoContext({
+      ...overrides,
+      candidatesFor: () => { selections++; return [0]; }
+    });
+    ctx.playRandomVideo();
+    assert.equal(selections, 0);
+  });
+}
+
+test('solar fallback retains day phase rather than reporting a night playlist', () => {
+  const pools = [];
+  const { ctx } = videoContext({
+    poolNow: () => 'sunrise',
+    candidatesFor: pool => { pools.push(pool); return pool === 'day' ? [0] : []; }
+  });
+  ctx.playRandomVideo();
+  assert.deepEqual(pools, ['sunrise', 'day']);
+  assert.equal(ctx.solarPlaying, 'day');
+  assert.equal(ctx.nightPlaying, false);
+});
+
+test('test button refreshes apply status before choosing the launch path', () => {
+  let checked = false;
+  const callback = () => {};
+  const instance = {
+    bindSafely(name) { assert.equal(name, 'testRunChecked'); return callback; },
+    checkApplyStatus(cb) { assert.equal(cb, callback); checked = true; }
+  };
+  vm.runInNewContext('({' + panelMethod('testRun') + '})').testRun.call(instance);
+  assert.equal(checked, true);
+});
+
+test('unapplied test asks for confirmation; applied test launches directly', () => {
+  let launches = 0;
+  let confirmation;
+  const instance = {
+    doTestRun() { launches++; },
+    askConfirm(...args) { confirmation = args; }
+  };
+  const handler = vm.runInNewContext('({' + panelMethod('testRunChecked') + '})', {
+    tr: (key, fallback) => fallback
+  });
+  handler.testRunChecked.call(instance, false);
+  assert.equal(launches, 0);
+  assert.equal(confirmation[3], 'testApplyAndRun');
+  handler.testRunChecked.call(instance, true);
+  assert.equal(launches, 1);
 });

@@ -3,6 +3,7 @@ var
   Panel = require('moonstone/Panel'),
   Scroller = require('moonstone/Scroller'),
   Item = require('moonstone/Item'),
+  BodyText = require('moonstone/BodyText'),
   Spotlight = require('spotlight'),
   I18n = require('./I18n.js'),
   DisplayPanel = require('./DisplayPanel.js');
@@ -25,13 +26,16 @@ module.exports = kind({
 
   components: [
     {kind: Scroller, fit: true, components: [
-      {name: 'list', style: 'margin-left: 4%; width: 92%;'}
+      {name: 'list', style: 'margin-left: 4%; width: 92%;'},
+      {kind: BodyText, name: 'translationNotice', style: 'margin: 20px 4% 4px; font-size: 24px;'},
+      {kind: BodyText, allowHtml: true, content: '<a href="https://github.com/aabytt/custom-screensaver-aerial/issues">https://github.com/aabytt/custom-screensaver-aerial/issues</a>', style: 'margin: 0 4% 20px; font-size: 22px; word-break: break-all;'}
     ]}
   ],
 
   create: function () {
     this.title = I18n.t('uiLanguage');
     this.inherited(arguments);
+    this.$.translationNotice.set('content', I18n.t('languageTranslationNotice'));
     var langs = DisplayPanel.LANGUAGES, perCol = Math.ceil(langs.length / COLS), cols = [], i;
     for (i = 0; i < COLS; i++) {
       cols.push({
@@ -89,6 +93,7 @@ module.exports = kind({
   pick: function (sender) {
     this.current = sender.lang;
     if (this.onChange) { this.onChange(sender.lang); }
+    this.$.translationNotice.set('content', I18n.t('languageTranslationNotice'));
     this.fadeTitle();   // the panel itself is now in the new language
     this.mark();
     return true;
