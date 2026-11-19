@@ -359,6 +359,7 @@ var notifyQueue = Promise.resolve();
 var notifyPending = null;
 var watcherAlive = false;
 var watcherOrig = null;   // the user's brightness, kept by the watcher (Panel protection); null = unknown
+var protStarted = false;
 var WATCHER_STALE = 60; // seconds: a check can take a while when services are slow
 var closing = false;    // a key was pressed: no more disables or videos
 function checkWatcher() {
@@ -376,6 +377,7 @@ function checkWatcher() {
             }
             if (watcherAlive && w.standbyDone === 1)
                 PROT.standbyDone = true;
+            if (protStarted) protInitBrightness();
             PROT.warningType = watcherAlive ? w.protectionWarning : "";
             PROT.warningUntil = watcherAlive ? w.protectionWarningUntil : 0;
             setProtectionWarning(PROT.warningType, PROT.warningUntil);
@@ -919,8 +921,13 @@ function protOnPlaying() {
 }
 function protStart() {
     protTextStart();
+    protStarted = true;
+    protInitBrightness();
+}
+function protInitBrightness() {
     var bright = protGet("brightnessOn", false), dim = protGet("dimOn", false);
-    if (!(bright || dim) || watcherOrig === null) return;
+    if (!(bright || dim) || watcherOrig === null || PROT.orig >= 0 ||
+        PROT.panelOff || PROT.standbyDone || closing) return;
     PROT.orig = PROT.last = watcherOrig;
     if (bright) {
         PROT.base = Math.max(0, Math.min(100, Math.round(protNum("brightness", 30))));
