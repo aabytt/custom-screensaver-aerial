@@ -1133,22 +1133,41 @@ var VideoSelectPanel = kind({
     }, {owner: this}).render();
   },
 
-  // {on, total} for a category ('' = everything)
-  categoryStats: function (id) {
-    var total = 0, on = 0, sec = 0;
+  // Build a fresh snapshot for each refresh: day/night panels share mutable selections and
+  // assets can belong to several categories. A snapshot avoids rescanning the catalog for
+  // every category without keeping a cache that could become stale across panels.
+  collectCategoryStats: function () {
+    var all = {on: 0, total: 0, sec: 0}, categories = Object.create(null);
     this.assets.forEach(function (a) {
-      if (!id || has(a.categories, id)) {
-        total++;
-        if (!this.disabled[a.id]) { on++; sec += durationOf(a); }
+      var selected = !this.disabled[a.id], duration = selected ? durationOf(a) : 0,
+        seen = Object.create(null);
+      function add(stats) {
+        stats.total++;
+        if (selected) { stats.on++; stats.sec += duration; }
       }
+      add(all);
+      (a.categories || []).forEach(function (id) {
+        if (!seen[id]) {
+          seen[id] = true;
+          if (!categories[id]) { categories[id] = {on: 0, total: 0, sec: 0}; }
+          add(categories[id]);
+        }
+      });
     }, this);
-    return {on: on, total: total, sec: sec};
+    return {all: all, categories: categories};
+  },
+
+  // {on, total, sec} for a category ('' = everything)
+  categoryStats: function (id, snapshot) {
+    var stats = snapshot || this.collectCategoryStats();
+    return id ? (stats.categories[id] || {on: 0, total: 0, sec: 0}) : stats.all;
   },
 
   // categories that actually contain videos
-  visibleCategories: function () {
+  visibleCategories: function (snapshot) {
+    var stats = snapshot || this.collectCategoryStats();
     return (this.categories || []).filter(function (c) {
-      return c && c.id && this.categoryStats(c.id).total > 0;
+      return c && c.id && this.categoryStats(c.id, stats).total > 0;
     }, this);
   },
 
@@ -1165,16 +1184,16 @@ var VideoSelectPanel = kind({
     return pick;
   },
 
-  infoText: function (id) {
-    var s = this.categoryStats(id);
+  infoText: function (id, snapshot) {
+    var s = this.categoryStats(id, snapshot);
     return withTime(s.on + ' / ' + s.total, s.sec, s.on);
   },
 
   // ---- first level: categories ----
 
   renderCategories: function () {
-    var images = (this.shared && this.shared.categoryImages) || {};
-    this.visibleCategories().forEach(function (c) {
+    var images = (this.shared && this.shared.categoryImages) || {}, stats = this.collectCategoryStats();
+    this.visibleCategories(stats).forEach(function (c) {
       // thumbnail from videos.json first; a random video of the category as the fallback
       var fallback = this.randomPreviewFor(c);
       this.$.grid.createComponent({
@@ -1183,7 +1202,7 @@ var VideoSelectPanel = kind({
         src: images[c.id] || fallback,
         fallback: fallback,
         label: this.nameOf(c),
-        info: this.infoText(c.id)
+        info: this.infoText(c.id, stats)
       }).render();
     }, this);
     this.fitTries = 0;
@@ -1418,8 +1437,14 @@ var VideoSelectPanel = kind({
     end = h + 1;
     while (end < list.length && !list[end].groupIds) { end++; }
     tiles = list.slice(h + 1, end).filter(function (t) { return t.hasNode() && t.showing; });
-    tiles.forEach(function (t) { tops[t.hasNode().offsetTop] = true; });
-    return tiles.length ? {header: list[h], tiles: tiles, rows: Object.keys(tops).length} : null;
+    // Only distinguish one/two rows from a larger group; avoid reading layout for
+    // every remaining tile after the threshold has been crossed.
+    var rows = 0, i, top;
+    for (i = 0; i < tiles.length && rows <= CENTER_MAX_ROWS; i++) {
+      top = tiles[i].hasNode().offsetTop;
+      if (!tops[top]) { tops[top] = true; rows++; }
+    }
+    return tiles.length ? {header: list[h], tiles: tiles, rows: rows} : null;
   },
 
   adjustScroll: function () {
@@ -1445,9 +1470,11 @@ var VideoSelectPanel = kind({
     }
   },
 
-  syncHeaders: function () {
+  syncHeaders: function (changedId) {
     this.$.grid.getClientControls().forEach(function (t) {
-      if (t.groupIds) { t.setInfo(this.groupInfo(t.groupIds)); }
+      if (t.groupIds && (changedId === undefined || t.groupIds.indexOf(changedId) !== -1)) {
+        t.setInfo(this.groupInfo(t.groupIds));
+      }
     }, this);
   },
 
@@ -2012,7 +2039,7 @@ var VideoSelectPanel = kind({
       this.disabled[evt.id] = true;
     }
     this.markDirty();
-    this.syncHeaders();
+    this.syncHeaders(evt.id);
     return true;
   },
 
@@ -2030,19 +2057,20 @@ var VideoSelectPanel = kind({
 
   // counters on the first level + header text; also called by the child panel
   refreshCounts: function () {
-    this.updateCount();
+    var stats = this.collectCategoryStats();
+    this.updateCount(stats);
     if (this.mode === 'categories') {
       this.$.grid.getClientControls().forEach(function (t) {
-        if (t.setInfo) { t.setInfo(this.infoText(t.categoryId)); }
+        if (t.setInfo) { t.setInfo(this.infoText(t.categoryId, stats)); }
       }, this);
     }
   },
 
-  updateCount: function () {
-    var all = this.categoryStats(''), text, night = this.list === 'night';
+  updateCount: function (snapshot) {
+    var stats = snapshot || this.collectCategoryStats(), all = this.categoryStats('', stats), text, night = this.list === 'night';
     if (this.list === 'day' && !this.isChild) { this.updateSolarCounts(); }
     if (this.mode === 'videos' && this.categoryId) {
-      var cat = this.categoryStats(this.categoryId);
+      var cat = this.categoryStats(this.categoryId, stats);
       text = I18n.t(night ? 'nightCountCategory' : 'countCategory', {on: cat.on, total: cat.total, allOn: all.on, allTotal: all.total});
       text = withTime(text, cat.sec, cat.on);
     } else {

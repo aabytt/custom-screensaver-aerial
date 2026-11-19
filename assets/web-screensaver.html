@@ -683,13 +683,15 @@ function updateOSD() {
         time = h24 ? two(h) : String(h % 12 || 12);
         time += ":" + two(now.getMinutes()) + (seconds ? ":" + two(now.getSeconds()) : "") + (h24 ? "" : (h < 12 ? " AM" : " PM"));
     }
-    document.getElementById("time").textContent = time;
+    var timeEl = document.getElementById("time");
+    if (timeEl.textContent !== time) timeEl.textContent = time;
     if (d) {
         date = d.daysOfWeek[now.getDay()] + ", " + now.getDate() + " " + d.months[now.getMonth()];
     } else {
         date = now.toLocaleDateString(lang, { weekday: "long", day: "numeric", month: "long" });
     }
-    document.getElementById("date").textContent = date;
+    var dateEl = document.getElementById("date");
+    if (dateEl.textContent !== date) dateEl.textContent = date;
 }
 
 // Calls a luna method. Resolves to the parsed reply, or to null if there is none within 3 s or the
