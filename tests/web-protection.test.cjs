@@ -18,12 +18,20 @@ const source = between('var watcherAlive = false;', '// Serialize opposite-state
 function setup(protection = { brightnessOn: true, brightness: 30 }) {
   let heartbeat = { time: Date.now() / 1000 };
   const calls = [];
+  let bl = null;
   const ctx = vm.createContext({
-    Promise, Date, Math, Number, isNaN,
+    Promise, Date, Math, Number, isNaN, JSON, RegExp, parseInt,
+    setTimeout: fn => fn(),
     notifyCtl: true, basePath: '', settings: { protection },
     PROT: { elapsed: 0, orig: -1, base: -1, last: -1, panelOff: false, standbyDone: false },
     loadJSONData: () => Promise.resolve(heartbeat),
-    luna: (uri, payload) => { calls.push(payload.settings.backlight); return Promise.resolve({ returnValue: true }); },
+    luna: (uri, payload) => {
+      if (uri.indexOf('getSystemSettings') >= 0)
+        return Promise.resolve({ returnValue: true, settings: { backlight: bl } });
+      bl = payload.settings.backlight;
+      calls.push(bl);
+      return Promise.resolve({ returnValue: true });
+    },
     video: { pause() {} }, setProtectionWarning() {}, protTextStart() {}, protTextTick() {}
   });
   vm.runInContext(source, ctx);

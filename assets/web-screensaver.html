@@ -793,12 +793,15 @@ function protNum(key, def) {
     var v = Number(protGet(key, def));
     return isNaN(v) ? def : v;
 }
-function setBacklight(v) {
+function setBacklight(v, force) {
     v = Math.max(0, Math.min(100, Math.round(v)));
-    if (PROT.orig < 0 || v === PROT.last) return;
+    if (PROT.orig < 0 || (!force && v === PROT.last)) return;
     PROT.last = v;
     luna("luna://com.webos.settingsservice/setSystemSettings",
-        { category: "picture", settings: { backlight: v }, notifySelf: false });
+        { category: "picture", settings: { backlight: v }, notifySelf: false }).then(function (reply) {
+        if (reply && reply.returnValue !== true && typeof console !== "undefined")
+            console.error("setSystemSettings backlight " + v + " rejected: " + JSON.stringify(reply));
+    });
 }
 function protRestore() {
     if (PROT.orig >= 0) setBacklight(PROT.orig);
@@ -931,10 +934,43 @@ function protInitBrightness() {
     PROT.orig = PROT.last = watcherOrig;
     if (bright) {
         PROT.base = Math.max(0, Math.min(100, Math.round(protNum("brightness", 30))));
-        setBacklight(PROT.base);
+        protSetBrightness(PROT.base);
     } else {
         PROT.base = PROT.orig;
     }
+}
+// Reads the picture backlight back; the parse mirrors read_picture() in backlight-lib.sh
+function lunaGetBacklight() {
+    return luna("luna://com.webos.settingsservice/getSystemSettings",
+        { category: "picture", keys: ["backlight"] }).then(function (reply) {
+        var m = reply && /"backlight" *: *"?([0-9]+)"?/.exec(JSON.stringify(reply));
+        return m ? parseInt(m[1], 10) : null;
+    });
+}
+// The first brightness write after startup can be dropped or overwritten while the TV is still
+// switching to the screensaver, and nothing else retries it. Confirm it with a read-back and
+// resend a few times; the gradual dimming keeps using the fire-and-forget setBacklight() above.
+function protSetBrightness(v) {
+    var attempt = 0;
+    function once() {
+        if (closing || PROT.panelOff || PROT.standbyDone) return;
+        attempt++;
+        setBacklight(v, attempt > 1);
+        setTimeout(function () {
+            if (closing || PROT.panelOff) return;
+            lunaGetBacklight().then(function (cur) {
+                if (cur === v) return;
+                if (attempt >= 5) {
+                    if (typeof console !== "undefined")
+                        console.error("Brightness " + v + " was not confirmed" +
+                            (cur === null ? " (no read-back)" : ", reads " + cur));
+                    return;
+                }
+                once();
+            });
+        }, 1500);
+    }
+    once();
 }
 // called every second
 function protTick() {
