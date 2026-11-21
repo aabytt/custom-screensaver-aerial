@@ -92,6 +92,14 @@ else
 initctl status sam 2>/dev/null | grep -q running
 fi
 }
+# Restarting SAM while the screensaver runs kills it without tvpowerd noticing, which then stays in
+# "Screen Saver Ready" and refuses every launch until a reboot
+sam_restart_ok() {
+if sam_call running '{}' '"id": *"com\.webos\.app\.screensaver"'; then
+echo "[-] The screensaver is running: close it and apply again" >&2
+return 1
+fi
+}
 luna_call() {  # uri payload pattern
 reply="$($TIMEOUT luna-send -n 1 "$1" "$2" </dev/null 2>/dev/null || true)"
 echo "$reply" | grep -qiE "$3"
@@ -181,8 +189,12 @@ sam_reread "$APP_ID" '"type": *"web"' || rc=$?
 else
 # webOS 3.x: no block / dev install reread, SAM only rereads when it restarts (this closes the
 # running apps, including the settings app)
+if sam_restart_ok; then
 initctl restart sam >/dev/null 2>&1 || true
 sam_reports "$APP_ID" '"type": *"web"' || rc=1
+else
+rc=1
+fi
 fi
 if [[ $rc -eq 2 ]]; then
 # Put the stock screensaver back so the next apply starts over (-l also takes the
@@ -430,7 +442,7 @@ return 0
 fi
 if ! have_systemd; then
 # webOS 3.x: SAM only rereads the stock manifest when it restarts
-if sam_call getAppInfo "{\"id\":\"$APP_ID\"}" '"type": *"web"'; then
+if sam_call getAppInfo "{\"id\":\"$APP_ID\"}" '"type": *"web"' && sam_restart_ok; then
 initctl restart sam >/dev/null 2>&1 || true
 fi
 echo "[+] Restored the stock screensaver" >&2
