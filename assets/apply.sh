@@ -67,6 +67,11 @@ VA_RESTORE_HOOK="/var/lib/webosbrew/init.d/49-aerial-videoads-restore"
 NOTIFY_UNIT="aerial-notify"
 NOTIFY_PIDFILE="/tmp/aerial-notify.pid"
 NOTIFY_HEARTBEAT="/tmp/aerial-watcher.json"
+# webOS 3.x, see apply_legacy
+LEGACY_ID="com.webos.app.store-demo"
+LEGACY_STAGE="/tmp/aerial-overlay"
+PLAYER_STAGE="/tmp/aerial-player"
+PLAYER_PIDFILE="/tmp/aerial-player.pid"
 # One apply (or revert) at a time (a double press, or Apply during the boot hooks), so mounts don't
 # stack. Aerial 3.0.2's restore hook takes the same lock at boot.
 LOCK=/tmp/aerial-apply.lock
@@ -246,11 +251,14 @@ fi
 stop_watcher() {
 systemctl stop "$NOTIFY_UNIT" >/dev/null 2>&1 || true
 systemctl reset-failed "$NOTIFY_UNIT" >/dev/null 2>&1 || true
-if [[ -f "$NOTIFY_PIDFILE" ]]; then
-pid="$(cat "$NOTIFY_PIDFILE")"
+for pf in "$NOTIFY_PIDFILE" "$PLAYER_PIDFILE"; do
+if [[ -f "$pf" ]]; then
+pid="$(cat "$pf")"
 kill -s TERM "-$pid" >/dev/null 2>&1 || kill "$pid" >/dev/null 2>&1 || true
-rm -f "$NOTIFY_PIDFILE"
+rm -f "$pf"
 fi
+done
+rm -f /tmp/aerial-player.on
 }
 start_watcher() {
 stop_watcher
@@ -275,9 +283,72 @@ if [[ -f "$1/watcher.json" ]] && ! findmnt "$1/watcher.json" >/dev/null; then
 mount --bind "$NOTIFY_HEARTBEAT" "$1/watcher.json" || true
 fi
 }
+# webOS 3.x: the stock screensaver is a native app (native_builtin) and a web page has to be a
+# screenSaver window for tvpowerd to follow, but then the compositor leaves the app below mapped and
+# the video is hidden behind it. So the stock screensaver becomes a transparent overlay page
+# (screensaver-overlay.html, mounted from a small stage) and the video plays in a card app: the player
+# page, mounted over the unused LG app $LEGACY_ID like mirror_videoads does for videoads.
+# legacy-player.sh starts and stops the player once tvpowerd has started the screensaver. SAM can't be
+# made to reread a manifest here (no block / release), so a SAM restart picks up both.
+start_legacy_watcher() {
+if command -v setsid >/dev/null 2>&1; then
+setsid /bin/sh "$ASSETS_DIR/legacy-player.sh" </dev/null >/dev/null 2>&1 &
+else
+nohup /bin/sh "$ASSETS_DIR/legacy-player.sh" </dev/null >/dev/null 2>&1 &
+fi
+echo $! > "$PLAYER_PIDFILE"
+}
+legacy_sam_ok() {
+sam_call getAppInfo "{\"id\":\"$APP_ID\"}" '"main": *"screensaver-overlay\.html"' &&
+sam_call getAppInfo "{\"id\":\"$VA_ID\"}" "$VA_MAIN"
+}
+apply_legacy() {
+VA_ID="$LEGACY_ID"
+VA_DIR="/usr/palm/applications/$VA_ID"
+VA_STAGE="$PLAYER_STAGE"
+# The player is a card, not a screenSaver window
+VA_FIX='s/"defaultWindowType": *"screenSaver"/"defaultWindowType": "card"/'
+if findmnt "$APP_DIR" >/dev/null && ! cmp -s "$ASSETS_DIR/screensaver-overlay.html" "$APP_DIR/screensaver-overlay.html"; then
+echo "[~] Replacing the screensaver mounted from an earlier install" >&2
+umount -l "$APP_DIR"
+fi
+if ! findmnt "$APP_DIR" >/dev/null; then
+rm -rf "$LEGACY_STAGE"
+mkdir -p "$LEGACY_STAGE"
+cp "$ASSETS_DIR/screensaver-overlay.html" "$LEGACY_STAGE"/
+sed 's/"main": *"web-screensaver\.html"/"main": "screensaver-overlay.html"/' "$ASSETS_DIR/appinfo.json" > "$LEGACY_STAGE/appinfo.json"
+mount --bind "$LEGACY_STAGE" "$APP_DIR"
+fi
+if ! va_mounted_current && ! va_mount_copy; then
+umount -l "$APP_DIR" || true
+echo "[-] Could not mount the player over $VA_ID" >&2
+exit 1
+fi
+start_watcher
+start_legacy_watcher
+if sam_up && ! legacy_sam_ok; then
+if sam_restart_ok && sam_restart; then
+for i in $(seq 1 20); do
+legacy_sam_ok && break
+sleep 1
+done
+fi
+if ! legacy_sam_ok; then
+umount -l "$APP_DIR" || true
+umount -l "$VA_DIR" || true
+echo "[-] The app manager didn't pick up the screensaver, so the stock one is kept. Apply again after a reboot." >&2
+exit 1
+fi
+fi
+echo "[+] Enabled succesfully (web screensaver, webOS 3.x)" >&2
+}
 # This Aerial's appinfo.json with the id $VA_ID
 va_appinfo() {
+if [[ -n "$VA_FIX" ]]; then
+sed "s/\"$APP_ID\"/\"$VA_ID\"/" "$ASSETS_DIR/appinfo.json" | sed "$VA_FIX"
+else
 sed "s/\"$APP_ID\"/\"$VA_ID\"/" "$ASSETS_DIR/appinfo.json"
+fi
 }
 # Whether every file of this assets/ is in the videoads copy unchanged, except tn/ (left out),
 # appinfo.json (another id) and the mounted settings.json, watcher.json, solar.json and fonts/custom
@@ -428,7 +499,7 @@ sh "$ASSETS_DIR/backlight-restore.sh" </dev/null >/dev/null 2>&1 || true
 fi
 # -l also takes the mounts inside along (settings.json, solar.json, watcher.json, fonts/custom).
 # The heartbeat is mounted into assets/ too, which on the QML screensaver is inside none of them.
-for m in "$MOUNT_TARGET" "$APP_DIR" "$VA_DIR" \
+for m in "$MOUNT_TARGET" "$APP_DIR" "$VA_DIR" "/usr/palm/applications/$LEGACY_ID" \
 "$ASSETS_DIR/watcher.json" "$APP_DIR/watcher.json" "$VA_DIR/watcher.json"; do
 if findmnt "$m" >/dev/null 2>&1; then
 umount -l "$m" || echo "[~] Could not unmount $m" >&2
@@ -438,6 +509,7 @@ done
 if ! findmnt "$VA_DIR" >/dev/null 2>&1; then
 rm -rf "$VA_STAGE" 2>/dev/null || true
 fi
+rm -rf "$LEGACY_STAGE" "$PLAYER_STAGE" 2>/dev/null || true
 if ! sam_up; then
 # SAM isn't up: it reads the manifests on flash on its first scan
 echo "[+] Restored the stock screensaver" >&2
@@ -488,11 +560,15 @@ exit 1
 fi
 trap 'rmdir "$LOCK" 2>/dev/null || true' EXIT
 undo_videoads_setup
+if grep -q '"type" *: *"native_builtin"' "$APP_DIR/appinfo.json" 2>/dev/null || [[ -f "$APP_DIR/screensaver-overlay.html" ]]; then
+apply_legacy
+exit 0
+fi
 # webOS 25 and 26 (10.x/11.x): the stock screensaver is a Flutter app and QML apps can't be
 # launched, so replace the whole app directory with assets/, which holds a web app (appinfo.json +
 # web-screensaver.html) next to the settings, videos and locales it reads. The watcher switches
 # notifications back on after the screensaver (#46), and ends by itself if this is unmounted.
-if grep -qE '"type" *: *"(flutter|native_builtin)"' "$APP_DIR/appinfo.json" 2>/dev/null || findmnt "$APP_DIR" >/dev/null; then
+if grep -q '"type" *: *"flutter"' "$APP_DIR/appinfo.json" 2>/dev/null || findmnt "$APP_DIR" >/dev/null; then
 if findmnt "$APP_DIR" >/dev/null && ! [[ "$ASSETS_DIR" -ef "$APP_DIR" ]]; then
 # Mounted, but not this assets/: installing an update can replace the app folder, and the
 # mount would keep serving the old one until a reboot. -l also takes mounts inside it along.
@@ -522,5 +598,5 @@ mirror_videoads
 echo "$msg" >&2
 exit 0
 fi
-echo "[-] Unsupported screensaver: neither $MOUNT_TARGET nor a Flutter / built-in native app found" >&2
+echo "[-] Unsupported screensaver: neither $MOUNT_TARGET nor a Flutter app found" >&2
 exit 1

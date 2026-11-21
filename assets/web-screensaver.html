@@ -66,13 +66,6 @@
 </div>
 <div id="osd-notice"></div>
 <div id="debug"></div>
-<script>
-// webOS 3.x / 4 (Chromium < 100): WAM doesn't make a window of type "screenSaver" from the manifest, so
-// the page is a card and tvpowerd never leaves "Screen Saver Ready" (every later launch is refused)
-if (/Chrome\/([0-9]+)/.test(navigator.userAgent) && Number(RegExp.$1) < 100) {
-    try { PalmSystem.setWindowProperty("_WEBOS_WINDOW_TYPE", "_WEBOS_WINDOW_TYPE_SCREENSAVER"); } catch (e) {}
-}
-</script>
 <script src="solar.js"></script>
 <script>
 var basePath = "";
