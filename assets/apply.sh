@@ -501,6 +501,7 @@ va_reports_stock
 }
 revert_screensaver() {
 stop_watcher
+sh "$ASSETS_DIR/screensaver-delay.sh" revert || true
 # The watcher is what puts the brightness back when the screensaver ends, and it is stopped now:
 # do it here, exactly like the boot hook does (see install_backlight_hook)
 if [ -s "$BL_STATE" ] && [ -f "$ASSETS_DIR/backlight-restore.sh" ]; then
@@ -550,6 +551,8 @@ revert_screensaver
 exit 0
 fi
 install_backlight_hook || true
+# The screensaver delay where the TV has no setting for it (see screensaver-delay.sh); also at boot
+sh "$ASSETS_DIR/screensaver-delay.sh" apply || true
 if [[ -f "$MOUNT_TARGET" ]]; then
 if ! findmnt "$MOUNT_TARGET"; then
 mount --bind "$QML_PATH" "$MOUNT_TARGET"

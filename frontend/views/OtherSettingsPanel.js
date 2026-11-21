@@ -6,6 +6,9 @@ var
   BodyText = require('moonstone/BodyText'),
   Marquee = require('moonstone/Marquee'),
   ToggleItem = require('moonstone/ToggleItem'),
+  SimpleIntegerPicker = require('moonstone/SimpleIntegerPicker'),
+  LunaService = require('enyo-webos/LunaService'),
+  SettingsStore = require('./SettingsStore.js'),
   Popup = require('moonstone/Popup'),
   Button = require('moonstone/Button'),
   I18n = require('./I18n.js'),
@@ -21,6 +24,11 @@ var LINKS = {
 };
 
 var ACCENT = Theme.ACCENT;
+
+// Screensaver delay (settings.screensaverDelay, minutes): only offered where screensaver-delay.sh says the TV's
+// timer can be changed (webOS 3.x has it fixed at 60 min and no menu for it)
+var DELAY_MAX = 240;   // same limit as screensaver-delay.sh
+var DELAY_SH = 'sh ' + SettingsStore.assetsDir + '/screensaver-delay.sh';
 var ICON_SIZE = 46;
 var ICON_GAP = 22;
 var ICON_ITEM = 'display: flex; align-items: center;';
@@ -82,6 +90,11 @@ module.exports = kind({
   components: [
     {kind: Scroller, fit: true, components: [
       {style: 'margin-left: 7%; width: 78%;', components: [
+        {kind: Item, name: 'delay', showing: false, components: [
+          {kind: Marquee.Text, name: 'delayLabel'},
+          {kind: SimpleIntegerPicker, name: 'delayPicker', min: 1, max: DELAY_MAX, step: 1, unit: '', onChange: 'delayChanged'}
+        ]},
+        {kind: BodyText, name: 'delayHint', showing: false, style: 'margin: 0 0 22px; padding-left: 12px; text-align: left; font-size: ' + Theme.DESC_FONT + '; color: ' + Theme.MUTED + ';'},
         {kind: ToggleItem, name: 'noticeToggle', style: 'text-align: left;', onchange: 'noticeChanged'},
         {kind: BodyText, name: 'noticeHint', style: 'margin: 0 0 22px; padding-left: 12px; text-align: left; font-size: ' + Theme.DESC_FONT + '; color: ' + Theme.MUTED + ';'},
         {kind: Item, name: 'aboutItem', style: 'text-align: left;', ontap: 'openAbout', components: [
@@ -115,6 +128,8 @@ module.exports = kind({
         ]}
       ]},
 
+    {kind: LunaService, name: 'delaySupport', service: 'luna://org.webosbrew.hbchannel.service', method: 'exec', onResponse: 'gotDelaySupport', onError: 'gotDelaySupport'},
+
     // QR card: header, code with caption, footer with Close (as the report card)
     {kind: Popup, name: 'qrPopup', centered: true, floating: true, modal: true, autoDismiss: true,
       onHide: 'qrHidden', style: popupStyle(720), components: [
@@ -138,6 +153,8 @@ module.exports = kind({
     this.$.noticeToggle.set('content', tr('updateNoticeToggle', 'Show update notices in the screensaver'));
     this.$.noticeToggle.set('checked', this.settings.updateNoticeEnabled !== false);
     this.$.noticeHint.set('content', tr('updateNoticeInfo', 'Shows one update message when the screensaver starts.'));
+    this.$.delayLabel.set('content', tr('screensaverDelay', 'Start the screensaver after, min'));
+    this.$.delaySupport.send({command: DELAY_SH + ' support'});
     this.$.aboutLabel.set('content', tr('aboutTitle', 'About Aerial'));
     this.$.aboutHint.set('content', tr('aboutHint', 'Project information, community, and support.'));
 
@@ -164,6 +181,46 @@ module.exports = kind({
     item.url = url;
     this.$[item.name + 'Title'].set('content', title);
     this.$[item.name + 'Sub'].set('content', sub);
+  },
+
+  // The answer is the TV's own delay in minutes, nothing where it can't be changed (the item stays hidden)
+  gotDelaySupport: function (sender, evt) {
+    var out = (evt && evt.returnValue && evt.stdoutString) ? String(evt.stdoutString).trim() : '';
+    if (this.destroyed || !/^\d+$/.test(out)) { return; }
+    this.delayStock = parseInt(out, 10);
+    this.$.delayHint.set('content', this.delayStock ?
+      tr('screensaverDelayInfo', 'The TV\'s own setting is {min} min.').replace('{min}', this.delayStock) : '');
+    this.$.delay.set('showing', true);
+    this.$.delayHint.set('showing', !!this.delayStock);
+    // a picker given its value while hidden shows its first one: shown first, then set and laid out (as ProtectionPanel)
+    this.delayReady = false;   // setting the value fires onChange
+    this.$.delayPicker.set('value', Math.min(this.settings.screensaverDelay || this.delayStock || 60, DELAY_MAX));
+    this.startJob('delayLayout', function () {
+      var p = this.$.delayPicker;
+      if (p.reflow) { p.reflow(); }
+      this.$.delay.resized();
+      this.delayReady = true;
+    }, 300);
+  },
+
+  // every change restarts nopd (MainPanel applies it with the save), so only the last one of a quick series counts
+  delayChanged: function () {
+    if (!this.delayReady) { return; }
+    this.delayPending = true;
+    this.startJob('delayApply', 'delayApply', 1500);
+  },
+
+  delayApply: function () {
+    var v = this.$.delayPicker.get('value'), m = v === this.delayStock ? 0 : v;   // the TV's own value: no patched copy needed
+    this.delayPending = false;
+    if (m === (this.settings.screensaverDelay || 0)) { return; }
+    this.settings.screensaverDelay = m;
+    if (this.onChange) { this.onChange('screensaverDelay', m); }
+  },
+
+  destroy: function () {
+    if (this.delayPending) { this.stopJob('delayApply'); this.delayApply(); }   // closed within the wait
+    this.inherited(arguments);
   },
 
   noticeChanged: function (sender) {
