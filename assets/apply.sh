@@ -68,7 +68,8 @@ NOTIFY_UNIT="aerial-notify"
 NOTIFY_PIDFILE="/tmp/aerial-notify.pid"
 NOTIFY_HEARTBEAT="/tmp/aerial-watcher.json"
 # webOS 3.x, see apply_legacy
-LEGACY_ID="com.webos.app.store-demo"
+LEGACY_ID="org.aabytt.webos.custom-screensaver-aerial.player"
+LEGACY_DIR="/media/developer/apps/usr/palm/applications/$LEGACY_ID"
 LEGACY_STAGE="/tmp/aerial-overlay"
 PLAYER_STAGE="/tmp/aerial-player"
 PLAYER_PIDFILE="/tmp/aerial-player.pid"
@@ -112,7 +113,12 @@ if command -v systemctl >/dev/null 2>&1; then
 systemctl restart sam.service
 else
 initctl restart sam
-fi >/dev/null 2>&1
+fi >/dev/null 2>&1 || true
+for i in $(seq 1 30); do
+sam_up && return 0
+sleep 1
+done
+return 1
 }
 luna_call() {  # uri payload pattern
 reply="$($TIMEOUT luna-send -n 1 "$1" "$2" </dev/null 2>/dev/null || true)"
@@ -287,7 +293,8 @@ fi
 # screenSaver window for tvpowerd to follow, but then the compositor leaves the app below mapped and
 # the video is hidden behind it. So the stock screensaver becomes a transparent overlay page
 # (screensaver-overlay.html, mounted from a small stage) and the video plays in a card app: the player
-# page, mounted over the unused LG app $LEGACY_ID like mirror_videoads does for videoads.
+# page, mounted over a new dev app $LEGACY_ID (a directory under the dev apps that SAM lists after its
+# restart).
 # legacy-player.sh starts and stops the player once tvpowerd has started the screensaver. SAM can't be
 # made to reread a manifest here (no block / release), so a SAM restart picks up both.
 start_legacy_watcher() {
@@ -304,7 +311,7 @@ sam_call getAppInfo "{\"id\":\"$VA_ID\"}" "$VA_MAIN"
 }
 apply_legacy() {
 VA_ID="$LEGACY_ID"
-VA_DIR="/usr/palm/applications/$VA_ID"
+VA_DIR="$LEGACY_DIR"
 VA_STAGE="$PLAYER_STAGE"
 # The player is a card, not a screenSaver window
 VA_FIX='s/"defaultWindowType": *"screenSaver"/"defaultWindowType": "card"/'
@@ -319,6 +326,7 @@ cp "$ASSETS_DIR/screensaver-overlay.html" "$LEGACY_STAGE"/
 sed 's/"main": *"web-screensaver\.html"/"main": "screensaver-overlay.html"/' "$ASSETS_DIR/appinfo.json" > "$LEGACY_STAGE/appinfo.json"
 mount --bind "$LEGACY_STAGE" "$APP_DIR"
 fi
+mkdir -p "$VA_DIR"
 if ! va_mounted_current && ! va_mount_copy; then
 umount -l "$APP_DIR" || true
 echo "[-] Could not mount the player over $VA_ID" >&2
@@ -336,6 +344,7 @@ fi
 if ! legacy_sam_ok; then
 umount -l "$APP_DIR" || true
 umount -l "$VA_DIR" || true
+rmdir "$VA_DIR" 2>/dev/null || true
 echo "[-] The app manager didn't pick up the screensaver, so the stock one is kept. Apply again after a reboot." >&2
 exit 1
 fi
@@ -499,7 +508,7 @@ sh "$ASSETS_DIR/backlight-restore.sh" </dev/null >/dev/null 2>&1 || true
 fi
 # -l also takes the mounts inside along (settings.json, solar.json, watcher.json, fonts/custom).
 # The heartbeat is mounted into assets/ too, which on the QML screensaver is inside none of them.
-for m in "$MOUNT_TARGET" "$APP_DIR" "$VA_DIR" "/usr/palm/applications/$LEGACY_ID" \
+for m in "$MOUNT_TARGET" "$APP_DIR" "$VA_DIR" "$LEGACY_DIR" \
 "$ASSETS_DIR/watcher.json" "$APP_DIR/watcher.json" "$VA_DIR/watcher.json"; do
 if findmnt "$m" >/dev/null 2>&1; then
 umount -l "$m" || echo "[~] Could not unmount $m" >&2
@@ -510,6 +519,7 @@ if ! findmnt "$VA_DIR" >/dev/null 2>&1; then
 rm -rf "$VA_STAGE" 2>/dev/null || true
 fi
 rm -rf "$LEGACY_STAGE" "$PLAYER_STAGE" 2>/dev/null || true
+findmnt "$LEGACY_DIR" >/dev/null 2>&1 || rmdir "$LEGACY_DIR" 2>/dev/null || true
 if ! sam_up; then
 # SAM isn't up: it reads the manifests on flash on its first scan
 echo "[+] Restored the stock screensaver" >&2

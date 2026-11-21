@@ -1,7 +1,7 @@
 #!/bin/sh
 # webOS 3.x: plays Aerial's video for the stock screensaver. The video has to be in a card app: a
 # screenSaver window leaves the app below mapped, which hides the video (see screensaver-overlay.html).
-# apply.sh mounts the player page (web-screensaver.html) over the unused LG app $PLAYER.
+# apply.sh mounts the player page (web-screensaver.html) as the dev app $PLAYER.
 #
 # tvpowerd launches the (transparent) screensaver as usual and, once it has reached "Screen Saver", this
 # launches the player under it. Launching a card hides the screensaver window and tvpowerd drops back to
@@ -9,7 +9,7 @@
 # screensaver doesn't work: an app change during its request cancels the request.
 # When the screensaver window is gone (a key), the player is closed and the app that was in front is
 # brought back (closing a card alone leaves the TV on its last input).
-PLAYER="com.webos.app.store-demo"
+PLAYER="org.aabytt.webos.custom-screensaver-aerial.player"
 SAVER="com.webos.app.screensaver"
 TVPOWER="luna://com.webos.service.tvpower/power"
 SAM="luna://com.webos.applicationManager"

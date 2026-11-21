@@ -60,8 +60,9 @@ reread on these TVs; this closes every running app, including the settings app. 
   doesn't make that type from the manifest. The stock screensaver is therefore replaced by a
   transparent page (`screensaver-overlay.html`) that sets the window type itself.
 - A `screenSaver` window leaves the app below mapped, which hides the video. So the video plays in a
-  card app: the player page (`web-screensaver.html`) is mounted over the unused LG app
-  `com.webos.app.store-demo`, and `legacy-player.sh` (started by `apply.sh`) launches it under the
+  card app: the player page (`web-screensaver.html`) is mounted as a dev app of its own,
+  `org.aabytt.webos.custom-screensaver-aerial.player` (a directory under `/media/developer/apps`
+  that SAM lists after its restart), and `legacy-player.sh` (started by `apply.sh`) launches it under the
   overlay once tvpowerd has started the screensaver, then closes it and brings back the app that was in
   front when the overlay goes away.
 - Same as the stock screensaver, the HDMI input apps refuse it while an HDMI input is in front.
