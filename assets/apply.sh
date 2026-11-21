@@ -95,6 +95,11 @@ echo "[-] The screensaver is running: close it and apply again" >&2
 return 1
 fi
 }
+# Firmware without block / release (webOS 3.x) doesn't reread either way: callers skip the waiting
+# for it. Blocking an app that doesn't exist is harmless where the method exists.
+sam_no_reread() {
+sam_call blockSystemApp '{"id":"aerial.probe"}' 'unknown method'
+}
 # Last resort when SAM can't be made to reread (webOS 3.x has no block / dev install reread). This
 # closes the running apps, including the settings app.
 sam_restart() {
@@ -188,7 +193,11 @@ if ! sam_up; then
 return 0
 fi
 rc=0
+if sam_no_reread; then
+rc=3
+else
 sam_reread "$APP_ID" '"type": *"web"' || rc=$?
+fi
 if [[ $rc -eq 2 ]]; then
 # Put the stock screensaver back so the next apply starts over (-l also takes the
 # watcher.json mount inside it along)
@@ -197,7 +206,7 @@ echo "[-] Could not release $APP_ID from LG's blocked system app list, so no scr
 echo "    Apply again, or run: luna-send -n 1 $SAM/releaseBlockSystemApp '{\"id\":\"$APP_ID\"}'" >&2
 exit 1
 fi
-if [[ $rc -ne 0 ]] && ! sam_reload "$APP_ID" '"type": *"web"' &&
+if [[ $rc -ne 0 ]] && { [[ $rc -eq 3 ]] || ! sam_reload "$APP_ID" '"type": *"web"'; } &&
 ! { sam_restart_ok && sam_restart && sam_reports "$APP_ID" '"type": *"web"'; }; then
 # Keep the stock screensaver, and have SAM reread it too in case it took the web app late
 umount -l "$APP_DIR" || true
@@ -439,7 +448,7 @@ undo_videoads_setup
 # A block an interrupted apply left would keep the stock screensaver from launching
 release_block "$APP_ID" 1 || true
 rv_failed=
-reload_stock "$APP_DIR" "$APP_ID" || rv_failed=1
+if sam_no_reread; then rv_failed=1; else reload_stock "$APP_DIR" "$APP_ID" || rv_failed=1; fi
 reload_videoads_stock || rv_failed=1
 if [ -n "$rv_failed" ] && sam_call getAppInfo "{\"id\":\"$APP_ID\"}" '"type": *"web"' && sam_restart_ok && sam_restart; then
 rv_failed=
