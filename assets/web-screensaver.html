@@ -46,8 +46,8 @@
   body.drift #osd { transition-property: opacity, transform; transition-duration: 3s, 1s; transition-timing-function: ease, linear; }
   body.drift #osd.fading { transition-duration: 5s, 1s; }
   #osd .ln { position: absolute; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.33;
-             text-shadow: var(--osd-shadow, 0 1px 0 #000);
-             transition: opacity var(--od, 1.5s) ease; }
+             text-shadow: 0 1px 0 #000;
+             transition: opacity 1.5s ease; }
   /* Clock mode: only the time and date, moved every minute against OLED burn-in */
   body.clock #osd { right: auto; bottom: auto; text-align: right; }
   body.clock #osd .ln { position: static; }
@@ -267,7 +267,9 @@ function applyOsdFont() {
         } catch (e) { setOsdBold(true, false, id); }
     }
     // soft shadow for bright scenes; the same value as SHADOW_ON in DisplayPanel.js
-    osd.style.setProperty("--osd-shadow", osdGet("shadow") ? "0 2px 8px rgba(0,0,0,0.9), 0 0 3px rgba(0,0,0,0.8)" : "0 1px 0 #000");
+    // set on each line: CSS variables need Chromium 49, webOS 3.x has 38
+    var shadow = osdGet("shadow") ? "0 2px 8px rgba(0,0,0,0.9), 0 0 3px rgba(0,0,0,0.8)" : "0 1px 0 #000";
+    ["name", "poi", "time", "date"].forEach(function (id) { document.getElementById(id).style.textShadow = shadow; });
 }
 
 function osdLaneLayout(pa, ca, py, cy, pH, cH, boxW) {
@@ -816,7 +818,7 @@ function groupFade(i, v, secs) {
     if (PTXT.hopping) return;
     (i ? ["time", "date"] : ["name", "poi"]).forEach(function (id) {
         var el = document.getElementById(id);
-        el.style.setProperty("--od", secs + "s");
+        el.style.transitionDuration = secs + "s";
         el.style.opacity = v;
     });
 }

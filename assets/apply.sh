@@ -83,6 +83,15 @@ TIMEOUT="timeout -t 8"
 else
 TIMEOUT=
 fi
+# webOS 3.x runs upstart instead of systemd
+have_systemd() { command -v systemctl >/dev/null 2>&1; }
+sam_up() {
+if have_systemd; then
+systemctl is-active -q sam.service
+else
+initctl status sam 2>/dev/null | grep -q running
+fi
+}
 luna_call() {  # uri payload pattern
 reply="$($TIMEOUT luna-send -n 1 "$1" "$2" </dev/null 2>/dev/null || true)"
 echo "$reply" | grep -qiE "$3"
@@ -162,12 +171,19 @@ return 1
 # that closes every running app, and on webOS 26 was reported to leave SAM's app registration
 # broken (#50).
 apply_web() {
-if ! systemctl is-active -q sam.service; then
+if ! sam_up; then
 # SAM isn't up yet: it reads the mounted manifest on its first scan
 return 0
 fi
 rc=0
+if have_systemd; then
 sam_reread "$APP_ID" '"type": *"web"' || rc=$?
+else
+# webOS 3.x: no block / dev install reread, SAM only rereads when it restarts (this closes the
+# running apps, including the settings app)
+initctl restart sam >/dev/null 2>&1 || true
+sam_reports "$APP_ID" '"type": *"web"' || rc=1
+fi
 if [[ $rc -eq 2 ]]; then
 # Put the stock screensaver back so the next apply starts over (-l also takes the
 # watcher.json mount inside it along)
@@ -176,7 +192,7 @@ echo "[-] Could not release $APP_ID from LG's blocked system app list, so no scr
 echo "    Apply again, or run: luna-send -n 1 $SAM/releaseBlockSystemApp '{\"id\":\"$APP_ID\"}'" >&2
 exit 1
 fi
-if [[ $rc -ne 0 ]] && ! sam_reload "$APP_ID" '"type": *"web"'; then
+if [[ $rc -ne 0 ]] && ! { have_systemd && sam_reload "$APP_ID" '"type": *"web"'; }; then
 # Keep the stock screensaver, and have SAM reread it too in case it took the web app late
 umount -l "$APP_DIR" || true
 request_reload "$APP_ID"
@@ -193,7 +209,7 @@ undo_videoads_setup() {
 [[ -f "$VA_RESTORE_HOOK" ]] || return 0
 # At boot SAM and the settings service may still be starting
 for i in $(seq 1 $SAM_WAIT); do
-systemctl is-active -q sam.service && break
+sam_up && break
 sleep 1
 done
 # The hook unmounts a videoads copy itself, but fails on one with mounts inside it (this
@@ -318,7 +334,7 @@ grep -q "\"$VA_ID\"" "$BLOCKED_LIST_DIR"/*.json 2>/dev/null && return 0
 if ! va_mounted_current; then
 va_mount_copy || return 0
 fi
-systemctl is-active -q sam.service || return 0
+sam_up || return 0
 sam_call getAppInfo "{\"id\":\"$VA_ID\"}" "$VA_MAIN" && return 0
 if ! sam_reload "$VA_ID" "$VA_MAIN"; then
 umount -l "$VA_DIR" || true
@@ -407,8 +423,16 @@ done
 if ! findmnt "$VA_DIR" >/dev/null 2>&1; then
 rm -rf "$VA_STAGE" 2>/dev/null || true
 fi
-if ! systemctl is-active -q sam.service; then
+if ! sam_up; then
 # SAM isn't up: it reads the manifests on flash on its first scan
+echo "[+] Restored the stock screensaver" >&2
+return 0
+fi
+if ! have_systemd; then
+# webOS 3.x: SAM only rereads the stock manifest when it restarts
+if sam_call getAppInfo "{\"id\":\"$APP_ID\"}" '"type": *"web"'; then
+initctl restart sam >/dev/null 2>&1 || true
+fi
 echo "[+] Restored the stock screensaver" >&2
 return 0
 fi
@@ -458,7 +482,7 @@ undo_videoads_setup
 # launched, so replace the whole app directory with assets/, which holds a web app (appinfo.json +
 # web-screensaver.html) next to the settings, videos and locales it reads. The watcher switches
 # notifications back on after the screensaver (#46), and ends by itself if this is unmounted.
-if grep -q '"type" *: *"flutter"' "$APP_DIR/appinfo.json" 2>/dev/null || findmnt "$APP_DIR" >/dev/null; then
+if grep -qE '"type" *: *"(flutter|native_builtin)"' "$APP_DIR/appinfo.json" 2>/dev/null || findmnt "$APP_DIR" >/dev/null; then
 if findmnt "$APP_DIR" >/dev/null && ! [[ "$ASSETS_DIR" -ef "$APP_DIR" ]]; then
 # Mounted, but not this assets/: installing an update can replace the app folder, and the
 # mount would keep serving the old one until a reboot. -l also takes mounts inside it along.
@@ -476,7 +500,7 @@ mount_heartbeat "$APP_DIR"
 start_watcher
 # Mounted already. Clear a block an earlier run may have left (SAM can report the web app
 # while it's blocked), then make SAM reread if it still has the Flutter manifest
-if systemctl is-active -q sam.service; then
+if sam_up; then
 release_block "$APP_ID" 1 || true
 if ! sam_call getAppInfo "{\"id\":\"$APP_ID\"}" '"type": *"web"'; then
 apply_web
@@ -488,5 +512,5 @@ mirror_videoads
 echo "$msg" >&2
 exit 0
 fi
-echo "[-] Unsupported screensaver: neither $MOUNT_TARGET nor a Flutter app found" >&2
+echo "[-] Unsupported screensaver: neither $MOUNT_TARGET nor a Flutter / built-in native app found" >&2
 exit 1

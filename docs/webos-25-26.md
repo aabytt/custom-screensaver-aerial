@@ -48,3 +48,10 @@ The videoads screensaver reads a bind-mounted settings file. The watcher updates
 that file in place so the mount keeps pointing to it. It validates the new JSON
 and checks for concurrent edits first, but an overlapping UI save or screensaver
 read is still possible: an in-place write is not atomic.
+
+## webOS 3.x (2016 TVs, upstart)
+
+The stock screensaver is a built-in native app (`native_builtin`), so the web screensaver is
+mounted over it like on webOS 25/26. There is no `systemctl`, `blockSystemApp` or dev-install
+reread on these TVs: apply (and revert) restart the app manager (`initctl restart sam`), which
+closes every running app, including the settings app. Tested on webOS 3.4 (kernel 3.16).
