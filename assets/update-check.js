@@ -25,7 +25,7 @@ function writeLive(file, before, obj) {
         settings.parse(data);
         var fd = fs.openSync(file, 'r+'); // do not truncate or create a new inode
         try {
-            if (fs.readFileSync(fd, 'utf8') !== before) { throw new Error('live settings changed'); }
+            if (read(file) !== before) { throw new Error('live settings changed'); }
             var bytes = Buffer.from ? Buffer.from(data, 'utf8') : new Buffer(data, 'utf8');
             if (fs.writeSync(fd, bytes, 0, bytes.length, 0) !== bytes.length) { throw new Error('short settings write'); }
             fs.ftruncateSync(fd, bytes.length);

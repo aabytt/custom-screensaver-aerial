@@ -53,7 +53,7 @@
 ## Requirements
 
 * A rooted LG TV with the [Homebrew Channel](https://www.webosbrew.org/) installed
-* webOS 5 (2020), webOS 6 (2021), webOS 22 (7.x), webOS 23 (8.x), webOS 25 (10.x) or webOS 26 (11.x)
+* webOS 3.4 (2016, see below), webOS 5 (2020), webOS 6 (2021), webOS 22 (7.x), webOS 23 (8.x), webOS 25 (10.x) or webOS 26 (11.x)
 
 > [!WARNING]
 > The app replaces the original webOS screensaver. Use at your own risk.

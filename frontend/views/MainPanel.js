@@ -1314,8 +1314,13 @@ module.exports = kind({
 		}
 	},
 	otherSettingsChanged: function (key, value) {
+		var self = this;
 		settings[key] = value;
-		this.settingsSave();
+		if (key !== 'screensaverDelay') { this.settingsSave(); return; }
+		// saved first: the boot hook (apply.sh) reads it from there, then applied at once
+		SettingsStore.save(settings, function (command) {
+			self.exec(command + ' && sh ' + SettingsStore.assetsDir + '/screensaver-delay.sh apply ' + value);
+		});
 	},
 	settingsSave: function () {
 		var self = this;

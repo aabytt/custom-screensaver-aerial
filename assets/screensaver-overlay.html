@@ -1,0 +1,24 @@
+<!doctype html>
+<!--
+  webOS 3.x: the stock screensaver's main page (see apply_legacy in apply.sh). tvpowerd only moves
+  from "Screen Saver Ready" to "Screen Saver" once it sees a window of type screenSaver, and WAM there
+  doesn't make that type from the manifest, so it is set here. This window stays transparent: the
+  video plays in a card app under it (legacy-player.sh), because a screenSaver window leaves the app below
+  mapped, so a video in it would be hidden behind that app.
+  A page that paints nothing is never mapped, hence the nearly invisible pixel.
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; width: 100%; height: 100%; background: transparent; }
+  #p { position: fixed; left: 0; top: 0; width: 2px; height: 2px; background: rgba(0, 0, 0, 0.05); }
+</style>
+<script>
+try { PalmSystem.setWindowProperty("_WEBOS_WINDOW_TYPE", "_WEBOS_WINDOW_TYPE_SCREENSAVER"); } catch (e) {}
+// Any key ends the screensaver: tvpowerd closes it on its own, this is for a key it doesn't see
+document.addEventListener("keydown", function () { window.close(); });
+</script>
+</head>
+<body><div id="p"></div></body>
+</html>
