@@ -150,12 +150,13 @@ var DEFAULTS = {
   seconds: true, clock24: true, font: 'segoe', bold: false, shadow: false
 };
 
-// The text shadow is drawn by the web screensaver only (QML keeps its 1 px outline). The web one runs on webOS 10 and newer.
+// The text shadow is drawn by the web screensaver only (QML keeps its 1 px outline). The web one runs on webOS 10 and
+// newer, and on webOS 3.x (where the stock screensaver is a native app).
 var WEB_MIN_MAJOR = 10;
 // 'release' comes from the TV ("10.3.0"); unknown -> false, so the shadow switch stays hidden
 function isWebScreensaver(release) {
-  var m = String(release || '').match(/\d+/);
-  return !!m && parseInt(m[0], 10) >= WEB_MIN_MAJOR;
+  var m = String(release || '').match(/\d+/), major = m ? parseInt(m[0], 10) : 0;
+  return major >= WEB_MIN_MAJOR || major === 3;
 }
 // text-shadow of the OSD lines: a thin outline by default, a soft wide one when the switch is on
 var SHADOW_OFF = '0 1px 0 #000';
