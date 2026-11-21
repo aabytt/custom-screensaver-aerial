@@ -83,14 +83,9 @@ TIMEOUT="timeout -t 8"
 else
 TIMEOUT=
 fi
-# webOS 3.x runs upstart instead of systemd
-have_systemd() { command -v systemctl >/dev/null 2>&1; }
+# Whether SAM is up: it answers (works with any init system)
 sam_up() {
-if have_systemd; then
-systemctl is-active -q sam.service
-else
-initctl status sam 2>/dev/null | grep -q running
-fi
+sam_call getAppInfo "{\"id\":\"$APP_ID\"}" '"returnValue": *true'
 }
 # Restarting SAM while the screensaver runs kills it without tvpowerd noticing, which then stays in
 # "Screen Saver Ready" and refuses every launch until a reboot
@@ -99,6 +94,15 @@ if sam_call running '{}' '"id": *"com\.webos\.app\.screensaver"'; then
 echo "[-] The screensaver is running: close it and apply again" >&2
 return 1
 fi
+}
+# Last resort when SAM can't be made to reread (webOS 3.x has no block / dev install reread). This
+# closes the running apps, including the settings app.
+sam_restart() {
+if command -v systemctl >/dev/null 2>&1; then
+systemctl restart sam.service
+else
+initctl restart sam
+fi >/dev/null 2>&1
 }
 luna_call() {  # uri payload pattern
 reply="$($TIMEOUT luna-send -n 1 "$1" "$2" </dev/null 2>/dev/null || true)"
@@ -184,18 +188,7 @@ if ! sam_up; then
 return 0
 fi
 rc=0
-if have_systemd; then
 sam_reread "$APP_ID" '"type": *"web"' || rc=$?
-else
-# webOS 3.x: no block / dev install reread, SAM only rereads when it restarts (this closes the
-# running apps, including the settings app)
-if sam_restart_ok; then
-initctl restart sam >/dev/null 2>&1 || true
-sam_reports "$APP_ID" '"type": *"web"' || rc=1
-else
-rc=1
-fi
-fi
 if [[ $rc -eq 2 ]]; then
 # Put the stock screensaver back so the next apply starts over (-l also takes the
 # watcher.json mount inside it along)
@@ -204,7 +197,8 @@ echo "[-] Could not release $APP_ID from LG's blocked system app list, so no scr
 echo "    Apply again, or run: luna-send -n 1 $SAM/releaseBlockSystemApp '{\"id\":\"$APP_ID\"}'" >&2
 exit 1
 fi
-if [[ $rc -ne 0 ]] && ! { have_systemd && sam_reload "$APP_ID" '"type": *"web"'; }; then
+if [[ $rc -ne 0 ]] && ! sam_reload "$APP_ID" '"type": *"web"' &&
+! { sam_restart_ok && sam_restart && sam_reports "$APP_ID" '"type": *"web"'; }; then
 # Keep the stock screensaver, and have SAM reread it too in case it took the web app late
 umount -l "$APP_DIR" || true
 request_reload "$APP_ID"
@@ -440,14 +434,6 @@ if ! sam_up; then
 echo "[+] Restored the stock screensaver" >&2
 return 0
 fi
-if ! have_systemd; then
-# webOS 3.x: SAM only rereads the stock manifest when it restarts
-if sam_call getAppInfo "{\"id\":\"$APP_ID\"}" '"type": *"web"' && sam_restart_ok; then
-initctl restart sam >/dev/null 2>&1 || true
-fi
-echo "[+] Restored the stock screensaver" >&2
-return 0
-fi
 # Aerial 3.0.2's leftovers on webOS 26 (its watcher, the lgchannels setting, its boot hook)
 undo_videoads_setup
 # A block an interrupted apply left would keep the stock screensaver from launching
@@ -455,6 +441,9 @@ release_block "$APP_ID" 1 || true
 rv_failed=
 reload_stock "$APP_DIR" "$APP_ID" || rv_failed=1
 reload_videoads_stock || rv_failed=1
+if [ -n "$rv_failed" ] && sam_call getAppInfo "{\"id\":\"$APP_ID\"}" '"type": *"web"' && sam_restart_ok && sam_restart; then
+rv_failed=
+fi
 if [ -n "$rv_failed" ]; then
 echo "[~] The app manager didn't reread the stock screensaver yet; a reboot puts it right" >&2
 fi
