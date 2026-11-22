@@ -48,3 +48,21 @@ The videoads screensaver reads a bind-mounted settings file. The watcher updates
 that file in place so the mount keeps pointing to it. It validates the new JSON
 and checks for concurrent edits first, but an overlapping UI save or screensaver
 read is still possible: an in-place write is not atomic.
+
+## webOS 3.x (2016 TVs, upstart)
+
+The stock screensaver is a built-in native app (`native_builtin`). Apply (and revert) restart the app
+manager (`initctl restart sam`) once, because there is no `systemctl`, `blockSystemApp` or dev-install
+reread on these TVs; this closes every running app, including the settings app. Tested on webOS 3.4
+(kernel 3.16).
+
+- tvpowerd only leaves `Screen Saver Ready` once it sees a window of type `screenSaver`, and WAM there
+  doesn't make that type from the manifest. The stock screensaver is therefore replaced by a
+  transparent page (`screensaver-overlay.html`) that sets the window type itself.
+- A `screenSaver` window leaves the app below mapped, which hides the video. So the video plays in a
+  card app: the player page (`web-screensaver.html`) is mounted as a dev app of its own,
+  `org.aabytt.webos.custom-screensaver-aerial.player` (a directory under `/media/developer/apps`
+  that SAM lists after its restart), and `legacy-player.sh` (started by `apply.sh`) launches it under the
+  overlay once tvpowerd has started the screensaver, then closes it and brings back the app that was in
+  front when the overlay goes away.
+- Same as the stock screensaver, the HDMI input apps refuse it while an HDMI input is in front.

@@ -67,6 +67,12 @@ VA_RESTORE_HOOK="/var/lib/webosbrew/init.d/49-aerial-videoads-restore"
 NOTIFY_UNIT="aerial-notify"
 NOTIFY_PIDFILE="/tmp/aerial-notify.pid"
 NOTIFY_HEARTBEAT="/tmp/aerial-watcher.json"
+# webOS 3.x, see apply_legacy
+LEGACY_ID="org.aabytt.webos.custom-screensaver-aerial.player"
+LEGACY_DIR="/media/developer/apps/usr/palm/applications/$LEGACY_ID"
+LEGACY_STAGE="/tmp/aerial-overlay"
+PLAYER_STAGE="/tmp/aerial-player"
+PLAYER_PIDFILE="/tmp/aerial-player.pid"
 # One apply (or revert) at a time (a double press, or Apply during the boot hooks), so mounts don't
 # stack. Aerial 3.0.2's restore hook takes the same lock at boot.
 LOCK=/tmp/aerial-apply.lock
@@ -83,6 +89,37 @@ TIMEOUT="timeout -t 8"
 else
 TIMEOUT=
 fi
+# Whether SAM is up: it answers (works with any init system)
+sam_up() {
+sam_call getAppInfo "{\"id\":\"$APP_ID\"}" '"returnValue": *true'
+}
+# Restarting SAM while the screensaver runs kills it without tvpowerd noticing, which then stays in
+# "Screen Saver Ready" and refuses every launch until a reboot
+sam_restart_ok() {
+if sam_call running '{}' '"id": *"com\.webos\.app\.screensaver"'; then
+echo "[-] The screensaver is running: close it and apply again" >&2
+return 1
+fi
+}
+# Firmware without block / release (webOS 3.x) doesn't reread either way: callers skip the waiting
+# for it. Blocking an app that doesn't exist is harmless where the method exists.
+sam_no_reread() {
+sam_call blockSystemApp '{"id":"aerial.probe"}' 'unknown method'
+}
+# Last resort when SAM can't be made to reread (webOS 3.x has no block / dev install reread). This
+# closes the running apps, including the settings app.
+sam_restart() {
+if command -v systemctl >/dev/null 2>&1; then
+systemctl restart sam.service
+else
+initctl restart sam
+fi >/dev/null 2>&1 || true
+for i in $(seq 1 30); do
+sam_up && return 0
+sleep 1
+done
+return 1
+}
 luna_call() {  # uri payload pattern
 reply="$($TIMEOUT luna-send -n 1 "$1" "$2" </dev/null 2>/dev/null || true)"
 echo "$reply" | grep -qiE "$3"
@@ -162,12 +199,16 @@ return 1
 # that closes every running app, and on webOS 26 was reported to leave SAM's app registration
 # broken (#50).
 apply_web() {
-if ! systemctl is-active -q sam.service; then
+if ! sam_up; then
 # SAM isn't up yet: it reads the mounted manifest on its first scan
 return 0
 fi
 rc=0
+if sam_no_reread; then
+rc=3
+else
 sam_reread "$APP_ID" '"type": *"web"' || rc=$?
+fi
 if [[ $rc -eq 2 ]]; then
 # Put the stock screensaver back so the next apply starts over (-l also takes the
 # watcher.json mount inside it along)
@@ -176,7 +217,8 @@ echo "[-] Could not release $APP_ID from LG's blocked system app list, so no scr
 echo "    Apply again, or run: luna-send -n 1 $SAM/releaseBlockSystemApp '{\"id\":\"$APP_ID\"}'" >&2
 exit 1
 fi
-if [[ $rc -ne 0 ]] && ! sam_reload "$APP_ID" '"type": *"web"'; then
+if [[ $rc -ne 0 ]] && { [[ $rc -eq 3 ]] || ! sam_reload "$APP_ID" '"type": *"web"'; } &&
+! { sam_restart_ok && sam_restart && sam_reports "$APP_ID" '"type": *"web"'; }; then
 # Keep the stock screensaver, and have SAM reread it too in case it took the web app late
 umount -l "$APP_DIR" || true
 request_reload "$APP_ID"
@@ -193,7 +235,7 @@ undo_videoads_setup() {
 [[ -f "$VA_RESTORE_HOOK" ]] || return 0
 # At boot SAM and the settings service may still be starting
 for i in $(seq 1 $SAM_WAIT); do
-systemctl is-active -q sam.service && break
+sam_up && break
 sleep 1
 done
 # The hook unmounts a videoads copy itself, but fails on one with mounts inside it (this
@@ -215,11 +257,14 @@ fi
 stop_watcher() {
 systemctl stop "$NOTIFY_UNIT" >/dev/null 2>&1 || true
 systemctl reset-failed "$NOTIFY_UNIT" >/dev/null 2>&1 || true
-if [[ -f "$NOTIFY_PIDFILE" ]]; then
-pid="$(cat "$NOTIFY_PIDFILE")"
+for pf in "$NOTIFY_PIDFILE" "$PLAYER_PIDFILE"; do
+if [[ -f "$pf" ]]; then
+pid="$(cat "$pf")"
 kill -s TERM "-$pid" >/dev/null 2>&1 || kill "$pid" >/dev/null 2>&1 || true
-rm -f "$NOTIFY_PIDFILE"
+rm -f "$pf"
 fi
+done
+rm -f /tmp/aerial-player.on
 }
 start_watcher() {
 stop_watcher
@@ -244,9 +289,75 @@ if [[ -f "$1/watcher.json" ]] && ! findmnt "$1/watcher.json" >/dev/null; then
 mount --bind "$NOTIFY_HEARTBEAT" "$1/watcher.json" || true
 fi
 }
+# webOS 3.x: the stock screensaver is a native app (native_builtin) and a web page has to be a
+# screenSaver window for tvpowerd to follow, but then the compositor leaves the app below mapped and
+# the video is hidden behind it. So the stock screensaver becomes a transparent overlay page
+# (screensaver-overlay.html, mounted from a small stage) and the video plays in a card app: the player
+# page, mounted over a new dev app $LEGACY_ID (a directory under the dev apps that SAM lists after its
+# restart).
+# legacy-player.sh starts and stops the player once tvpowerd has started the screensaver. SAM can't be
+# made to reread a manifest here (no block / release), so a SAM restart picks up both.
+start_legacy_watcher() {
+if command -v setsid >/dev/null 2>&1; then
+setsid /bin/sh "$ASSETS_DIR/legacy-player.sh" </dev/null >/dev/null 2>&1 &
+else
+nohup /bin/sh "$ASSETS_DIR/legacy-player.sh" </dev/null >/dev/null 2>&1 &
+fi
+echo $! > "$PLAYER_PIDFILE"
+}
+legacy_sam_ok() {
+sam_call getAppInfo "{\"id\":\"$APP_ID\"}" '"main": *"screensaver-overlay\.html"' &&
+sam_call getAppInfo "{\"id\":\"$VA_ID\"}" "$VA_MAIN"
+}
+apply_legacy() {
+VA_ID="$LEGACY_ID"
+VA_DIR="$LEGACY_DIR"
+VA_STAGE="$PLAYER_STAGE"
+# The player is a card, not a screenSaver window
+VA_FIX='s/"defaultWindowType": *"screenSaver"/"defaultWindowType": "card"/'
+if findmnt "$APP_DIR" >/dev/null && ! cmp -s "$ASSETS_DIR/screensaver-overlay.html" "$APP_DIR/screensaver-overlay.html"; then
+echo "[~] Replacing the screensaver mounted from an earlier install" >&2
+umount -l "$APP_DIR"
+fi
+if ! findmnt "$APP_DIR" >/dev/null; then
+rm -rf "$LEGACY_STAGE"
+mkdir -p "$LEGACY_STAGE"
+cp "$ASSETS_DIR/screensaver-overlay.html" "$LEGACY_STAGE"/
+sed 's/"main": *"web-screensaver\.html"/"main": "screensaver-overlay.html"/' "$ASSETS_DIR/appinfo.json" > "$LEGACY_STAGE/appinfo.json"
+mount --bind "$LEGACY_STAGE" "$APP_DIR"
+fi
+mkdir -p "$VA_DIR"
+if ! va_mounted_current && ! va_mount_copy; then
+umount -l "$APP_DIR" || true
+echo "[-] Could not mount the player over $VA_ID" >&2
+exit 1
+fi
+start_watcher
+start_legacy_watcher
+if sam_up && ! legacy_sam_ok; then
+if sam_restart_ok && sam_restart; then
+for i in $(seq 1 20); do
+legacy_sam_ok && break
+sleep 1
+done
+fi
+if ! legacy_sam_ok; then
+umount -l "$APP_DIR" || true
+umount -l "$VA_DIR" || true
+rmdir "$VA_DIR" 2>/dev/null || true
+echo "[-] The app manager didn't pick up the screensaver, so the stock one is kept. Apply again after a reboot." >&2
+exit 1
+fi
+fi
+echo "[+] Enabled succesfully (web screensaver, webOS 3.x)" >&2
+}
 # This Aerial's appinfo.json with the id $VA_ID
 va_appinfo() {
+if [[ -n "$VA_FIX" ]]; then
+sed "s/\"$APP_ID\"/\"$VA_ID\"/" "$ASSETS_DIR/appinfo.json" | sed "$VA_FIX"
+else
 sed "s/\"$APP_ID\"/\"$VA_ID\"/" "$ASSETS_DIR/appinfo.json"
+fi
 }
 # Whether every file of this assets/ is in the videoads copy unchanged, except tn/ (left out),
 # appinfo.json (another id) and the mounted settings.json, watcher.json, solar.json and fonts/custom
@@ -318,7 +429,7 @@ grep -q "\"$VA_ID\"" "$BLOCKED_LIST_DIR"/*.json 2>/dev/null && return 0
 if ! va_mounted_current; then
 va_mount_copy || return 0
 fi
-systemctl is-active -q sam.service || return 0
+sam_up || return 0
 sam_call getAppInfo "{\"id\":\"$VA_ID\"}" "$VA_MAIN" && return 0
 if ! sam_reload "$VA_ID" "$VA_MAIN"; then
 umount -l "$VA_DIR" || true
@@ -390,6 +501,7 @@ va_reports_stock
 }
 revert_screensaver() {
 stop_watcher
+sh "$ASSETS_DIR/screensaver-delay.sh" revert || true
 # The watcher is what puts the brightness back when the screensaver ends, and it is stopped now:
 # do it here, exactly like the boot hook does (see install_backlight_hook)
 if [ -s "$BL_STATE" ] && [ -f "$ASSETS_DIR/backlight-restore.sh" ]; then
@@ -397,7 +509,7 @@ sh "$ASSETS_DIR/backlight-restore.sh" </dev/null >/dev/null 2>&1 || true
 fi
 # -l also takes the mounts inside along (settings.json, solar.json, watcher.json, fonts/custom).
 # The heartbeat is mounted into assets/ too, which on the QML screensaver is inside none of them.
-for m in "$MOUNT_TARGET" "$APP_DIR" "$VA_DIR" \
+for m in "$MOUNT_TARGET" "$APP_DIR" "$VA_DIR" "$LEGACY_DIR" \
 "$ASSETS_DIR/watcher.json" "$APP_DIR/watcher.json" "$VA_DIR/watcher.json"; do
 if findmnt "$m" >/dev/null 2>&1; then
 umount -l "$m" || echo "[~] Could not unmount $m" >&2
@@ -407,7 +519,9 @@ done
 if ! findmnt "$VA_DIR" >/dev/null 2>&1; then
 rm -rf "$VA_STAGE" 2>/dev/null || true
 fi
-if ! systemctl is-active -q sam.service; then
+rm -rf "$LEGACY_STAGE" "$PLAYER_STAGE" 2>/dev/null || true
+findmnt "$LEGACY_DIR" >/dev/null 2>&1 || rmdir "$LEGACY_DIR" 2>/dev/null || true
+if ! sam_up; then
 # SAM isn't up: it reads the manifests on flash on its first scan
 echo "[+] Restored the stock screensaver" >&2
 return 0
@@ -417,8 +531,11 @@ undo_videoads_setup
 # A block an interrupted apply left would keep the stock screensaver from launching
 release_block "$APP_ID" 1 || true
 rv_failed=
-reload_stock "$APP_DIR" "$APP_ID" || rv_failed=1
+if sam_no_reread; then rv_failed=1; else reload_stock "$APP_DIR" "$APP_ID" || rv_failed=1; fi
 reload_videoads_stock || rv_failed=1
+if [ -n "$rv_failed" ] && sam_call getAppInfo "{\"id\":\"$APP_ID\"}" '"type": *"web"' && sam_restart_ok && sam_restart; then
+rv_failed=
+fi
 if [ -n "$rv_failed" ]; then
 echo "[~] The app manager didn't reread the stock screensaver yet; a reboot puts it right" >&2
 fi
@@ -434,6 +551,8 @@ revert_screensaver
 exit 0
 fi
 install_backlight_hook || true
+# The screensaver delay where the TV has no setting for it (see screensaver-delay.sh); also at boot
+sh "$ASSETS_DIR/screensaver-delay.sh" apply || true
 if [[ -f "$MOUNT_TARGET" ]]; then
 if ! findmnt "$MOUNT_TARGET"; then
 mount --bind "$QML_PATH" "$MOUNT_TARGET"
@@ -454,6 +573,10 @@ exit 1
 fi
 trap 'rmdir "$LOCK" 2>/dev/null || true' EXIT
 undo_videoads_setup
+if grep -q '"type" *: *"native_builtin"' "$APP_DIR/appinfo.json" 2>/dev/null || [[ -f "$APP_DIR/screensaver-overlay.html" ]]; then
+apply_legacy
+exit 0
+fi
 # webOS 25 and 26 (10.x/11.x): the stock screensaver is a Flutter app and QML apps can't be
 # launched, so replace the whole app directory with assets/, which holds a web app (appinfo.json +
 # web-screensaver.html) next to the settings, videos and locales it reads. The watcher switches
@@ -476,7 +599,7 @@ mount_heartbeat "$APP_DIR"
 start_watcher
 # Mounted already. Clear a block an earlier run may have left (SAM can report the web app
 # while it's blocked), then make SAM reread if it still has the Flutter manifest
-if systemctl is-active -q sam.service; then
+if sam_up; then
 release_block "$APP_ID" 1 || true
 if ! sam_call getAppInfo "{\"id\":\"$APP_ID\"}" '"type": *"web"'; then
 apply_web
