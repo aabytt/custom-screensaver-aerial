@@ -554,6 +554,14 @@ install_backlight_hook || true
 # The screensaver delay where the TV has no setting for it (see screensaver-delay.sh); also at boot
 sh "$ASSETS_DIR/screensaver-delay.sh" apply || true
 if [[ -f "$MOUNT_TARGET" ]]; then
+WEBOS_MAJOR="$(grep -o '"webos_release" *: *"[0-9]*' /var/run/nyx/os_info.json 2>/dev/null | grep -o '[0-9]*$' || true)"
+WEB_ONLY=
+[[ "$WEBOS_MAJOR" = 4 ]] && WEB_ONLY=1
+# A QML screensaver an earlier install mounted would stay underneath
+if [[ -n "$WEB_ONLY" ]] && findmnt "$MOUNT_TARGET" >/dev/null 2>&1; then
+umount -l "$MOUNT_TARGET" || true
+fi
+if [[ -z "$WEB_ONLY" && -f "$MOUNT_TARGET" ]]; then
 if ! findmnt "$MOUNT_TARGET"; then
 mount --bind "$QML_PATH" "$MOUNT_TARGET"
 echo "[+] Enabled succesfully" >&2
@@ -573,7 +581,7 @@ exit 1
 fi
 trap 'rmdir "$LOCK" 2>/dev/null || true' EXIT
 undo_videoads_setup
-if grep -q '"type" *: *"native_builtin"' "$APP_DIR/appinfo.json" 2>/dev/null || [[ -f "$APP_DIR/screensaver-overlay.html" ]]; then
+if [[ -n "$WEB_ONLY" ]] || grep -q '"type" *: *"native_builtin"' "$APP_DIR/appinfo.json" 2>/dev/null || [[ -f "$APP_DIR/screensaver-overlay.html" ]]; then
 apply_legacy
 exit 0
 fi
