@@ -8,6 +8,7 @@ Tested your TV? [Submit a report](https://github.com/aabytt/custom-screensaver-a
 | TV model | webOS | Firmware | Aerial | Idle | Test | SDR | DV | UI | Status | Issue |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 43UR81006LJ | webOS 25 (10) · 10.3.0 | 33.31.10 | 3.0.4 | ✅ | ✅ | ✅ | 🚫 | ✅ | ✅ Works | [#80](../../issues/80) |
+| 65SM8200PLA | webOS 4 · 4.10.2 | 05.40.97 | 3.1.1 | ➖ | ➖ | ➖ | ➖ | ✅ | ⚠️ Partial | [#108](../../issues/108) |
 | OLED55C1RLA | webOS 6 · 6.5.0 | 03.51.15 | 3.0.4 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ Works | [#90](../../issues/90) |
 | OLED55C39LC | webOS 25 (10) · 10.3.1 | 33.31.68 | 3.0.4 | ✅ | ✅ | ➖ | ➖ | ✅ | ✅ Works | [#95](../../issues/95) |
 | OLED55CX3LA | webOS 5 · 5.6.2 | 04.64.00 | 3.0.4 | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ Not working | [#85](../../issues/85) |
