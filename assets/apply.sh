@@ -197,7 +197,8 @@ return 1
 }
 # Makes SAM pick up the mounted web app; on failure, says why and exits. SAM is never restarted:
 # that closes every running app, and on webOS 26 was reported to leave SAM's app registration
-# broken (#50).
+# broken (#50). (Where SAM can't be made to reread at all, i.e. webOS 4, the last resort below
+# is a restart, only when the screensaver isn't running.)
 apply_web() {
 if ! sam_up; then
 # SAM isn't up yet: it reads the mounted manifest on its first scan
@@ -313,8 +314,11 @@ apply_legacy() {
 VA_ID="$LEGACY_ID"
 VA_DIR="$LEGACY_DIR"
 VA_STAGE="$PLAYER_STAGE"
-# The player is a card, not a screenSaver window
+# webOS 3.x: the player is a card, not a screenSaver window. webOS 4.x keeps it a screenSaver window.
+VA_FIX=
+if [[ -z "$WEB_ONLY" ]]; then
 VA_FIX='s/"defaultWindowType": *"screenSaver"/"defaultWindowType": "card"/'
+fi
 if findmnt "$APP_DIR" >/dev/null && ! cmp -s "$ASSETS_DIR/screensaver-overlay.html" "$APP_DIR/screensaver-overlay.html"; then
 echo "[~] Replacing the screensaver mounted from an earlier install" >&2
 umount -l "$APP_DIR"
@@ -349,7 +353,11 @@ echo "[-] The app manager didn't pick up the screensaver, so the stock one is ke
 exit 1
 fi
 fi
+if [[ -n "$WEB_ONLY" ]]; then
+echo "[+] Enabled succesfully (web screensaver, webOS 4.x)" >&2
+else
 echo "[+] Enabled succesfully (web screensaver, webOS 3.x)" >&2
+fi
 }
 # This Aerial's appinfo.json with the id $VA_ID
 va_appinfo() {
@@ -553,7 +561,10 @@ fi
 install_backlight_hook || true
 # The screensaver delay where the TV has no setting for it (see screensaver-delay.sh); also at boot
 sh "$ASSETS_DIR/screensaver-delay.sh" apply || true
-if [[ -f "$MOUNT_TARGET" ]]; then
+
+# webOS 4.x: same legacy approach as webOS 3.x (transparent overlay as the screensaver, video in a
+# separate player app, legacy-player.sh), except that the player stays a screenSaver window instead
+# of a card. So the QML screensaver is skipped here and apply_legacy is used (see WEB_ONLY there).
 WEBOS_MAJOR="$(grep -o '"webos_release" *: *"[0-9]*' /var/run/nyx/os_info.json 2>/dev/null | grep -o '[0-9]*$' || true)"
 WEB_ONLY=
 [[ "$WEBOS_MAJOR" = 4 ]] && WEB_ONLY=1
@@ -561,6 +572,7 @@ WEB_ONLY=
 if [[ -n "$WEB_ONLY" ]] && findmnt "$MOUNT_TARGET" >/dev/null 2>&1; then
 umount -l "$MOUNT_TARGET" || true
 fi
+
 if [[ -z "$WEB_ONLY" && -f "$MOUNT_TARGET" ]]; then
 if ! findmnt "$MOUNT_TARGET"; then
 mount --bind "$QML_PATH" "$MOUNT_TARGET"
@@ -581,6 +593,7 @@ exit 1
 fi
 trap 'rmdir "$LOCK" 2>/dev/null || true' EXIT
 undo_videoads_setup
+# webOS 3.x and 4.x: native_builtin / QML stock screensaver, or the overlay an earlier install mounted
 if [[ -n "$WEB_ONLY" ]] || grep -q '"type" *: *"native_builtin"' "$APP_DIR/appinfo.json" 2>/dev/null || [[ -f "$APP_DIR/screensaver-overlay.html" ]]; then
 apply_legacy
 exit 0
