@@ -568,6 +568,10 @@ sh "$ASSETS_DIR/screensaver-delay.sh" apply || true
 # here and apply_legacy is used (see WEB_ONLY there). webOS 3.0-3.4 (native_builtin) is picked up
 # by its manifest type further down and keeps the card player.
 WEBOS_REL="$(grep -o '"webos_release" *: *"[0-9.]*' /var/run/nyx/os_info.json 2>/dev/null | grep -o '[0-9.]*$' || true)"
+# webOS 3.x has no os_info.json (webOS 3.9: "sdkVersion": "3.9.0"): ask the system properties service
+if [[ -z "$WEBOS_REL" ]]; then
+WEBOS_REL="$($TIMEOUT luna-send -n 1 luna://com.webos.service.tv.systemproperty/getSystemInfo '{"keys":["sdkVersion"]}' </dev/null 2>/dev/null | grep -o '"sdkVersion": *"[0-9.]*' | grep -o '[0-9.]*$' || true)"
+fi
 WEBOS_MAJOR="${WEBOS_REL%%.*}"
 WEBOS_MINOR=
 case "$WEBOS_REL" in
