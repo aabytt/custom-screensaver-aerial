@@ -470,7 +470,7 @@ fi
 # ---- revert ----------------------------------------------------------------------------------------------
 # Everything below undoes an apply. Nothing on flash is written and the autostart link is left
 # alone, so with autostart on the stock screensaver is back only until the next boot.
-# The "type" of the manifest that is on flash again ("flutter" on webOS 25/26, "qml" on older ones)
+# The "type" of the manifest that is on flash again ("flutter" on webOS 25/26, "qml" on older ones, webOS 9 included)
 stock_type() {  # app dir
 sed -n 's/.*"type" *: *"\([^"]*\)".*/\1/p' "$1/appinfo.json" 2>/dev/null | head -n 1
 }
@@ -583,12 +583,16 @@ WEB_ONLY=1
 elif [[ "$WEBOS_MAJOR" = 3 && -n "$WEBOS_MINOR" && "$WEBOS_MINOR" -ge 5 ]] 2>/dev/null; then
 WEB_ONLY=1
 fi
+# webOS 9 still has the QML stock screensaver, but is treated like webOS 10/11 (25/26): the whole app
+# directory is replaced with the web app (see the Flutter branch below).
+WEB_APP=
+[[ "$WEBOS_MAJOR" = 9 ]] && WEB_APP=1
 # A QML screensaver an earlier install mounted would stay underneath
-if [[ -n "$WEB_ONLY" ]] && findmnt "$MOUNT_TARGET" >/dev/null 2>&1; then
+if [[ -n "$WEB_ONLY$WEB_APP" ]] && findmnt "$MOUNT_TARGET" >/dev/null 2>&1; then
 umount -l "$MOUNT_TARGET" || true
 fi
 
-if [[ -z "$WEB_ONLY" && -f "$MOUNT_TARGET" ]]; then
+if [[ -z "$WEB_ONLY" && -z "$WEB_APP" && -f "$MOUNT_TARGET" ]]; then
 if ! findmnt "$MOUNT_TARGET"; then
 mount --bind "$QML_PATH" "$MOUNT_TARGET"
 echo "[+] Enabled succesfully" >&2
@@ -613,11 +617,12 @@ if [[ -n "$WEB_ONLY" ]] || grep -q '"type" *: *"native_builtin"' "$APP_DIR/appin
 apply_legacy
 exit 0
 fi
-# webOS 25 and 26 (10.x/11.x): the stock screensaver is a Flutter app and QML apps can't be
-# launched, so replace the whole app directory with assets/, which holds a web app (appinfo.json +
-# web-screensaver.html) next to the settings, videos and locales it reads. The watcher switches
-# notifications back on after the screensaver (#46), and ends by itself if this is unmounted.
-if grep -q '"type" *: *"flutter"' "$APP_DIR/appinfo.json" 2>/dev/null || findmnt "$APP_DIR" >/dev/null; then
+# webOS 25 and 26 (10.x/11.x), and webOS 9 treated the same: the stock screensaver is a Flutter app
+# (QML on 9) and QML apps can't be launched, so replace the whole app directory with assets/, which
+# holds a web app (appinfo.json + web-screensaver.html) next to the settings, videos and locales it
+# reads. The watcher switches notifications back on after the screensaver (#46), and ends by itself
+# if this is unmounted.
+if [[ -n "$WEB_APP" ]] || grep -q '"type" *: *"flutter"' "$APP_DIR/appinfo.json" 2>/dev/null || findmnt "$APP_DIR" >/dev/null; then
 if findmnt "$APP_DIR" >/dev/null && ! [[ "$ASSETS_DIR" -ef "$APP_DIR" ]]; then
 # Mounted, but not this assets/: installing an update can replace the app folder, and the
 # mount would keep serving the old one until a reboot. -l also takes mounts inside it along.
