@@ -354,7 +354,7 @@ exit 1
 fi
 fi
 if [[ -n "$WEB_ONLY" ]]; then
-echo "[+] Enabled succesfully (web screensaver, webOS 4.x)" >&2
+echo "[+] Enabled succesfully (web screensaver, webOS ${WEBOS_REL:-4.x})" >&2
 else
 echo "[+] Enabled succesfully (web screensaver, webOS 3.x)" >&2
 fi
@@ -562,12 +562,23 @@ install_backlight_hook || true
 # The screensaver delay where the TV has no setting for it (see screensaver-delay.sh); also at boot
 sh "$ASSETS_DIR/screensaver-delay.sh" apply || true
 
-# webOS 4.x: same legacy approach as webOS 3.x (transparent overlay as the screensaver, video in a
-# separate player app, legacy-player.sh), except that the player stays a screenSaver window instead
-# of a card. So the QML screensaver is skipped here and apply_legacy is used (see WEB_ONLY there).
-WEBOS_MAJOR="$(grep -o '"webos_release" *: *"[0-9]*' /var/run/nyx/os_info.json 2>/dev/null | grep -o '[0-9]*$' || true)"
+# webOS 3.5+ (QML stock screensaver, up to 3.9) and 4.x: same legacy approach as webOS 3.0-3.4
+# (transparent overlay as the screensaver, video in a separate player app, legacy-player.sh), except
+# that the player stays a screenSaver window instead of a card. So the QML screensaver is skipped
+# here and apply_legacy is used (see WEB_ONLY there). webOS 3.0-3.4 (native_builtin) is picked up
+# by its manifest type further down and keeps the card player.
+WEBOS_REL="$(grep -o '"webos_release" *: *"[0-9.]*' /var/run/nyx/os_info.json 2>/dev/null | grep -o '[0-9.]*$' || true)"
+WEBOS_MAJOR="${WEBOS_REL%%.*}"
+WEBOS_MINOR=
+case "$WEBOS_REL" in
+*.*) WEBOS_MINOR="${WEBOS_REL#*.}"; WEBOS_MINOR="${WEBOS_MINOR%%.*}" ;;
+esac
 WEB_ONLY=
-[[ "$WEBOS_MAJOR" = 4 ]] && WEB_ONLY=1
+if [[ "$WEBOS_MAJOR" = 4 ]]; then
+WEB_ONLY=1
+elif [[ "$WEBOS_MAJOR" = 3 && -n "$WEBOS_MINOR" && "$WEBOS_MINOR" -ge 5 ]] 2>/dev/null; then
+WEB_ONLY=1
+fi
 # A QML screensaver an earlier install mounted would stay underneath
 if [[ -n "$WEB_ONLY" ]] && findmnt "$MOUNT_TARGET" >/dev/null 2>&1; then
 umount -l "$MOUNT_TARGET" || true
