@@ -39,16 +39,18 @@
 ## Features
 
 * [330+ videos](https://aabytt.github.io/aerial-preview/) from different sources (Apple Aerials, Amazon FireOS, Jetson Creative, Robin Fourcade)
-* 40+ locales for OSD
-* Source type selection (FullHD/4k SDR or Dolby Vision)
+* 40+ locales for the OSD
+* Source type selection (FullHD/4K SDR or Dolby Vision)
 * Playlist editor
 * Night mode: a separate playlist for the night hours
+* Solar mode: playback follows the time of day (sunrise, day, sunset, night) based on the actual local time at your selected location
 * On-screen display settings: font (including bold and custom fonts), size, position, 12/24 h clock
-* Panel protection: gradual dimming, automatic panel off and standby, moving, drifting or fading text
+* Panel protection: custom brightness, gradual dimming, automatic panel off and standby, moving, drifting or fading text
 * Clock-only mode when another app (e.g. a paused Jellyfin or Netflix session) holds the video decoder
 * Autostart registration
-* Temporary apply
-* Launch screensaver immediately for testing
+* Launch the screensaver immediately for testing
+
+> **Note:** Some features are model-dependent and may not be available on every TV.
 
 ## Requirements
 
