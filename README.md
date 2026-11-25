@@ -53,7 +53,7 @@
 ## Requirements
 
 * A rooted LG TV with the [Homebrew Channel](https://www.webosbrew.org/) installed
-* webOS 3.4 (2016, see below), webOS 5 (2020), webOS 6 (2021), webOS 22 (7.x), webOS 23 (8.x), webOS 25 (10.x) or webOS 26 (11.x)
+* webOS 3 (2016), webOS 3.5 (2017), webos 4 (2018), webOS 4.5 (2019) webOS 5 (2020), webOS 6 (2021), webOS 22 (7.x), webOS 23 (8.x), webOS 25 (10.x), webOS 26 (11.x)
 
 > [!WARNING]
 > The app replaces the original webOS screensaver. Use at your own risk.
@@ -70,8 +70,8 @@ See the [compatibility table](COMPATIBILITY.md) for tested TVs, or
 [submit your own report](https://github.com/aabytt/custom-screensaver-aerial/issues/new?template=compatibility.yml).
 Tap the `Version` field in the app to read your TV details.
 
-webOS 25 and 26 use a different implementation of the screensaver. See
-[webOS 25 and 26 notes](docs/webos-25-26.md) for how it works and for upgrade instructions.
+webOS versions use a different implementation of the screensaver. See
+[webOS screensaver notes](docs/webos-25-26.md) for how it works and for upgrade instructions.
 
 ## Donate
 
