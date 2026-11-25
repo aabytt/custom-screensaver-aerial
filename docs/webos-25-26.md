@@ -1,3 +1,14 @@
+# Screensaver implementation across webOS versions
+
+| webOS | Stock screensaver | Approach | Player window |
+|---|---|---|---|
+| 3.0–3.4 | `native_builtin` | Legacy: transparent overlay + separate player app | `card` |
+| 3.5–4.x | QML | Legacy: transparent overlay + separate player app | `screenSaver` |
+| 5.x–24 | QML | Bind-mount `screensaver-main.qml` over `main.qml` | `screenSaver` |
+| 25 / 26 | Flutter | Mount the whole app directory as a web app (`web-screensaver.html`) | `screenSaver` |
+ 
+> **Note:** Some features are not available on every TV model or webOS generation, depending on what the firmware and hardware support.
+
 # webOS 25 and 26 (10.x / 11.x)
 
 The stock screensaver is a Flutter app on these TVs and QML apps can't be launched, so

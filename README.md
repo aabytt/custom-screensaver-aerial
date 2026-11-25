@@ -39,21 +39,23 @@
 ## Features
 
 * [330+ videos](https://aabytt.github.io/aerial-preview/) from different sources (Apple Aerials, Amazon FireOS, Jetson Creative, Robin Fourcade)
-* 40+ locales for OSD
-* Source type selection (FullHD/4k SDR or Dolby Vision)
+* 40+ locales for the OSD
+* Source type selection (FullHD/4K SDR or Dolby Vision)
 * Playlist editor
 * Night mode: a separate playlist for the night hours
+* Solar mode: playback follows the time of day (sunrise, day, sunset, night) based on the actual local time at your selected location
 * On-screen display settings: font (including bold and custom fonts), size, position, 12/24 h clock
-* Panel protection: gradual dimming, automatic panel off and standby, moving, drifting or fading text
+* Panel protection: custom brightness, gradual dimming, automatic panel off and standby, moving, drifting or fading text
 * Clock-only mode when another app (e.g. a paused Jellyfin or Netflix session) holds the video decoder
 * Autostart registration
-* Temporary apply
-* Launch screensaver immediately for testing
+* Launch the screensaver immediately for testing
+
+> **Note:** Some features are model-dependent and may not be available on every TV.
 
 ## Requirements
 
 * A rooted LG TV with the [Homebrew Channel](https://www.webosbrew.org/) installed
-* webOS 3.4 (2016, see below), webOS 5 (2020), webOS 6 (2021), webOS 22 (7.x), webOS 23 (8.x), webOS 25 (10.x) or webOS 26 (11.x)
+* webOS 3 (2016), webOS 3.5 (2017), webos 4 (2018), webOS 4.5 (2019) webOS 5 (2020), webOS 6 (2021), webOS 22 (7.x), webOS 23 (8.x), webOS 25 (10.x), webOS 26 (11.x)
 
 > [!WARNING]
 > The app replaces the original webOS screensaver. Use at your own risk.
@@ -70,8 +72,8 @@ See the [compatibility table](COMPATIBILITY.md) for tested TVs, or
 [submit your own report](https://github.com/aabytt/custom-screensaver-aerial/issues/new?template=compatibility.yml).
 Tap the `Version` field in the app to read your TV details.
 
-webOS 25 and 26 use a different implementation of the screensaver. See
-[webOS 25 and 26 notes](docs/webos-25-26.md) for how it works and for upgrade instructions.
+webOS versions use a different implementation of the screensaver. See
+[webOS screensaver notes](docs/webos-25-26.md) for how it works and for upgrade instructions.
 
 ## Donate
 
