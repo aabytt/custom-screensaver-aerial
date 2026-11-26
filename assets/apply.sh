@@ -299,10 +299,15 @@ fi
 # legacy-player.sh starts and stops the player once tvpowerd has started the screensaver. SAM can't be
 # made to reread a manifest here (no block / release), so a SAM restart picks up both.
 start_legacy_watcher() {
+# webOS 9: tvpowerd may refuse the screensaver request, see legacy-player.sh
+LP_ARG=
+if [[ "$WEBOS_MAJOR" = 9 ]]; then
+LP_ARG=direct
+fi
 if command -v setsid >/dev/null 2>&1; then
-setsid /bin/sh "$ASSETS_DIR/legacy-player.sh" </dev/null >/dev/null 2>&1 &
+setsid /bin/sh "$ASSETS_DIR/legacy-player.sh" $LP_ARG </dev/null >/dev/null 2>&1 &
 else
-nohup /bin/sh "$ASSETS_DIR/legacy-player.sh" </dev/null >/dev/null 2>&1 &
+nohup /bin/sh "$ASSETS_DIR/legacy-player.sh" $LP_ARG </dev/null >/dev/null 2>&1 &
 fi
 echo $! > "$PLAYER_PIDFILE"
 }
